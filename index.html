@@ -1,0 +1,2100 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<title>Private Ledger</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="data:image/png;base64,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">
+<link rel="apple-touch-icon" href="icon-apple.png">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Private Ledger">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --bg:#000000; --surface:#131315; --surface2:#1C1C20; --line:rgba(255,255,255,.09);
+  --acc:#D4FF3F; --acc-dim:rgba(212,255,63,.14);
+  --red:#FF5C5C; --amber:#E8C84B;
+  --text:#F5F5F5; --text-dim:rgba(255,255,255,.46); --text-faint:rgba(255,255,255,.26);
+  --ink:255,255,255; --on-acc:#000; --tabbar:rgba(19,19,21,.98);
+  --font-ui:'Sora',-apple-system,BlinkMacSystemFont,sans-serif; --font-num:'DM Mono',ui-monospace,monospace;
+  box-sizing:border-box;
+}
+*{box-sizing:border-box;}
+html,body{height:100%; margin:0; overflow:hidden; overscroll-behavior:none; position:fixed; inset:0; width:100%;}
+body{background:var(--bg); color:var(--text); font-family:var(--font-ui); -webkit-font-smoothing:antialiased;}
+input,button,select{font-family:inherit;}
+.phone{position:fixed; top:0; left:0; right:0; margin:0 auto; width:100%; max-width:460px; height:100%; height:var(--app-h,100%); display:flex; flex-direction:column; overflow:hidden;}
+
+.topbar{display:flex; align-items:center; justify-content:space-between; padding:calc(14px + env(safe-area-inset-top,0px)) 18px 8px;}
+.brand{display:flex; align-items:center; gap:8px;}
+.brand img{width:24px; height:24px; border-radius:7px; display:block;}
+.app-name{font-size:12.5px; font-weight:600; color:var(--text-dim); letter-spacing:.03em;}
+.topbar .icons{display:flex; align-items:center; gap:10px;}
+.sync-dot{width:9px; height:9px; border-radius:50%; background:var(--text-faint); border:none; padding:0; cursor:pointer;}
+.sync-dot.ok{background:var(--acc);}
+.sync-dot.saving,.sync-dot.loading{background:var(--amber); animation:pulseS 1s ease-in-out infinite;}
+.sync-dot.error{background:var(--red); animation:none;}
+@keyframes pulseS{0%,100%{opacity:1;}50%{opacity:.35;}}
+.gear{width:26px; height:26px; border-radius:8px; background:var(--surface); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; font-size:12px; color:var(--text-dim); cursor:pointer;}
+
+.topbar{flex:none;}
+.screen{display:none; flex:1 1 auto; min-height:0; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch; overscroll-behavior:contain; padding:4px 18px 28px; scrollbar-width:thin; scrollbar-color:var(--acc-dim) transparent;}
+.screen::-webkit-scrollbar{width:5px;}
+.screen::-webkit-scrollbar-thumb{background:var(--acc-dim); border-radius:4px;}
+.screen::-webkit-scrollbar-thumb:hover{background:var(--acc);}
+.screen.active{display:block;}
+
+.hero-card{background:var(--surface); border:1px solid var(--line); border-radius:18px; padding:22px 20px; margin-top:6px;}
+.hero-label{font-size:11.5px; color:var(--text-dim); font-weight:600; letter-spacing:.02em;}
+.hero-num{font-family:var(--font-num); font-size:30px; font-weight:500; margin-top:8px; letter-spacing:-.01em;}
+.hero-prog{margin-top:14px;}
+.hero-prog .track{height:6px; background:var(--surface2); border-radius:4px; overflow:hidden;}
+.hero-prog .fill{height:100%; background:var(--acc); border-radius:4px;}
+.hero-prog .meta{display:flex; justify-content:space-between; margin-top:7px; font-size:10.5px; color:var(--text-dim);}
+.hero-prog .meta b{color:var(--text); font-weight:500; font-family:var(--font-num);}
+
+.stat-row{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-top:16px;}
+.stat-row.c2{grid-template-columns:1fr 1fr;}
+.stat-mini{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:11px 10px;}
+.stat-mini .l{font-size:10px; color:var(--text-dim);}
+.stat-mini .l small{display:block; font-size:8.5px; color:var(--text-faint); font-weight:400; margin-top:1px;}
+.stat-mini .v{font-family:var(--font-num); font-size:14px; margin-top:4px;}
+.stat-mini.tap{cursor:pointer; border-style:dashed; border-color:var(--acc-dim);}
+.stat-mini.tap .v{color:var(--acc);}
+
+.save-card{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:16px; margin-top:12px; display:flex; justify-content:space-between; align-items:center;}
+.save-card .l{font-size:12px; color:var(--text-dim); font-weight:600;}
+.save-card .s{font-size:9.5px; color:var(--text-faint); margin-top:3px;}
+.save-card .v{font-family:var(--font-num); font-size:18px; color:var(--acc); white-space:nowrap; margin-left:10px;}
+
+.section-title{font-size:12.5px; font-weight:600; color:var(--text-dim); text-transform:uppercase; letter-spacing:.04em; margin:22px 0 10px;}
+
+.todo-card{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:6px 16px; margin-top:6px;}
+.todo-row{display:flex; align-items:center; gap:11px; padding:11px 0; border-bottom:1px solid var(--line); cursor:pointer;}
+.todo-row:last-child{border-bottom:none;}
+.todo-row .tick{width:19px; height:19px; border-radius:6px; border:1.5px solid var(--line); flex:none; background:none;}
+.todo-row .tick.on{background:var(--acc); border-color:var(--acc);}
+.todo-row .nm{flex:1; font-size:12.5px; text-align:left;}
+.todo-row .nm small{display:block; font-size:9.5px; color:var(--text-faint); margin-top:1px; font-weight:400;}
+.todo-row .amt{font-family:var(--font-num); font-size:12.5px; color:var(--text-dim);}
+.todo-head{display:flex; justify-content:space-between; align-items:baseline;}
+.todo-head .cnt{font-size:11px; color:var(--acc); font-family:var(--font-num);}
+.empty-note{font-size:11px; color:var(--text-faint); padding:14px 0; text-align:center;}
+
+.chart-card{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:16px;}
+.trend-wrap{position:relative;}
+.trend-wrap svg{display:block; width:100%; height:76px; overflow:visible;}
+.trend-now-lab{position:absolute; font-size:9.5px; color:var(--acc); font-family:var(--font-num); background:var(--bg); padding:2px 6px; border-radius:6px; border:1px solid var(--line); transform:translate(-50%,-130%); white-space:nowrap;}
+.trend-lab{display:flex; justify-content:space-between; margin-top:8px; font-size:9.5px; color:var(--text-faint);}
+
+.split-card{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:16px; margin-top:10px;}
+.split-track{display:flex; height:8px; border-radius:5px; overflow:hidden; margin:10px 0 12px; background:var(--surface2);}
+.split-legend{display:grid; grid-template-columns:1fr 1fr; gap:8px 14px;}
+.split-legend div{display:flex; align-items:center; gap:6px; font-size:11px; color:var(--text-dim);}
+.split-legend i{width:7px; height:7px; border-radius:2px; flex:none;}
+
+.year-picker{display:flex; gap:8px; margin-top:14px; flex-wrap:wrap;}
+.year-picker .yr{flex:1; min-width:64px; padding:9px 0; border-radius:12px; border:1px solid var(--line); background:var(--surface); color:var(--text-dim); font-size:13px; font-weight:600;}
+.year-picker .yr.active{background:var(--acc); border-color:var(--acc); color:var(--on-acc);}
+.year-grid{display:none; margin-top:16px;}
+.year-grid.active{display:block;}
+.month-grid{display:flex; flex-wrap:wrap; gap:7px;}
+.month-chip2{min-width:50px; flex:0 0 auto; padding:8px 4px; border-radius:11px; text-align:center; background:var(--surface); border:1px solid var(--line); font-size:11px; color:var(--text-dim);}
+.month-chip2 .d{width:5px; height:5px; border-radius:50%; background:var(--text-faint); margin:4px auto 0;}
+.month-chip2.done{color:var(--text);}
+.month-chip2.done .d{background:var(--acc);}
+.month-chip2.off{opacity:.35;}
+.month-chip2.off .d{background:transparent; border:1px solid var(--text-faint);}
+.month-chip2.now{background:var(--acc-dim); border-color:var(--acc); color:var(--acc);}
+.month-chip2.now .d{background:var(--acc);}
+.year-note{font-size:10px; color:var(--text-faint); margin-top:10px; line-height:1.5;}
+.year-note b{color:var(--text-dim);}
+
+.month-head{display:flex; align-items:center; justify-content:space-between; margin-top:4px;}
+.month-nav{display:flex; align-items:center; gap:10px;}
+.month-nav button{width:28px; height:28px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--text-dim); font-size:13px;}
+.month-title{font-size:20px; font-weight:700;}
+.month-chip{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:7px 11px; font-size:10.5px; color:var(--text-dim); text-align:right;}
+.month-chip b{display:block; font-family:var(--font-num); color:var(--text); font-size:12.5px; font-weight:500;}
+
+details.acc{background:var(--surface); border:1px solid var(--line); border-radius:14px; margin-top:9px; overflow:hidden;}
+details.acc summary{list-style:none; cursor:pointer; padding:13px 15px; display:flex; align-items:center; justify-content:space-between;}
+details.acc summary::-webkit-details-marker{display:none;}
+.acc-name{display:flex; align-items:center; gap:10px; font-size:13px; font-weight:600;}
+.acc-ico{width:28px; height:28px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:13px; flex:none; background:var(--surface2); color:var(--text-dim);}
+details.acc[open] .acc-ico{background:var(--acc-dim); color:var(--acc);}
+.acc-right{display:flex; align-items:center; gap:8px;}
+.acc-amt{font-family:var(--font-num); font-size:12px; color:var(--text-dim);}
+.acc-chev{color:var(--text-faint); font-size:10px; transition:transform .2s;}
+details.acc[open] .acc-chev{transform:rotate(90deg); color:var(--acc);}
+.acc-body{padding:0 15px 13px; border-top:1px solid var(--line);}
+
+details.acc-sub{border-bottom:1px solid var(--line);}
+details.acc-sub:last-child{border-bottom:none;}
+details.acc-sub summary{list-style:none; cursor:pointer; display:flex; justify-content:space-between; align-items:center; padding:9px 0; font-size:12px; color:var(--text);}
+details.acc-sub summary::-webkit-details-marker{display:none;}
+details.acc-sub[open] summary{color:var(--acc);}
+.pm-detail{padding:2px 0 12px;}
+.pm-row{display:flex; justify-content:space-between; align-items:center; padding:7px 0;}
+.pm-lbl{font-size:11.5px; color:var(--text-dim);}
+.pm-lbl small{display:block; font-size:9px; color:var(--text-faint); font-family:var(--font-num); margin-top:1px;}
+.stepper{display:flex; align-items:center; gap:6px;}
+.stepper button{width:24px; height:24px; border-radius:7px; border:1px solid var(--line); background:var(--bg); color:var(--text-dim); font-size:13px;}
+.stepper input{width:38px; text-align:center; background:var(--bg); border:1px solid var(--line); border-radius:7px; padding:4px 2px; font-family:var(--font-num); color:var(--text); font-size:12px;}
+.sal-input{width:100px; text-align:right; background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:5px 8px; font-family:var(--font-num); font-size:12px; color:var(--text);}
+
+.debt-card{background:var(--surface2); border-radius:12px; padding:12px 13px; margin-top:9px;}
+.debt-top{display:flex; align-items:center; justify-content:space-between; gap:8px;}
+.debt-id{display:flex; align-items:center; gap:7px; min-width:0;}
+.debt-name-input{background:none; border:none; color:var(--text); font-family:var(--font-ui); font-size:12.5px; font-weight:600; padding:0; min-width:0;}
+.debt-badge{font-size:8.5px; color:var(--text-faint); font-weight:500; margin-top:2px; letter-spacing:.02em;}
+.debt-bal{text-align:right; font-family:var(--font-num); font-size:14px; flex:none;}
+.prog-track{height:4px; background:var(--bg); border-radius:3px; margin-top:10px; overflow:hidden;}
+.prog-fill{height:100%; background:var(--acc); border-radius:3px;}
+.debt-foot{display:flex; justify-content:space-between; align-items:center; margin-top:8px; flex-wrap:wrap; gap:6px;}
+.debt-foot .pct{font-size:9.5px; color:var(--text-dim);}
+.edit-pill{width:21px; height:21px; border-radius:7px; background:var(--bg); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; font-size:9.5px; color:var(--text-dim); cursor:pointer; flex:none;}
+.rate-pop{display:none; gap:8px; margin-top:8px; flex-wrap:wrap;}
+.rate-pop.open{display:flex;}
+.rate-field{display:inline-flex; align-items:center; gap:4px; background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:4px 7px;}
+.rate-field input{width:42px; background:none; border:none; color:var(--text); font-family:var(--font-num); font-size:11px; text-align:right;}
+.rate-field .u{font-size:9px; color:var(--text-faint);}
+.rate-field.ov{border-color:var(--acc);}
+.field-actions{display:flex; align-items:center; gap:7px; margin-top:8px; flex-wrap:wrap;}
+.mini-input{width:76px; background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:5px 7px; font-family:var(--font-num); font-size:11px; color:var(--text); text-align:right;}
+.mini-label{font-size:9px; color:var(--text-faint); margin-right:3px;}
+.del-x{background:none; border:none; color:var(--text-faint); font-size:12px; cursor:pointer; padding:2px;}
+.hide-x{background:none; border:none; color:var(--text-faint); font-size:11px; cursor:pointer; padding:2px; opacity:.6;}
+.add-row-btn{width:100%; margin-top:10px; padding:10px; border-radius:12px; border:1px dashed var(--acc-dim); background:none; color:var(--acc); font-size:11.5px; font-weight:600;}
+.name-edit{background:none; border:none; border-bottom:1px dashed var(--line); color:var(--text); font-family:var(--font-ui); font-size:12.5px; padding:2px 0; flex:1; min-width:40px;}
+
+.line-row{display:flex; justify-content:space-between; align-items:center; padding:9px 0; border-bottom:1px solid var(--line); font-size:12px; gap:8px;}
+.line-row:last-child{border-bottom:none;}
+.line-row .n{display:flex; align-items:center; gap:8px; color:var(--text); flex:1; min-width:0;}
+.tick{width:16px; height:16px; border-radius:5px; border:1.5px solid var(--line); flex:none; background:none; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; padding:0; margin:0; line-height:1; font-size:10px; font-weight:700; color:var(--on-acc); font-family:Arial,sans-serif;}
+.tick.on{background:var(--acc); border-color:var(--acc);}
+.line-row .amt{font-family:var(--font-num); color:var(--text-dim); flex:none; width:84px; text-align:right; background:var(--bg); border:1px solid var(--line); border-radius:7px; padding:4px 6px; font-size:11px;}
+.line-row .amt[disabled]{opacity:.5;}
+.xfer-row{display:flex; align-items:center; gap:6px; flex-wrap:wrap; padding:6px 0 10px; border-bottom:1px solid var(--line); font-size:10px;}
+.xfer-row:last-of-type{border-bottom:none;}
+.xfer-row select{background:var(--bg); border:1px solid var(--line); border-radius:7px; color:var(--text-dim); font-size:10px; padding:4px;}
+.xfer-btn{background:var(--acc-dim); color:var(--acc); border:1px solid var(--acc); border-radius:7px; padding:4px 8px; font-size:10px;}
+.xfer-btn.undo{background:rgba(255,92,92,.1); color:var(--red); border-color:var(--red);}
+
+.save-table{width:100%; border-collapse:collapse; font-size:9.5px;}
+.save-table th{color:var(--text-faint); font-weight:500; text-align:right; padding-bottom:6px;}
+.save-table th:first-child,.save-table td:first-child{text-align:left;}
+.save-table td{text-align:right; padding:5px 0; border-top:1px solid var(--line); font-family:var(--font-num); color:var(--text-dim);}
+
+.sheet-overlay{position:fixed; inset:0; background:rgba(0,0,0,.6); display:none; align-items:flex-end; justify-content:center; z-index:300;}
+.sheet-overlay.show{display:flex;}
+.sheet{max-width:460px; width:100%; max-height:85vh; overflow-y:auto; background:var(--surface); border-radius:22px 22px 0 0; padding:10px 20px calc(24px + env(safe-area-inset-bottom,0px));}
+.sheet-handle{width:36px; height:4px; background:var(--line); border-radius:3px; margin:4px auto 14px;}
+.sheet-title{font-size:15px; font-weight:700; margin-bottom:14px;}
+.sheet-btn{width:100%; text-align:left; background:var(--surface2); border:1px solid var(--line); color:var(--text); border-radius:12px; padding:12px 14px; font-size:12.5px; margin-bottom:8px; cursor:pointer;}
+.swatch-row{display:flex; gap:10px; margin-top:4px; flex-wrap:wrap;}
+.swatch{width:36px; height:36px; border-radius:50%; border:2px solid transparent; cursor:pointer;}
+.swatch.active{border-color:var(--text);}
+.sheet-close{width:100%; margin-top:16px; background:none; border:1px solid var(--line); color:var(--text-dim); border-radius:12px; padding:11px; font-size:12.5px;}
+.add-form{background:var(--surface2); border-radius:14px; padding:14px; margin-top:10px;}
+.add-form .fr{display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:9px;}
+.add-form label{font-size:11px; color:var(--text-dim); flex:none;}
+.add-form input,.add-form select{flex:1; background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:7px 9px; color:var(--text); font-size:12px; font-family:var(--font-num);}
+.add-form select{font-family:var(--font-ui);}
+
+.undo-toast{position:fixed; left:50%; bottom:88px; transform:translate(-50%,24px); background:var(--surface2); border:1px solid var(--line); color:var(--text); padding:10px 10px 10px 16px; border-radius:12px; display:flex; align-items:center; gap:12px; font-size:12px; box-shadow:0 8px 24px rgba(0,0,0,.5); opacity:0; pointer-events:none; transition:opacity .25s,transform .25s; z-index:250; max-width:90vw;}
+.undo-toast.show{opacity:1; transform:translate(-50%,0); pointer-events:auto;}
+.undo-toast button{background:var(--acc); color:var(--on-acc); border:none; border-radius:9px; padding:6px 12px; font-weight:700; font-size:12px;}
+
+.tabbar{flex:none; width:100%; background:var(--tabbar); border-top:1px solid var(--line); display:flex; padding:9px 10px calc(9px + env(safe-area-inset-bottom,0px));}
+.tabbar button{flex:1; background:none; border:none; color:var(--text-faint); font-family:var(--font-ui); font-size:10px; display:flex; flex-direction:column; align-items:center; gap:4px; padding:4px; cursor:pointer;}
+.tabbar button .ic{font-size:17px;}
+.tabbar button.active{color:var(--acc);}
+.add-btn-small{background:none; border:1px dashed var(--acc-dim); color:var(--acc); border-radius:10px; padding:6px 10px; font-size:10.5px; margin-top:10px;}
+
+.tick.miss{border-radius:50%; width:15px; height:15px; font-size:9px;}
+.tick.miss.on{background:var(--red); border-color:var(--red);}
+.move-btns{display:flex; flex-direction:column; flex:none; margin-right:2px;}
+.move-btn{background:none; border:none; color:var(--text-faint); font-size:8px; line-height:1; padding:3px 6px; cursor:pointer;}
+.move-btn:active{color:var(--acc);}
+.rep-tag{color:var(--acc); font-size:10px;}
+.chk-row{display:flex; align-items:center; gap:8px; font-size:11px; color:var(--text-dim); margin:2px 0;}
+.chk-row input{flex:none; width:16px; height:16px; accent-color:var(--acc);}
+.debt-sub{font-size:9px; color:var(--text-faint); font-family:var(--font-ui); margin-top:2px;}
+.debt-card.missed{box-shadow:inset 2px 0 0 var(--red);}
+
+.pay-box{display:flex; flex-direction:column; align-items:flex-end; gap:2px; flex:none;}
+.pay-box .mini-label{margin:0; font-size:8.5px;}
+.pay-big{width:96px; font-size:13px; font-weight:500; color:var(--text);}
+.rem-row{display:flex; justify-content:space-between; align-items:center; gap:8px; margin-top:7px;}
+.rem-l{font-size:10.5px; color:var(--text-dim);}
+.rem-in{width:104px;}
+.rem-in.ov{border-color:var(--acc);}
+.warn-row{font-size:10px; color:var(--red); margin-top:6px; line-height:1.4;}
+.warn-row.late{color:var(--amber);}
+.debt-card.late{box-shadow:inset 2px 0 0 var(--amber);}
+.move-btns.h{flex-direction:row; margin:0;}
+.edit-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px; width:100%;}
+.edit-grid label{display:flex; flex-direction:column; gap:3px; font-size:9px; color:var(--text-faint);}
+.edit-grid input,.edit-grid select{background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:6px 8px; color:var(--text); font-size:12px; font-family:var(--font-num); width:100%;}
+.edit-grid select{font-family:var(--font-ui);}
+.edit-grid .full{grid-column:1/3;}
+.late-card{background:rgba(255,92,92,.07); border:1px solid rgba(255,92,92,.35); border-radius:16px; padding:6px 16px; margin-top:6px;}
+.late-row{display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid rgba(255,92,92,.18); font-size:12.5px;}
+.late-row:last-child{border-bottom:none;}
+.late-row small{display:block; font-size:9.5px; color:var(--red); margin-top:1px;}
+.late-row .amt{font-family:var(--font-num); color:var(--red);}
+
+.theme-row{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:4px;}
+.theme-card{background:var(--surface2); border:2px solid transparent; border-radius:12px; padding:9px 6px 8px; cursor:pointer; color:var(--text); font-size:10.5px; display:flex; flex-direction:column; align-items:center; gap:6px;}
+.theme-card.active{border-color:var(--acc);}
+.theme-dots{display:flex; gap:0; border-radius:8px; overflow:hidden; border:1px solid var(--line);}
+.theme-dots i{display:block; width:16px; height:20px;}
+  .month-total-line{display:flex; justify-content:space-between; align-items:baseline; gap:10px; margin:8px 2px 2px; padding:7px 12px; border:1px solid var(--line); border-radius:10px; font-size:12px; color:var(--text-dim,var(--text));}
+  .month-total-line small{color:var(--text-faint); font-size:10px;}
+  .month-total-line .mtl-v{font-family:var(--font-num); font-weight:600; color:var(--text); white-space:nowrap;}
+.tk-pill{display:inline-block; font-family:var(--font-num); font-size:10.5px; font-weight:600; padding:2px 7px; margin-right:8px; border-radius:999px; border:1px solid var(--line); color:var(--acc); vertical-align:2px;}
+.nd-auto{color:var(--acc) !important; font-style:italic;}
+</style>
+</head>
+<body>
+<div class="phone" id="phone">
+  <div class="topbar">
+    <span class="brand"><img src="data:image/png;base64,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" alt=""><span class="app-name">Private Ledger</span></span>
+    <span class="icons"><button class="sync-dot" id="syncDot" title="Bulut senkron durumu"></button><span class="gear" id="gearBtn">⚙</span></span>
+  </div>
+
+  <div class="screen active" id="s-ozet"></div>
+  <div class="screen" id="s-ay"></div>
+  <div class="screen" id="s-borclar"></div>
+
+  <div class="tabbar">
+    <button class="tab active" data-s="s-ozet"><span class="ic">◎</span>Özet</button>
+    <button class="tab" data-s="s-ay"><span class="ic">▤</span>Aylar</button>
+    <button class="tab" data-s="s-borclar"><span class="ic">≡</span>Borçlar</button>
+  </div>
+</div>
+
+<div class="sheet-overlay" id="sheetOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Ayarlar</div>
+    <button class="sheet-btn" id="exportBtn">⇩ Yedek Al (.json)</button>
+    <label class="sheet-btn" style="display:block; cursor:pointer;">⇧ Yedekten Geri Yükle<input type="file" accept="application/json,.json" id="importInput" style="display:none;"></label>
+    <div class="section-title" style="margin-top:16px;">Tema</div>
+    <div class="theme-row" id="themeRow"></div>
+    <div class="section-title" style="margin-top:16px;">Vurgu Rengi</div>
+    <div class="swatch-row" id="swatchRow"></div>
+    <button class="sheet-close" id="sheetClose">Kapat</button>
+  </div>
+</div>
+<div class="undo-toast" id="undoToast"><span id="undoToastMsg"></span><button id="undoBtn">Geri Al</button></div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ===================== AY ANAHTARI MOTORU ===================== */
+  var EPOCH_YEAR = 2026, EPOCH_MONTH = 6;
+  var EPOCH_KEY = EPOCH_YEAR + '-' + String(EPOCH_MONTH).padStart(2,'0');
+  var MONTH_NAMES = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+  var MONTH_ABBR2 = {'Ocak':'Oca','Şubat':'Şub','Mart':'Mar','Nisan':'Nis','Mayıs':'May','Haziran':'Haz','Temmuz':'Tem','Ağustos':'Ağu','Eylül':'Eyl','Ekim':'Eki','Kasım':'Kas','Aralık':'Ara'};
+  var THEMES = {
+    siyah:   {label:'Mat Siyah',  bg:'#000000', surface:'#131315', surface2:'#1C1C20', line:'rgba(255,255,255,.09)', text:'#F5F5F5', dim:'rgba(255,255,255,.46)', faint:'rgba(255,255,255,.26)', ink:'255,255,255', red:'#FF5C5C', amber:'#E8C84B', onAcc:'#000000', tabbar:'rgba(19,19,21,.98)', meta:'#000000', accents:['#D4FF3F','#5DD6FF','#FFC24B','#FF6B6B','#C9A6FF']},
+    lacivert:{label:'Lacivert',   bg:'#0F1424', surface:'#1A2140', surface2:'#232B52', line:'rgba(255,255,255,.10)', text:'#EEF0F7', dim:'rgba(238,240,247,.60)', faint:'rgba(238,240,247,.36)', ink:'238,240,247', red:'#E8685A', amber:'#E8A94B', onAcc:'#06201C', tabbar:'rgba(21,28,56,.98)', meta:'#0F1424', accents:['#3FB8A7','#E8A94B','#7FA8F0','#C9A6FF','#E88AA0']},
+    krem:    {label:'Krem Defter',bg:'#ECE5D3', surface:'#FBF8EF', surface2:'#F1EBDB', line:'rgba(30,42,68,.15)', text:'#1E2A44', dim:'rgba(30,42,68,.66)', faint:'rgba(30,42,68,.44)', ink:'30,42,68', red:'#B5483A', amber:'#946510', onAcc:'#FFFFFF', tabbar:'rgba(251,248,239,.98)', meta:'#ECE5D3', accents:['#1F7A6D','#2F5FA8','#A35F1C','#7A4BA3','#B04A63']},
+    antrasit:{label:'Antrasit',   bg:'#16171B', surface:'#202228', surface2:'#2A2D35', line:'rgba(255,255,255,.09)', text:'#E8E9EC', dim:'rgba(232,233,236,.58)', faint:'rgba(232,233,236,.34)', ink:'232,233,236', red:'#E0786F', amber:'#D9B26A', onAcc:'#10151B', tabbar:'rgba(32,34,40,.98)', meta:'#16171B', accents:['#8FB8DE','#D9B26A','#9ACD9E','#C7A3E0','#E0928F']},
+    sis:     {label:'Sis',        bg:'#E4E9ED', surface:'#F6F8FA', surface2:'#EAEFF3', line:'rgba(28,45,60,.14)', text:'#1B2A38', dim:'rgba(27,42,56,.66)', faint:'rgba(27,42,56,.44)', ink:'27,42,56', red:'#B84A47', amber:'#8F6A14', onAcc:'#FFFFFF', tabbar:'rgba(246,248,250,.98)', meta:'#E4E9ED', accents:['#2B6F8E','#3A7D5C','#9A6A2A','#6A5BA8','#B0506A']},
+    orman:   {label:'Orman',      bg:'#0D1915', surface:'#162A23', surface2:'#1E382F', line:'rgba(255,255,255,.09)', text:'#E5EFE9', dim:'rgba(229,239,233,.58)', faint:'rgba(229,239,233,.34)', ink:'229,239,233', red:'#E2776C', amber:'#DDBB6A', onAcc:'#06201A', tabbar:'rgba(22,42,35,.98)', meta:'#0D1915', accents:['#7FD1A5','#E3C16F','#8EC5E8','#E0A0B4','#C9B6F0']}
+  };
+  var THEME_ORDER = ['krem','sis','lacivert','antrasit','orman','siyah'];
+  var OLD_MONTHS = ['Ağustos','Eylül','Ekim','Kasım','Aralık','Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz'];
+
+  function keyFromAbsIndex(idx){
+    var total = (EPOCH_YEAR*12 + (EPOCH_MONTH-1)) + idx;
+    var y = Math.floor(total/12), m = total%12 + 1;
+    return y + '-' + String(m).padStart(2,'0');
+  }
+  function absIndexFromKey(key){
+    var parts = key.split('-'); var y = Number(parts[0]), m = Number(parts[1]);
+    return (y*12 + (m-1)) - (EPOCH_YEAR*12 + (EPOCH_MONTH-1));
+  }
+  function keysBetween(fromKey, toKey){
+    var a = absIndexFromKey(fromKey), b = absIndexFromKey(toKey);
+    var out = [];
+    for(var i=a;i<=b;i++) out.push(keyFromAbsIndex(i));
+    return out;
+  }
+  function monthNameFromKey(key){ return MONTH_NAMES[Number(key.split('-')[1])-1]; }
+  function monthAbbrFromKey(key){ return MONTH_ABBR2[monthNameFromKey(key)]; }
+  function yearFromKey(key){ return Number(key.split('-')[0]); }
+  function addMonths(key, n){ return keyFromAbsIndex(absIndexFromKey(key)+n); }
+  function keysForYear(y){
+    var out = [];
+    for(var m=1;m<=12;m++) out.push(y+'-'+String(m).padStart(2,'0'));
+    return out;
+  }
+  function migrateOldIndexToKey(oldIdx){ return keyFromAbsIndex(oldIdx + 2); }
+  function todayKey(){ var d = new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
+  function fmtKeyShort(key){ return monthAbbrFromKey(key)+" '"+String(yearFromKey(key)).slice(2); }
+
+  var uidCounter = 1;
+  function uid(){ return 'id'+(uidCounter++)+'_'+Math.random().toString(36).slice(2,7); }
+  function hasOwn(o,k){ return Object.prototype.hasOwnProperty.call(o||{},k); }
+  function parseNum(str){
+    if(str===null||str===undefined) return 0;
+    str=String(str).trim(); if(str==='') return 0;
+    str=str.replace(/\./g,'').replace(',', '.');
+    var v=parseFloat(str); return isNaN(v)?0:v;
+  }
+  function fmt(n){
+    var num=Number(n); if(isNaN(num)) return '—';
+    return num.toLocaleString('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2})+' TL';
+  }
+  function fmtShort(n){
+    var num=Number(n); if(isNaN(num)) return '—';
+    return num.toLocaleString('tr-TR',{maximumFractionDigits:0})+' TL';
+  }
+  function editVal(n){ return Number(n||0).toLocaleString('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+  function esc(s){ return (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  /* ===================== DURUM MODELİ ===================== */
+  function defaultState(){
+    return {
+      epoch: EPOCH_KEY,
+      salaryDefault:{netMaas:0, sendika:0, aile:0, pazarRate:0, mesaiRate:0},
+      salaryDefaultByMonth:{},
+      salaryMonthly:{},
+      debts:[], ekBorclular:[], expenses:[], faturalar:[],
+      offBudgetExpenses:{}, recurringOb:[], sectionOrder:['expenses','faturalar','offbudget','debts','ek'],
+      theme:{name:'siyah', accent:'#D4FF3F'}
+    };
+  }
+
+  function fieldMonthly(d, field, key){
+    var m = d[field+'ByMonth'];
+    if(m && hasOwn(m,key) && m[key]!==null && m[key]!==undefined && m[key]!=='') return Number(m[key]);
+    return Number(d[field]||0);
+  }
+  function setFieldMonthly(d, field, key, value){
+    if(!d[field+'ByMonth']) d[field+'ByMonth'] = {};
+    if(value===null || value===undefined || value===''){ delete d[field+'ByMonth'][key]; }
+    else d[field+'ByMonth'][key] = value;
+  }
+  function fieldIsOverridden(d, field, key){
+    var m = d[field+'ByMonth'];
+    return !!(m && hasOwn(m,key) && m[key]!==null && m[key]!==undefined && m[key]!=='');
+  }
+  function salaryFieldFor(STATE, field, key){
+    var m = STATE.salaryDefaultByMonth[key];
+    if(m && hasOwn(m,field) && m[field]!==null && m[field]!==undefined && m[field]!=='') return Number(m[field]);
+    return Number(STATE.salaryDefault[field]||0);
+  }
+  function setSalaryField(STATE, field, key, value){
+    if(!STATE.salaryDefaultByMonth[key]) STATE.salaryDefaultByMonth[key] = {};
+    if(value===null||value===undefined||value===''){ delete STATE.salaryDefaultByMonth[key][field]; }
+    else STATE.salaryDefaultByMonth[key][field] = value;
+  }
+
+  function billAmountForMonth(f, key){
+    if(f.monthlyAmounts && hasOwn(f.monthlyAmounts,key)) return Number(f.monthlyAmounts[key]||0);
+    if(f.repeat && absIndexFromKey(key) >= absIndexFromKey(f.startMonthKey||EPOCH_KEY)) return Number(f.repeatAmount||0);
+    return 0;
+  }
+  // Her ay tekrar eden hesap dışı kalemleri, bugünden 36 ay ilerisine kadar aylara işler (kimlikler sabit, çift kayıt olmaz)
+  function ensureRecurring(S){
+    var t0 = todayKey(); if(absIndexFromKey(t0) < 0) t0 = EPOCH_KEY;
+    var endAll = addMonths(t0, 36);
+    (S.recurringOb||[]).forEach(function(t){
+      var last = (t.endMonthKey && absIndexFromKey(t.endMonthKey) < absIndexFromKey(endAll)) ? t.endMonthKey : endAll;
+      if(absIndexFromKey(t.startMonthKey) > absIndexFromKey(last)) return;
+      keysBetween(t.startMonthKey, last).forEach(function(k){
+        if(t.skip && t.skip[k]) return;
+        var arr = S.offBudgetExpenses[k] || [];
+        if(arr.some(function(i){return i.recurId===t.id;})) return;
+        arr.push({id:'r_'+t.id+'_'+k, ad:t.ad, tutar:Number(t.tutar||0), paid:false, recurId:t.id});
+        S.offBudgetExpenses[k] = arr;
+      });
+    });
+  }
+  function transferredBillsForCard(STATE, cardId, targetKey){
+    return STATE.faturalar.reduce(function(total,f){
+      var transfers = f.cardTransfers || {};
+      return total + Object.keys(transfers).reduce(function(sub,key){
+        var tr = transfers[key];
+        return sub + (tr && tr.cardId===cardId && tr.targetMonth===targetKey ? Number(tr.amount||0) : 0);
+      },0);
+    },0);
+  }
+  function transferredOffBudgetForCard(STATE, cardId, targetKey){
+    var total = 0;
+    Object.keys(STATE.offBudgetExpenses||{}).forEach(function(mk){
+      (STATE.offBudgetExpenses[mk]||[]).forEach(function(item){
+        var tr = item.cardTransfer;
+        if(tr && tr.cardId===cardId && tr.targetMonth===targetKey) total += Number(tr.amount||0);
+      });
+    });
+    return total;
+  }
+  function additionsForDebt(STATE, d, key){
+    return Number((d.additions && d.additions[key])||0) + transferredBillsForCard(STATE,d.id,key) + transferredOffBudgetForCard(STATE,d.id,key);
+  }
+
+  function calcDebtSeries(STATE, d, uptoKey){
+    if(absIndexFromKey(d.startMonthKey) > absIndexFromKey(uptoKey)) return {balances:{},paid:{},suggested:{},carryIn:{},carryOut:{},keys:[]};
+    var keys = keysBetween(d.startMonthKey, uptoKey);
+    var balances={}, paid={}, suggested={}, carryIn={}, carryOut={};
+    var bal = Number(d.baslangic||0);
+    var carry = 0;      // önceki aydan ertelenen (ödenemeyen) tutar
+    var prepaid = 0;    // kredide peşin ödenen taksit tutarı (sonraki taksitlerden düşer)
+    keys.forEach(function(key){
+      var payment, sugg;
+      var hasOv = !!(d.payments && hasOwn(d.payments,key));
+      var missed = !!(d.missedMonths && d.missedMonths[key]);
+      carryIn[key] = carry;
+      if(d.tur === 'kredi_karti'){
+        var eskiBakiye = bal;
+        var eklenen = additionsForDebt(STATE,d,key);
+        bal = eskiBakiye + eklenen;
+        var faizYuzdeVal = fieldMonthly(d,'faizYuzde',key);
+        var asgariYuzdeVal = fieldMonthly(d,'asgariYuzde',key);
+        var faizTutari = eskiBakiye*(faizYuzdeVal/100);
+        var faizli = bal + faizTutari;
+        sugg = bal*(asgariYuzdeVal/100) + faizTutari + carry;
+        var due = hasOv ? Number(d.payments[key]) : sugg;
+        payment = missed ? 0 : due;
+        carryOut[key] = missed ? due : 0;
+        bal = Math.max(0, faizli-payment);
+      } else if(d.tur === 'kmh'){
+        bal += additionsForDebt(STATE,d,key);
+        var faizK = fieldMonthly(d,'faizYuzde',key);
+        var faizliK = bal*(1+(faizK/100));
+        sugg = bal*(faizK/100) + carry;
+        var dueK = hasOv ? Number(d.payments[key]) : sugg;
+        payment = missed ? 0 : dueK;
+        carryOut[key] = missed ? dueK : 0;
+        bal = Math.max(0, faizliK-payment);
+      } else if(d.tur === 'kredi'){
+        bal += additionsForDebt(STATE,d,key);
+        var taksitVal = fieldMonthly(d,'taksit',key);
+        var sugg0 = Math.min(taksitVal, bal);
+        var afterPre = Math.max(0, sugg0 - prepaid);          // peşin ödenen taksitler düşüldükten sonra
+        var newPrepaid = Math.max(0, prepaid - sugg0);
+        sugg = Math.min(bal, afterPre + carry);
+        var dueC = hasOv ? Number(d.payments[key]) : sugg;
+        payment = missed ? 0 : dueC;
+        carryOut[key] = missed ? dueC : 0;
+        // taksitten fazla ödenen kısım, sonraki ayların taksitlerini karşılar
+        prepaid = newPrepaid + (missed ? 0 : Math.max(0, payment - sugg));
+        bal = Math.max(0, bal-payment);
+      } else {
+        bal += additionsForDebt(STATE,d,key);
+        sugg = carry;
+        var dueM = hasOv ? Number(d.payments[key]) : sugg;
+        payment = missed ? 0 : dueM;
+        carryOut[key] = missed ? dueM : 0;
+        bal = Math.max(0, bal-payment);
+      }
+      carry = carryOut[key];
+      if(d.balanceOverrides && hasOwn(d.balanceOverrides,key)) bal = Math.max(0, Number(d.balanceOverrides[key]||0));
+      balances[key]=bal; paid[key]=payment; suggested[key]=sugg;
+    });
+    return {balances:balances, paid:paid, suggested:suggested, carryIn:carryIn, carryOut:carryOut, keys:keys};
+  }
+  function calcEkSeries(STATE, d, uptoKey){
+    if(absIndexFromKey(d.startMonthKey) > absIndexFromKey(uptoKey)) return {balances:{},paid:{},carryIn:{},carryOut:{},keys:[]};
+    var keys = keysBetween(d.startMonthKey, uptoKey);
+    var balances={}, paid={}, carryIn={}, carryOut={};
+    var bal = Number(d.baslangic||0);
+    var carry = 0;
+    keys.forEach(function(key){
+      bal += Number((d.additions && d.additions[key])||0);
+      var missed = !!(d.missedMonths && d.missedMonths[key]);
+      carryIn[key] = carry;
+      var due = (d.payments && hasOwn(d.payments,key)) ? Number(d.payments[key]) : carry;
+      var payment = missed ? 0 : due;
+      carryOut[key] = missed ? due : 0;
+      carry = carryOut[key];
+      bal = Math.max(0, bal-payment);
+      if(d.balanceOverrides && hasOwn(d.balanceOverrides,key)) bal = Math.max(0, Number(d.balanceOverrides[key]||0));
+      balances[key]=bal; paid[key]=payment;
+    });
+    return {balances:balances, paid:paid, carryIn:carryIn, carryOut:carryOut, keys:keys};
+  }
+  function sortedVisible(list){ return list.filter(function(d){return !d.hidden;}); }
+  function computeGrandTotal(STATE, uptoKey){
+    var total = 0;
+    STATE.debts.forEach(function(d){
+      if(absIndexFromKey(d.startMonthKey) > absIndexFromKey(uptoKey)) return;
+      total += calcDebtSeries(STATE,d,uptoKey).balances[uptoKey] || 0;
+    });
+    STATE.ekBorclular.forEach(function(d){
+      if(absIndexFromKey(d.startMonthKey) > absIndexFromKey(uptoKey)) return;
+      total += calcEkSeries(STATE,d,uptoKey).balances[uptoKey] || 0;
+    });
+    return total;
+  }
+  function totalStartValue(STATE){
+    return STATE.debts.reduce(function(s,d){return s+Number(d.baslangic||0);},0) +
+           STATE.ekBorclular.reduce(function(s,d){return s+Number(d.baslangic||0);},0);
+  }
+  function thisYearNewDebtOutstanding(STATE, uptoKey){
+    var yStart = yearFromKey(EPOCH_KEY) + '-01';
+    var total = 0;
+    [STATE.debts, STATE.ekBorclular].forEach(function(list){
+      list.forEach(function(d){
+        if(absIndexFromKey(d.startMonthKey) < absIndexFromKey(EPOCH_KEY)) return;
+        if(absIndexFromKey(d.startMonthKey) > absIndexFromKey(uptoKey)) return;
+        var ser = d.tur ? calcDebtSeries(STATE,d,uptoKey) : calcEkSeries(STATE,d,uptoKey);
+        total += ser.balances[uptoKey] || 0;
+      });
+    });
+    return total;
+  }
+  function monthFullyClosed(STATE, key){
+    var debtsOk = sortedVisible(STATE.debts).every(function(d){
+      return absIndexFromKey(key) < absIndexFromKey(d.startMonthKey) || !!(d.paidMonths && d.paidMonths[key]) || !!(d.missedMonths && d.missedMonths[key]);
+    });
+    if(!debtsOk) return false;
+    var ekOk = sortedVisible(STATE.ekBorclular).every(function(d){
+      return absIndexFromKey(key) < absIndexFromKey(d.startMonthKey) || !!(d.paidMonths && d.paidMonths[key]) || !!(d.missedMonths && d.missedMonths[key]);
+    });
+    if(!ekOk) return false;
+    var expOk = STATE.expenses.every(function(e){
+      return absIndexFromKey(key) < absIndexFromKey(e.startMonthKey||EPOCH_KEY) || !!(e.paidMonths && e.paidMonths[key]);
+    });
+    if(!expOk) return false;
+    var faturaOk = STATE.faturalar.every(function(f){
+      if(absIndexFromKey(key) < absIndexFromKey(f.startMonthKey||EPOCH_KEY)) return true;
+      var tr = (f.cardTransfers||{})[key];
+      return !!tr || !!(f.paidMonths && f.paidMonths[key]);
+    });
+    if(!faturaOk) return false;
+    var offOk = (STATE.offBudgetExpenses[key]||[]).every(function(item){ return !!item.cardTransfer || !!item.paid; });
+    return offOk;
+  }
+  function firstOpenKey(STATE, horizonKey){
+    var keys = keysBetween(EPOCH_KEY, horizonKey);
+    for(var i=0;i<keys.length;i++){ if(!monthFullyClosed(STATE,keys[i])) return keys[i]; }
+    return addMonths(horizonKey,1);
+  }
+
+  /* ===================== NORMALİZE ===================== */
+  function normalizeState(parsed){
+    var def = defaultState();
+    var out = Object.assign({}, def, parsed||{});
+    out.salaryDefault = Object.assign({}, def.salaryDefault, (parsed&&parsed.salaryDefault)||{});
+    out.salaryDefaultByMonth = (parsed&&parsed.salaryDefaultByMonth)||{};
+    out.salaryMonthly = (parsed&&parsed.salaryMonthly)||{};
+    out.debts = (Array.isArray(out.debts)?out.debts:[]).map(function(d,idx){
+      return Object.assign({}, d, {
+        payments:d.payments||{}, balanceOverrides:d.balanceOverrides||{}, additions:d.additions||{},
+        paidMonths:d.paidMonths||{}, missedMonths:d.missedMonths||{}, hidden:!!d.hidden,
+        sortOrder:(typeof d.sortOrder==='number')?d.sortOrder:idx,
+        startMonthKey:d.startMonthKey||EPOCH_KEY
+      });
+    });
+    out.ekBorclular = (Array.isArray(out.ekBorclular)?out.ekBorclular:[]).map(function(d,idx){
+      return Object.assign({}, d, {
+        payments:d.payments||{}, balanceOverrides:d.balanceOverrides||{}, additions:d.additions||{},
+        paidMonths:d.paidMonths||{}, missedMonths:d.missedMonths||{}, hidden:!!d.hidden,
+        sortOrder:(typeof d.sortOrder==='number')?d.sortOrder:idx,
+        startMonthKey:d.startMonthKey||EPOCH_KEY
+      });
+    });
+    out.expenses = (Array.isArray(out.expenses)?out.expenses:[]).map(function(e,idx){
+      return Object.assign({}, e, {
+        monthlyAmounts:e.monthlyAmounts||{}, paidMonths:e.paidMonths||{},
+        startMonthKey:e.startMonthKey||EPOCH_KEY, sortOrder:(typeof e.sortOrder==='number')?e.sortOrder:idx
+      });
+    });
+    out.faturalar = (Array.isArray(out.faturalar)?out.faturalar:[]).map(function(f,idx){
+      return Object.assign({}, f, {
+        monthlyAmounts:f.monthlyAmounts||{}, cardTransfers:f.cardTransfers||{}, paidMonths:f.paidMonths||{},
+        startMonthKey:f.startMonthKey||EPOCH_KEY, sortOrder:(typeof f.sortOrder==='number')?f.sortOrder:idx
+      });
+    });
+    out.offBudgetExpenses = (parsed&&parsed.offBudgetExpenses) || {};
+    Object.keys(out.offBudgetExpenses).forEach(function(mk){
+      out.offBudgetExpenses[mk] = (out.offBudgetExpenses[mk]||[]).map(function(item){
+        return Object.assign({}, item, {id:item.id||uid(), ad:item.ad||'Yeni Harcama', tutar:Number(item.tutar||0), paid:!!item.paid});
+      });
+    });
+    out.recurringOb = (Array.isArray(out.recurringOb)?out.recurringOb:[]).map(function(t){
+      return Object.assign({endMonthKey:null}, t, {skip:t.skip||{}});
+    });
+    ensureRecurring(out);
+    out.sectionOrder = Array.isArray(out.sectionOrder) ? out.sectionOrder : ['expenses','faturalar','offbudget','debts','ek'];
+    out.theme = Object.assign({name:'siyah', accent:'#D4FF3F'}, (parsed&&parsed.theme)||{});
+    if(!THEMES[out.theme.name]) out.theme.name = 'siyah';
+    return out;
+  }
+
+  /* ===================== ESKİ VERİDEN GÖÇ ===================== */
+  function migrateFromOldState(old){
+    var ns = defaultState();
+    if(old.salaryFixed) ns.salaryDefault = {
+      netMaas:Number(old.salaryFixed.netMaas||0), sendika:Number(old.salaryFixed.sendika||0),
+      aile:Number(old.salaryFixed.aile||0), pazarRate:Number(old.salaryFixed.pazarRate||0), mesaiRate:Number(old.salaryFixed.mesaiRate||0)
+    };
+    if(old.salaryMonthly){
+      OLD_MONTHS.forEach(function(name,i){
+        var v = old.salaryMonthly[name];
+        if(v) ns.salaryMonthly[migrateOldIndexToKey(i)] = {pazarGun:Number(v.pazarGun||0), mesaiSaat:Number(v.mesaiSaat||0)};
+      });
+    }
+    function migrateByMonthArr(arr){
+      var o = {};
+      if(Array.isArray(arr)) arr.forEach(function(v,i){ if(v!==undefined&&v!==null) o[migrateOldIndexToKey(i)]=v; });
+      return o;
+    }
+    function migrateIdxKeyedObj(obj){
+      var o = {};
+      if(obj) Object.keys(obj).forEach(function(k){ var i=Number(k); if(!isNaN(i)) o[migrateOldIndexToKey(i)] = obj[k]; });
+      return o;
+    }
+    (old.debts||[]).forEach(function(d){
+      var nd = Object.assign({}, d);
+      nd.startMonthKey = migrateOldIndexToKey(Number(d.startMonthIndex||0));
+      nd.payments = migrateIdxKeyedObj(d.payments);
+      nd.balanceOverrides = migrateIdxKeyedObj(d.balanceOverrides);
+      nd.additions = migrateIdxKeyedObj(d.additions);
+      nd.paidMonths = migrateIdxKeyedObj(d.paidMonths);
+      nd.missedMonths = migrateIdxKeyedObj(d.missedMonths);
+      ['taksit','faizYuzde','asgariYuzde'].forEach(function(f){
+        if(Array.isArray(d[f+'Monthly'])) nd[f+'ByMonth'] = migrateByMonthArr(d[f+'Monthly']);
+      });
+      delete nd.startMonthIndex; delete nd.taksitMonthly; delete nd.faizYuzdeMonthly; delete nd.asgariYuzdeMonthly;
+      ns.debts.push(nd);
+    });
+    (old.ekBorclular||[]).forEach(function(d){
+      var nd = Object.assign({}, d);
+      nd.startMonthKey = migrateOldIndexToKey(Number(d.startMonthIndex||0));
+      nd.payments = migrateIdxKeyedObj(d.payments);
+      nd.balanceOverrides = migrateIdxKeyedObj(d.balanceOverrides);
+      nd.additions = migrateIdxKeyedObj(d.additions);
+      nd.paidMonths = migrateIdxKeyedObj(d.paidMonths);
+      nd.missedMonths = migrateIdxKeyedObj(d.missedMonths);
+      delete nd.startMonthIndex;
+      ns.ekBorclular.push(nd);
+    });
+    (old.expenses||[]).forEach(function(e){
+      var ne = Object.assign({}, e);
+      ne.startMonthKey = migrateOldIndexToKey(0);
+      ne.monthlyAmounts = migrateByMonthArr(e.monthlyAmounts);
+      ne.paidMonths = migrateIdxKeyedObj(e.paidMonths);
+      delete ne.tutar;
+      ns.expenses.push(ne);
+    });
+    (old.faturalar||[]).forEach(function(f){
+      var nf = Object.assign({}, f);
+      nf.startMonthKey = migrateOldIndexToKey(0);
+      nf.monthlyAmounts = migrateByMonthArr(f.monthlyAmounts);
+      nf.paidMonths = migrateIdxKeyedObj(f.paidMonths);
+      var ct = {};
+      if(f.cardTransfers) Object.keys(f.cardTransfers).forEach(function(k){
+        var tr = f.cardTransfers[k]; var i=Number(k);
+        ct[migrateOldIndexToKey(i)] = {cardId:tr.cardId, amount:tr.amount, targetMonth:migrateOldIndexToKey(Number(tr.targetMonth))};
+      });
+      nf.cardTransfers = ct;
+      delete nf.tutar;
+      ns.faturalar.push(nf);
+    });
+    if(old.offBudgetExpenses){
+      old.offBudgetExpenses.forEach(function(items,i){
+        var newKey = migrateOldIndexToKey(i);
+        ns.offBudgetExpenses[newKey] = (items||[]).map(function(item){
+          var ni = Object.assign({}, item);
+          if(item.cardTransfer){
+            ni.cardTransfer = {cardId:item.cardTransfer.cardId, amount:item.cardTransfer.amount, targetMonth:migrateOldIndexToKey(Number(item.cardTransfer.targetMonth))};
+          }
+          return ni;
+        });
+      });
+    }
+    return ns;
+  }
+
+  /* ===================== SUPABASE ===================== */
+  var SUPABASE_URL = "https://yaaogmitacsjdvcsuwqb.supabase.co";
+  var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlhYW9nbWl0YWNzamR2Y3N1d3FiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU3NjY0MjYsImV4cCI6MjEwMTM0MjQyNn0.A6EjwUD0zspmEkdtLfk6faDUu3jjcaFrNvK3pt9pV0g";
+  var _supabase;
+  try{ _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); }
+  catch(e){
+    // kütüphane yüklenemediyse (çevrimdışı vb.) uygulama yine de yerel modda açılsın
+    var _fail = function(){ return Promise.resolve({data:null, error:{message:'Bulut kütüphanesi yüklenemedi (çevrimdışı olabilirsin)'}}); };
+    var _q = { select:function(){return _q;}, eq:function(){return _q;}, single:_fail, maybeSingle:_fail, upsert:_fail };
+    _supabase = { from:function(){ return _q; } };
+  }
+  var NEW_ROW_ID = 2; // eski uygulama id=1'i kullanıyor; biz ayrı bir satırdayız, eski veriye dokunmuyoruz
+  var STORAGE_KEY = 'privateLedger_v1';
+
+  var STATE = normalizeState(defaultState());
+
+  var syncDotEl = document.getElementById('syncDot');
+  var lastSyncErrorDetail = '';
+  function setSyncStatus(status, detail){
+    if(!syncDotEl) return;
+    syncDotEl.classList.remove('ok','saving','error','loading');
+    syncDotEl.classList.add(status);
+    if(status==='error') lastSyncErrorDetail = detail||'bilinmeyen hata';
+    var labels = {
+      loading:'Kontrol ediliyor…', ok:'Bulutla senkronize ✓ (dokunarak yenile)', saving:'Kaydediliyor…',
+      error:'⚠ Buluta ulaşılamıyor, değişiklikler bu cihazda kayıtlı'+(detail?(' — '+detail):'')+' (dokunarak tekrar dene)'
+    };
+    syncDotEl.title = labels[status]||'';
+  }
+  var DIRTY_KEY = 'privateLedger_dirty';
+  var dirty = false; // buluta yazılamamış yerel değişiklik var mı
+  function setDirty(v){ dirty = v; try{ if(v) localStorage.setItem(DIRTY_KEY,'1'); else localStorage.removeItem(DIRTY_KEY); }catch(e){} }
+  function saveToLocalCache(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(STATE)); }catch(e){} }
+  function loadLocalState(){
+    try{ var raw = localStorage.getItem(STORAGE_KEY); if(raw) return normalizeState(JSON.parse(raw)); }catch(e){}
+    return null;
+  }
+
+  async function loadFromSupabase(){
+    setSyncStatus('loading');
+    var newRowMissing = false;
+    try{
+      var res = await _supabase.from('app_state').select('data').eq('id', NEW_ROW_ID).maybeSingle();
+      if(res.error) throw res.error;
+      if(res.data && res.data.data){
+        var pendingLocal = null;
+        try{ if(localStorage.getItem(DIRTY_KEY)==='1') pendingLocal = loadLocalState(); }catch(e){}
+        if(pendingLocal){ STATE = pendingLocal; dirty = true; await save(); return; }
+        STATE = normalizeState(res.data.data);
+        saveToLocalCache();
+        setSyncStatus('ok');
+        return;
+      }
+      newRowMissing = true; // sorgu başarılı ama satır yok -> ilk kurulum
+    }catch(e){
+      // ağ/geçici hata: yeni satırın üzerine ASLA yazma, yerel kopyayla devam et
+      var local0 = loadLocalState(); if(local0) STATE = local0;
+      try{ if(localStorage.getItem(DIRTY_KEY)==='1') dirty = true; }catch(e3){}
+      setSyncStatus('error', e && e.message ? e.message : 'bağlanılamadı');
+      return;
+    }
+    if(newRowMissing){
+      try{
+        var oldRes = await _supabase.from('app_state').select('data').eq('id', 1).maybeSingle();
+        if(oldRes.error) throw oldRes.error;
+        if(oldRes.data && oldRes.data.data){
+          STATE = migrateFromOldState(oldRes.data.data);
+        }
+        saveToLocalCache();
+        await save();
+      }catch(e2){
+        setSyncStatus('error', e2 && e2.message ? e2.message : 'bağlanılamadı');
+      }
+    }
+  }
+  async function save(){
+    saveToLocalCache();
+    setDirty(true);
+    setSyncStatus('saving');
+    try{
+      var r = await _supabase.from('app_state').upsert({id:NEW_ROW_ID, data:STATE, updated_at:new Date()});
+      if(r.error){ setSyncStatus('error', r.error.message); return; }
+      setDirty(false);
+      setSyncStatus('ok');
+    }catch(e){
+      setSyncStatus('error', e && e.message ? e.message : 'bağlanılamadı');
+    }
+  }
+  async function refreshFromCloud(force){
+    var active = document.activeElement;
+    var isEditing = active && document.getElementById('phone').contains(active) && /^(INPUT|SELECT|TEXTAREA)$/.test(active.tagName);
+    if(isEditing && !force) return;
+    if(dirty){ await save(); return; }
+    setSyncStatus('loading');
+    try{
+      var res = await _supabase.from('app_state').select('data').eq('id', NEW_ROW_ID).maybeSingle();
+      if(res.error) throw res.error;
+      if(res.data && res.data.data){
+        var fresh = normalizeState(res.data.data);
+        if(JSON.stringify(fresh) !== JSON.stringify(STATE)){
+          STATE = fresh; saveToLocalCache(); renderAll();
+        }
+      }
+      setSyncStatus('ok');
+    }catch(e){
+      setSyncStatus('error', e && e.message ? e.message : 'bağlanılamadı');
+    }
+  }
+
+  /* ===================== NAVİGASYON DURUMU ===================== */
+  var currentTab = 's-ozet';
+  var currentMonthKey = todayKey();
+  if(absIndexFromKey(currentMonthKey) < absIndexFromKey(EPOCH_KEY)) currentMonthKey = EPOCH_KEY;
+  var currentPickerYear = yearFromKey(currentMonthKey);
+  var yearEndCycleYear = yearFromKey(currentMonthKey);
+
+  function horizonKey(){ return addMonths(currentMonthKey, 6); } // hesaplamalar icin makul bir ufuk
+
+  function findList(name){ return STATE[name]; }
+
+  /* ===================== ÖZET EKRANI ===================== */
+  function nowKey(){ var t = todayKey(); return absIndexFromKey(t) < 0 ? EPOCH_KEY : t; }
+  function homeHorizon(){ return addMonths(nowKey(), 12); }
+  // Özet ekranının "şimdiki ayı": ilk kapanmamış ay, ama bugünden ileri gitmez
+  function homeKey(){
+    var fo = firstOpenKey(STATE, homeHorizon()), t = nowKey();
+    return absIndexFromKey(fo) <= absIndexFromKey(t) ? fo : t;
+  }
+  // Son kapanan aya göre kalemin kalan borcu (henüz başlamadıysa başlangıç tutarı)
+  function itemBalanceAt(d, closedKey){
+    if(absIndexFromKey(d.startMonthKey) > absIndexFromKey(closedKey)) return Number(d.baslangic||0);
+    var ser = d.tur ? calcDebtSeries(STATE,d,closedKey) : calcEkSeries(STATE,d,closedKey);
+    return ser.balances[closedKey]||0;
+  }
+  // Yıl sonu: Ocak (Y+1) ödemesi, Y yılının geliriyle yapıldığı için dahil edilir
+  function yearEndBalance(Y){
+    var kEnd = (Y+1)+'-01', kCut = Y+'-12', total = 0;
+    [STATE.debts, STATE.ekBorclular].forEach(function(list){
+      list.forEach(function(d){
+        if(absIndexFromKey(d.startMonthKey) > absIndexFromKey(kCut)) return;
+        var ser = d.tur ? calcDebtSeries(STATE,d,kEnd) : calcEkSeries(STATE,d,kEnd);
+        total += ser.balances[kEnd]||0;
+      });
+    });
+    return total;
+  }
+
+  function renderOzet(){
+    var hk = homeKey();
+    var openKey = firstOpenKey(STATE, homeHorizon());
+    var closedUpto = addMonths(openKey,-1);
+    var totalStart = totalStartValue(STATE);
+
+    var kalanBorc = 0;
+    STATE.debts.concat(STATE.ekBorclular).forEach(function(d){ kalanBorc += itemBalanceAt(d, closedUpto); });
+    var heroLabel = monthNameFromKey(openKey)+' İtibarıyla Kalan Borç';
+    var pct = totalStart>0 ? Math.max(0,Math.min(100, Math.round((1-(kalanBorc/totalStart))*100))) : 0;
+
+    // Genel toplam borç: kalan borç + bu ayın henüz ödenmemiş fatura ve hesap dışı kalemleri (kira hariç)
+    var pendingExtra = 0;
+    STATE.faturalar.forEach(function(f){
+      if(absIndexFromKey(hk) < absIndexFromKey(f.startMonthKey||EPOCH_KEY)) return;
+      if((f.cardTransfers||{})[hk]) return;
+      if(f.paidMonths && f.paidMonths[hk]) return;
+      pendingExtra += billAmountForMonth(f,hk);
+    });
+    (STATE.offBudgetExpenses[hk]||[]).forEach(function(i){
+      if(i.cardTransfer || i.paid) return;
+      pendingExtra += Number(i.tutar||0);
+    });
+    var genelToplamBorc = kalanBorc + pendingExtra;
+
+    // Toplam ödenen: Haziran'dan bugüne, yalnızca TİKLENEN ödemeler, kira hariç
+    var toplamOdenen = 0;
+    STATE.debts.forEach(function(d){
+      if(absIndexFromKey(d.startMonthKey) > absIndexFromKey(hk)) return;
+      var ser = calcDebtSeries(STATE,d,hk);
+      keysBetween(d.startMonthKey, hk).forEach(function(k){ if(d.paidMonths && d.paidMonths[k]) toplamOdenen += ser.paid[k]||0; });
+    });
+    STATE.ekBorclular.forEach(function(d){
+      if(absIndexFromKey(d.startMonthKey) > absIndexFromKey(hk)) return;
+      var ser = calcEkSeries(STATE,d,hk);
+      keysBetween(d.startMonthKey, hk).forEach(function(k){ if(d.paidMonths && d.paidMonths[k]) toplamOdenen += ser.paid[k]||0; });
+    });
+    keysBetween(EPOCH_KEY, hk).forEach(function(k){
+      STATE.faturalar.forEach(function(f){
+        if(f.paidMonths && f.paidMonths[k] && !(f.cardTransfers||{})[k]) toplamOdenen += billAmountForMonth(f,k);
+      });
+      (STATE.offBudgetExpenses[k]||[]).forEach(function(i){ if(i.paid && !i.cardTransfer) toplamOdenen += Number(i.tutar||0); });
+    });
+
+    // Yıl sonu kalan borç (dokununca yıl değişir)
+    var yearEndVal = yearEndBalance(yearEndCycleYear);
+
+    // Genel birikim: kapanan ayların "maaştan kalan" toplamı (getiri/kâr eklenmez)
+    var birikim = 0, closedCount = 0;
+    if(absIndexFromKey(closedUpto) >= absIndexFromKey(EPOCH_KEY)){
+      keysBetween(EPOCH_KEY, closedUpto).forEach(function(k){ birikim += computeMonthTotals(k).netKalan; closedCount++; });
+    }
+
+    // Bu ay yapılacaklar (kredi/kart, ek borçlu, kira/gider, fatura, hesap dışı)
+    var items = [];
+    sortedVisibleDebts().forEach(function(d){
+      if(absIndexFromKey(hk) < absIndexFromKey(d.startMonthKey)) return;
+      var ser = calcDebtSeries(STATE,d,hk);
+      var payVal = (d.payments&&hasOwn(d.payments,hk)) ? d.payments[hk] : ser.suggested[hk];
+      items.push({list:'debts', id:d.id, nm:d.ad, cat:'Krediler & Kartlar', amt:payVal, done:!!((d.paidMonths&&d.paidMonths[hk])||(d.missedMonths&&d.missedMonths[hk]))});
+    });
+    sortedVisible(STATE.ekBorclular).forEach(function(d){
+      if(absIndexFromKey(hk) < absIndexFromKey(d.startMonthKey)) return;
+      var serE = calcEkSeries(STATE,d,hk);
+      var payVal = (d.payments&&hasOwn(d.payments,hk)) ? d.payments[hk] : (serE.carryIn[hk]||0);
+      items.push({list:'ekBorclular', id:d.id, nm:d.ad, cat:'Ek Borçlular', amt:payVal, done:!!((d.paidMonths&&d.paidMonths[hk])||(d.missedMonths&&d.missedMonths[hk]))});
+    });
+    STATE.expenses.forEach(function(e){
+      if(absIndexFromKey(hk) < absIndexFromKey(e.startMonthKey||EPOCH_KEY)) return;
+      items.push({list:'expenses', id:e.id, nm:e.ad, cat:'Kira & Giderler', amt:billAmountForMonth(e,hk), done:!!(e.paidMonths&&e.paidMonths[hk])});
+    });
+    STATE.faturalar.forEach(function(f){
+      if(absIndexFromKey(hk) < absIndexFromKey(f.startMonthKey||EPOCH_KEY)) return;
+      if((f.cardTransfers||{})[hk]) return;
+      items.push({list:'faturalar', id:f.id, nm:f.ad, cat:'Faturalar', amt:billAmountForMonth(f,hk), done:!!(f.paidMonths&&f.paidMonths[hk])});
+    });
+    (STATE.offBudgetExpenses[hk]||[]).forEach(function(i){
+      if(i.cardTransfer) return;
+      items.push({list:'offbudget', id:i.id, nm:i.ad, cat:'Hesap Dışı', amt:i.tutar, done:!!i.paid});
+    });
+    var todoItems = items.filter(function(x){return !x.done;});
+    var totalTodoCount = items.length;
+    var doneCount = totalTodoCount - todoItems.length;
+
+    var todoHtml = todoItems.length ? todoItems.map(function(t){
+      return '<div class="todo-row" data-action="todo-tick" data-list="'+t.list+'" data-id="'+t.id+'" data-key="'+hk+'">'+
+        '<span class="tick"></span><span class="nm">'+esc(t.nm)+'<small>'+t.cat+'</small></span><span class="amt">'+fmtShort(t.amt)+'</span></div>';
+    }).join('') : '<div class="empty-note">'+(totalTodoCount ? monthNameFromKey(hk)+' için her şey tamam 🎉' : monthNameFromKey(hk)+' için henüz kalem yok')+'</div>';
+
+    // Geciken borçlar: ödenemedi işaretli ve henüz ödenmemiş kalemler
+    var overdue = [];
+    function collectOverdue(list, isDebt){
+      sortedVisible(list).forEach(function(d){
+        if(absIndexFromKey(hk) < absIndexFromKey(d.startMonthKey)) return;
+        var ser = isDebt ? calcDebtSeries(STATE,d,hk) : calcEkSeries(STATE,d,hk);
+        var missedNow = !!(d.missedMonths && d.missedMonths[hk]);
+        var paidNow = !!(d.paidMonths && d.paidMonths[hk]);
+        var amt = missedNow ? (ser.carryOut[hk]||0) : (paidNow ? 0 : (ser.carryIn[hk]||0));
+        if(!(amt>0)) return;
+        var k = missedNow ? hk : addMonths(hk,-1);
+        while(absIndexFromKey(k) > absIndexFromKey(d.startMonthKey) && d.missedMonths && d.missedMonths[addMonths(k,-1)]) k = addMonths(k,-1);
+        overdue.push({nm:d.ad, amt:amt, since:k, deferred:missedNow});
+      });
+    }
+    collectOverdue(STATE.debts, true); collectOverdue(STATE.ekBorclular, false);
+    var overdueTotal = overdue.reduce(function(sum,o){return sum+o.amt;},0);
+    var overdueHtml = overdue.length ? (
+      '<div class="todo-head" style="margin-top:20px;"><div class="section-title" style="margin:0; color:var(--red);">Geciken Borçlar</div><span class="cnt" style="color:var(--red);">'+fmtShort(overdueTotal)+'</span></div>'+
+      '<div class="late-card">'+overdue.map(function(o){
+        return '<div class="late-row"><span>'+esc(o.nm)+'<small>'+monthNameFromKey(o.since)+(o.deferred ? (o.since===hk ? ' ayında ödenemedi · '+monthNameFromKey(addMonths(hk,1))+'\'e ertelendi' : '\'den beri gecikiyor') : '\'den beri gecikiyor · bu ay ödenince kalkar')+'</small></span><span class="amt">'+fmtShort(o.amt)+'</span></div>';
+      }).join('')+'</div>') : '';
+
+    // Trend: Haziran'dan bugünden 11 ay sonrasına
+    var trendEnd = addMonths(hk, 11);
+    var trendStart = EPOCH_KEY;
+    var allItems = STATE.debts.concat(STATE.ekBorclular);
+    if(allItems.length) trendStart = allItems.reduce(function(m,d){ return absIndexFromKey(d.startMonthKey) < absIndexFromKey(m) ? d.startMonthKey : m; }, allItems[0].startMonthKey);
+    if(absIndexFromKey(trendStart) > absIndexFromKey(hk)) trendStart = hk;
+    var trendKeys = keysBetween(trendStart, trendEnd);
+    var trendSeries = trendKeys.map(function(k){ return computeGrandTotal(STATE,k); });
+    var nowIdx = absIndexFromKey(hk) - absIndexFromKey(trendStart);
+
+    // Borç dağılımı (kalan borçla aynı zaman noktası)
+    var groupTotals = {}, ekTotal = 0;
+    sortedVisible(STATE.debts).forEach(function(d){
+      groupTotals[d.tur] = (groupTotals[d.tur]||0) + itemBalanceAt(d, closedUpto);
+    });
+    sortedVisible(STATE.ekBorclular).forEach(function(d){ ekTotal += itemBalanceAt(d, closedUpto); });
+    var distTotal = Object.keys(groupTotals).reduce(function(s,k){return s+groupTotals[k];},0) + ekTotal;
+    var distColors = {kredi_karti:'var(--acc)', kmh:'rgba(var(--ink),.35)', kredi:'rgba(var(--ink),.2)', manuel:'rgba(var(--ink),.12)'};
+    var distLabels = {kredi_karti:'Kredi Kartları', kmh:'KMH', kredi:'Krediler', manuel:'Manuel'};
+    var distSegs = '', distLegend = '';
+    ['kredi_karti','kmh','kredi','manuel'].forEach(function(t){
+      if(!groupTotals[t]) return;
+      var w = distTotal>0 ? (groupTotals[t]/distTotal*100) : 0;
+      distSegs += '<div style="width:'+w.toFixed(1)+'%; background:'+distColors[t]+'"></div>';
+      distLegend += '<div><i style="background:'+distColors[t]+'"></i>'+distLabels[t]+' · '+fmtShort(groupTotals[t])+'</div>';
+    });
+    if(ekTotal>0){
+      var wEk = distTotal>0 ? (ekTotal/distTotal*100) : 0;
+      distSegs += '<div style="width:'+wEk.toFixed(1)+'%; background:rgba(var(--ink),.08)"></div>';
+      distLegend += '<div><i style="background:rgba(var(--ink),.08)"></i>Ek Borçlular · '+fmtShort(ekTotal)+'</div>';
+    }
+
+    var html = ''+
+    '<div class="hero-card">'+
+      '<div class="hero-label">'+heroLabel.toLocaleUpperCase('tr-TR')+'</div>'+
+      '<div class="hero-num">'+fmt(kalanBorc)+'</div>'+
+      '<div class="hero-prog"><div class="track"><div class="fill" style="width:'+pct+'%"></div></div>'+
+        '<div class="meta"><span>Ana Borç: <b>'+fmtShort(totalStart)+'</b></span><span>%'+pct+' ödendi</span></div></div>'+
+    '</div>'+
+    '<div class="todo-head" style="margin-top:20px;"><div class="section-title" style="margin:0;">'+monthNameFromKey(hk)+' Ayı Yapılacaklar</div><span class="cnt">'+doneCount+' / '+totalTodoCount+' tamam</span></div>'+
+    '<div class="todo-card">'+todoHtml+'</div>'+
+    '<div class="stat-row">'+
+      '<div class="stat-mini"><div class="l">Genel Toplam Borç<small>fatura dahil · kira hariç</small></div><div class="v">'+fmtShort(genelToplamBorc)+'</div></div>'+
+      '<div class="stat-mini"><div class="l">Toplam Ödenen<small>'+monthNameFromKey(EPOCH_KEY)+'\'den beri · kira hariç</small></div><div class="v">'+fmtShort(toplamOdenen)+'</div></div>'+
+      '<div class="stat-mini tap" id="yearEndCard"><div class="l">Yıl Sonu Kalan Borç<small>'+yearEndCycleYear+' · Ocak ödemesi dahil ↻</small></div><div class="v">'+fmtShort(yearEndVal)+'</div></div>'+
+    '</div>'+
+    '<div class="save-card"><div><div class="l">Genel Birikim</div><div class="s">'+closedCount+' ay kapandı · maaştan kalanlar toplanır, getiri eklenmez</div></div><div class="v">'+fmtShort(birikim)+'</div></div>'+
+    '<div class="section-title">Kalan Borç Trendi</div>'+
+    '<div class="chart-card"><div class="trend-wrap" id="trendWrap"><svg id="trendSvg" viewBox="0 0 300 76" preserveAspectRatio="none"></svg></div>'+
+      '<div class="trend-lab"><span>'+fmtKeyShort(trendStart)+'</span><span>'+monthNameFromKey(hk)+' · şimdi</span><span>'+fmtKeyShort(trendEnd)+'</span></div>'+
+    '</div>'+
+    (distTotal>0 ? (
+    '<div class="section-title">Borç Dağılımı</div>'+
+    '<div class="split-card"><div class="split-track">'+distSegs+'</div><div class="split-legend">'+distLegend+'</div></div>'
+    ) : '')+overdueHtml;
+
+    document.getElementById('s-ozet').innerHTML = html;
+    drawTrend(trendSeries, nowIdx);
+    var yc = document.getElementById('yearEndCard');
+    if(yc) yc.addEventListener('click', function(){
+      yearEndCycleYear++;
+      if(yearEndCycleYear > yearFromKey(EPOCH_KEY)+5) yearEndCycleYear = yearFromKey(EPOCH_KEY);
+      renderOzet();
+    });
+  }
+
+  function drawTrend(vals, nowI){
+    var svg = document.getElementById('trendSvg');
+    if(!svg || !vals.length) return;
+    var W=300,H=76,padT=10,padB=10;
+    var minV=Math.min.apply(null,vals), maxV=Math.max.apply(null,vals);
+    if(minV===maxV) maxV = minV+1;
+    var pts = vals.map(function(v,i){
+      var x = vals.length>1 ? (i/(vals.length-1))*W : 0;
+      var y = padT + (1-(v-minV)/(maxV-minV))*(H-padT-padB);
+      return [x,y];
+    });
+    var lineStr = pts.map(function(p){return p[0].toFixed(1)+','+p[1].toFixed(1);}).join(' ');
+    var areaStr = '0,'+H+' '+lineStr+' '+W+','+H;
+    var acc = getComputedStyle(document.documentElement).getPropertyValue('--acc').trim()||'#D4FF3F';
+    svg.innerHTML = '<polygon points="'+areaStr+'" fill="'+acc+'" opacity="0.12"></polygon>'+
+      '<polyline points="'+lineStr+'" fill="none" stroke="'+acc+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></polyline>'+
+      pts.map(function(p,i){ return i===nowI ? '<circle cx="'+p[0]+'" cy="'+p[1]+'" r="4" fill="'+acc+'"></circle>' : '<circle cx="'+p[0]+'" cy="'+p[1]+'" r="2" style="fill:rgba(var(--ink),.3)"></circle>'; }).join('');
+    var wrap = document.getElementById('trendWrap');
+    var old = wrap.querySelector('.trend-now-lab'); if(old) old.remove();
+    if(pts[nowI]){
+      var lab = document.createElement('div');
+      lab.className='trend-now-lab'; lab.style.left=(pts[nowI][0]/W*100)+'%'; lab.style.top=(pts[nowI][1]/H*100)+'%';
+      lab.textContent = fmtShort(vals[nowI]);
+      wrap.appendChild(lab);
+    }
+  }
+
+  /* ===================== AYLAR EKRANI ===================== */
+  var DEFAULT_SECTIONS = ['expenses','faturalar','offbudget','debts','ek'];
+  function sectionOrder(){
+    var o = Array.isArray(STATE.sectionOrder) ? STATE.sectionOrder.filter(function(id){return DEFAULT_SECTIONS.indexOf(id)>-1;}) : [];
+    DEFAULT_SECTIONS.forEach(function(id){ if(o.indexOf(id)===-1) o.push(id); });
+    return o.filter(function(id,i){return o.indexOf(id)===i;});
+  }
+  function sectionsHtml(key){
+    var map = {expenses:renderGiderlerAcc, faturalar:renderFaturalarAcc, offbudget:renderOffBudgetAcc, debts:renderDebtGroupsAcc, ek:renderEkBorclularAcc};
+    return sectionOrder().map(function(id){ return map[id](key); }).join('');
+  }
+  function secMoveHtml(id){
+    return '<span class="move-btns h" style="margin-right:4px;"><button type="button" class="move-btn" data-action="sec-move" data-id="'+id+'" data-dir="-1" title="Bölümü yukarı al">▲</button><button type="button" class="move-btn" data-action="sec-move" data-id="'+id+'" data-dir="1" title="Bölümü aşağı al">▼</button></span>';
+  }
+  var ACC_KEY = 'privateLedger_acc';
+  var _accOpen = (function(){ try{ var o = JSON.parse(localStorage.getItem(ACC_KEY)||'null'); if(o && typeof o==='object') return o; }catch(e){} return {debts:true}; })();
+  function persistAcc(){ try{ localStorage.setItem(ACC_KEY, JSON.stringify(_accOpen)); }catch(e){} }
+  function captureAcc(){
+    var ds = document.getElementById('s-ay').querySelectorAll('details[data-acc]');
+    if(ds.length){ ds.forEach(function(d){ _accOpen[d.dataset.acc] = d.open; }); persistAcc(); }
+  }
+  function restoreAcc(){
+    document.getElementById('s-ay').querySelectorAll('details[data-acc]').forEach(function(d){ d.open = !!_accOpen[d.dataset.acc]; });
+  }
+  function renderAylar(){
+    captureAcc();
+    var years = [];
+    for(var y=yearFromKey(EPOCH_KEY); y<=yearFromKey(EPOCH_KEY)+4; y++) years.push(y);
+    var pickerHtml = years.map(function(y){
+      return '<button class="yr'+(y===currentPickerYear?' active':'')+'" data-y="'+y+'">'+y+'</button>';
+    }).join('');
+
+    var gridsHtml = years.map(function(y){
+      var chips = keysForYear(y).map(function(k){
+        var cls = '';
+        if(absIndexFromKey(k) < absIndexFromKey(EPOCH_KEY)) cls = 'off';
+        else if(k===currentMonthKey) cls = 'now';
+        else if(monthFullyClosed(STATE,k)) cls = 'done';
+        return '<div class="month-chip2 '+cls+'" data-action="pick-month" data-key="'+k+'">'+monthAbbrFromKey(k)+'<div class="d"></div></div>';
+      }).join('');
+      var note = (y===yearFromKey(EPOCH_KEY)) ? '<div class="year-note">'+monthNameFromKey(EPOCH_KEY)+' '+y+' öncesi takip başlamadan önce · <b>'+monthNameFromKey(EPOCH_KEY)+' '+y+'</b> başlangıç noktan</div>' : '';
+      return '<div class="year-grid'+(y===currentPickerYear?' active':'')+'" id="yg-'+y+'"><div class="month-grid">'+chips+'</div>'+note+'</div>';
+    }).join('');
+
+    var mt = computeMonthTotals(currentMonthKey);
+    var kalanGenel = computeGrandTotal(STATE, currentMonthKey);
+
+    var html = ''+
+    '<div class="month-title" style="font-size:20px;">Aylar</div>'+
+    '<div class="year-picker" id="yearPicker">'+pickerHtml+'</div>'+
+    gridsHtml+
+    '<div class="section-title" style="margin-top:22px;">Seçili Ay</div>'+
+    '<div class="month-head">'+
+      '<div class="month-nav"><button data-action="month-prev">‹</button><div><div class="month-title">'+monthNameFromKey(currentMonthKey)+'</div><div style="font-size:11px; color:var(--text-faint); margin-top:1px;">'+yearFromKey(currentMonthKey)+'</div></div><button data-action="month-next">›</button></div>'+
+      '<div class="month-chip">'+monthNameFromKey(currentMonthKey)+' ödenince kalan<b>'+fmtShort(kalanGenel)+'</b></div>'+
+    '</div>'+
+    '<div class="stat-row c2" style="margin-top:14px;">'+
+      '<div class="stat-mini"><div class="l">Bu Ay Ödenecek Borç</div><div class="v">'+fmtShort(mt.debtDue)+'</div></div>'+
+      '<div class="stat-mini"><div class="l">Maaştan Kalan</div><div class="v">'+fmtShort(mt.netKalan)+'</div></div>'+
+    '</div>'+
+    '<div class="month-total-line"><span class="mtl-l">'+monthNameFromKey(currentMonthKey)+' toplam gider <small>(hepsi dahil)</small></span><span class="mtl-v">'+fmtShort(mt.debtDue+mt.faturaTotal+mt.expTotal+mt.offTotal)+'</span></div>'+
+    renderSalaryAcc(currentMonthKey)+
+    sectionsHtml(currentMonthKey);
+
+    document.getElementById('s-ay').innerHTML = html;
+    restoreAcc();
+  }
+
+  function computeMonthTotals(key){
+    var sal = STATE.salaryDefault;
+    var pazarGun = (STATE.salaryMonthly[key]&&STATE.salaryMonthly[key].pazarGun)||0;
+    var mesaiSaat = (STATE.salaryMonthly[key]&&STATE.salaryMonthly[key].mesaiSaat)||0;
+    var gelir = salaryFieldFor(STATE,'netMaas',key)+salaryFieldFor(STATE,'sendika',key)+salaryFieldFor(STATE,'aile',key)
+      + pazarGun*salaryFieldFor(STATE,'pazarRate',key) + mesaiSaat*salaryFieldFor(STATE,'mesaiRate',key);
+    var debtDue = 0;
+    sortedVisible(STATE.debts).forEach(function(d){
+      if(absIndexFromKey(key) < absIndexFromKey(d.startMonthKey)) return;
+      debtDue += calcDebtSeries(STATE,d,key).paid[key]||0;
+    });
+    sortedVisible(STATE.ekBorclular).forEach(function(d){
+      if(absIndexFromKey(key) < absIndexFromKey(d.startMonthKey)) return;
+      debtDue += calcEkSeries(STATE,d,key).paid[key]||0;
+    });
+    var faturaTotal = STATE.faturalar.reduce(function(s,f){
+      if(absIndexFromKey(key) < absIndexFromKey(f.startMonthKey||EPOCH_KEY)) return s;
+      var tr=(f.cardTransfers||{})[key]; if(tr) return s;
+      return s+billAmountForMonth(f,key);
+    },0);
+    var expTotal = STATE.expenses.reduce(function(s,e){
+      if(absIndexFromKey(key) < absIndexFromKey(e.startMonthKey||EPOCH_KEY)) return s;
+      return s+billAmountForMonth(e,key);
+    },0);
+    var offTotal = (STATE.offBudgetExpenses[key]||[]).reduce(function(s,i){return s+(i.cardTransfer?0:Number(i.tutar||0));},0);
+    var netKalan = gelir - debtDue - faturaTotal - expTotal - offTotal;
+    return {gelir:gelir, debtDue:debtDue, faturaTotal:faturaTotal, expTotal:expTotal, offTotal:offTotal, netKalan:netKalan};
+  }
+
+  function renderSalaryAcc(key){
+    var pazarGun = (STATE.salaryMonthly[key]&&STATE.salaryMonthly[key].pazarGun)||0;
+    var mesaiSaat = (STATE.salaryMonthly[key]&&STATE.salaryMonthly[key].mesaiSaat)||0;
+    var pazarRate = salaryFieldFor(STATE,'pazarRate',key), mesaiRate = salaryFieldFor(STATE,'mesaiRate',key);
+    var pazarTutar = pazarGun*pazarRate, mesaiTutar = mesaiSaat*mesaiRate;
+    var mt = computeMonthTotals(key);
+    return '<details class="acc" data-acc="salary"><summary><span class="acc-name"><span class="acc-ico">₺</span>Maaş &amp; Gelir</span><span class="acc-right"><span class="acc-amt">'+fmtShort(mt.gelir)+'</span><span class="acc-chev">›</span></span></summary>'+
+      '<div class="acc-body">'+
+        '<div class="line-row"><span class="n">Net Maaş'+(fieldIsOverriddenSalary('netMaas',key)?' ✎':'')+'</span><input class="amt" data-action="sal-field" data-field="netMaas" data-key="'+key+'" value="'+editVal(salaryFieldFor(STATE,'netMaas',key))+'"></div>'+
+        '<div class="line-row"><span class="n">Sendika</span><input class="amt" data-action="sal-field" data-field="sendika" data-key="'+key+'" value="'+editVal(salaryFieldFor(STATE,'sendika',key))+'"></div>'+
+        '<div class="line-row"><span class="n">Aile Yardımı</span><input class="amt" data-action="sal-field" data-field="aile" data-key="'+key+'" value="'+editVal(salaryFieldFor(STATE,'aile',key))+'"></div>'+
+        '<details class="acc-sub" data-acc="pm"><summary><span>Pazar + Mesai</span><span style="display:flex; align-items:center; gap:7px;"><span style="font-family:var(--font-num);">'+fmtShort(pazarTutar+mesaiTutar)+'</span><span class="edit-pill">✎</span></span></summary>'+
+          '<div class="pm-detail">'+
+            '<div class="pm-row"><span class="pm-lbl">Pazar günü<small>'+fmtShort(pazarRate)+'/gün</small></span><div class="stepper"><button data-action="pm-step" data-field="pazarGun" data-key="'+key+'" data-d="-1">−</button><input data-action="pm-set" data-field="pazarGun" data-key="'+key+'" value="'+pazarGun+'"><button data-action="pm-step" data-field="pazarGun" data-key="'+key+'" data-d="1">+</button></div></div>'+
+            '<div class="pm-row"><span class="pm-lbl">Mesai saati<small>'+fmtShort(mesaiRate)+'/saat</small></span><div class="stepper"><button data-action="pm-step" data-field="mesaiSaat" data-key="'+key+'" data-d="-1">−</button><input data-action="pm-set" data-field="mesaiSaat" data-key="'+key+'" value="'+mesaiSaat+'"><button data-action="pm-step" data-field="mesaiSaat" data-key="'+key+'" data-d="1">+</button></div></div>'+
+            '<div class="pm-row"><span class="pm-lbl">Gün/saat ücreti<small>bu ay için</small></span><div style="display:flex; gap:5px;"><input class="mini-input" style="width:64px;" data-action="sal-field" data-field="pazarRate" data-key="'+key+'" value="'+editVal(pazarRate)+'"><input class="mini-input" style="width:64px;" data-action="sal-field" data-field="mesaiRate" data-key="'+key+'" value="'+editVal(mesaiRate)+'"></div></div>'+
+          '</div>'+
+        '</details>'+
+        '<div class="year-note">Her alan bu aya özel — değiştirirsen sadece '+monthNameFromKey(key)+' etkilenir, diğer aylar kendi değerinde kalır.</div>'+
+      '</div>'+
+    '</details>';
+  }
+  function fieldIsOverriddenSalary(field,key){
+    var m = STATE.salaryDefaultByMonth[key];
+    return !!(m && hasOwn(m,field) && m[field]!==null && m[field]!==undefined && m[field]!=='');
+  }
+
+  var GROUP_LABELS = {kredi_karti:'Kredi Kartları', kmh:'KMH Hesapları', kredi:'Krediler', manuel:'Manuel Takip'};
+  var GROUP_ORDER = ['kredi_karti','kmh','kredi','manuel'];
+  function sortedVisibleDebts(){
+    return sortedVisible(STATE.debts).sort(function(a,b){
+      var ga=GROUP_ORDER.indexOf(a.tur); if(ga===-1) ga=99;
+      var gb=GROUP_ORDER.indexOf(b.tur); if(gb===-1) gb=99;
+      if(ga!==gb) return ga-gb;
+      return (a.sortOrder||0)-(b.sortOrder||0);
+    });
+  }
+  function turLabel(t){ return t==='kredi_karti'?'K.KARTI':(t==='kmh'?'KMH':(t==='kredi'?'KREDİ':'MANUEL')); }
+
+  function renderDebtGroupsAcc(key){
+    var list = sortedVisibleDebts();
+    var groupTotalsM = {};
+    list.forEach(function(d){
+      if(absIndexFromKey(key) < absIndexFromKey(d.startMonthKey)) return;
+      var ser = calcDebtSeries(STATE,d,key);
+      var g = groupTotalsM[d.tur]||(groupTotalsM[d.tur]={payment:0,balance:0});
+      g.payment += ser.paid[key]||0; g.balance += ser.balances[key]||0;
+    });
+    var totalPay = Object.keys(groupTotalsM).reduce(function(s,k){return s+groupTotalsM[k].payment;},0);
+    var totalBal = Object.keys(groupTotalsM).reduce(function(s,k){return s+groupTotalsM[k].balance;},0);
+
+    var lastTur = null, body = '';
+    list.forEach(function(d){
+      if(d.tur !== lastTur){
+        lastTur = d.tur;
+        var gt = groupTotalsM[d.tur]||{payment:0,balance:0};
+        body += '<div class="section-title" style="margin:16px 0 8px; font-size:10.5px;">'+GROUP_LABELS[d.tur]+' <span style="color:var(--text-faint); font-family:var(--font-num); text-transform:none;">('+fmtShort(gt.payment).replace(' TL','')+'/'+fmtShort(gt.balance).replace(' TL','')+')</span></div>';
+      }
+      if(absIndexFromKey(key) < absIndexFromKey(d.startMonthKey)){
+        body += '<div class="debt-card" style="opacity:.4;"><div class="debt-top"><div class="debt-id"><span class="debt-name-input">'+esc(d.ad)+'</span></div></div><div style="font-size:10px; color:var(--text-faint); margin-top:4px;">henüz başlamadı</div></div>';
+        return;
+      }
+      var ser = calcDebtSeries(STATE,d,key);
+      var bal = ser.balances[key]||0;
+      var payVal = (d.payments&&hasOwn(d.payments,key)) ? d.payments[key] : ser.suggested[key];
+      var manualSpend = Number((d.additions&&d.additions[key])||0);
+      var transferredAmt = transferredBillsForCard(STATE,d.id,key)+transferredOffBudgetForCard(STATE,d.id,key);
+      var pct0 = d.baslangic>0 ? Math.max(0,Math.min(100,Math.round((1-(bal/d.baslangic))*100))) : 0;
+      var isMissed = !!(d.missedMonths && d.missedMonths[key]);
+      var cIn = ser.carryIn[key]||0, cOut = ser.carryOut[key]||0;
+      var balOv = !!(d.balanceOverrides && hasOwn(d.balanceOverrides,key));
+      var rateFields = '';
+      if(d.tur==='kredi_karti'){
+        rateFields = '<span class="rate-field'+(fieldIsOverridden(d,'asgariYuzde',key)?' ov':'')+'"><span class="u">asg</span><input data-action="rate-field" data-list="debts" data-id="'+d.id+'" data-key="'+key+'" data-field="asgariYuzde" value="'+editVal(fieldMonthly(d,'asgariYuzde',key)).replace(',00','')+'"><span class="u">%</span></span>'+
+          '<span class="rate-field'+(fieldIsOverridden(d,'faizYuzde',key)?' ov':'')+'"><span class="u">faiz</span><input data-action="rate-field" data-list="debts" data-id="'+d.id+'" data-key="'+key+'" data-field="faizYuzde" value="'+editVal(fieldMonthly(d,'faizYuzde',key)).replace(',00','')+'"><span class="u">%</span></span>';
+      } else if(d.tur==='kmh'){
+        rateFields = '<span class="rate-field'+(fieldIsOverridden(d,'faizYuzde',key)?' ov':'')+'"><span class="u">faiz</span><input data-action="rate-field" data-list="debts" data-id="'+d.id+'" data-key="'+key+'" data-field="faizYuzde" value="'+editVal(fieldMonthly(d,'faizYuzde',key)).replace(',00','')+'"><span class="u">%</span></span>';
+      } else if(d.tur==='kredi'){
+        rateFields = '<span class="rate-field'+(fieldIsOverridden(d,'taksit',key)?' ov':'')+'"><span class="u">taksit</span><input data-action="rate-field" data-list="debts" data-id="'+d.id+'" data-key="'+key+'" data-field="taksit" value="'+editVal(fieldMonthly(d,'taksit',key)).replace(',00','')+'"></span>';
+      }
+      var warn = '';
+      if(isMissed) warn += '<div class="warn-row">⚠ Bu ay ödenmedi — '+fmtShort(cOut)+' '+monthNameFromKey(addMonths(key,1))+' ayına ertelendi</div>';
+      if(cIn>0) warn += '<div class="warn-row late">⏳ Geçen aydan geciken '+fmtShort(cIn)+' ödeme tutarına dahil</div>';
+      body += '<div class="debt-card'+(isMissed?' missed':(cIn>0?' late':''))+'">'+
+        '<div class="debt-top"><div class="debt-id">'+paidTickBtn('debts',d.id,key,d.paidMonths)+missedBtn('debts',d.id,key,d.missedMonths)+'<input class="debt-name-input" data-action="name" data-list="debts" data-id="'+d.id+'" value="'+esc(d.ad)+'"></div>'+
+          '<div class="pay-box"><span class="mini-label">Ödenecek</span><input class="mini-input pay-big" data-action="pay" data-list="debts" data-id="'+d.id+'" data-key="'+key+'" value="'+editVal(payVal)+'"></div></div>'+
+        '<div class="debt-badge">'+turLabel(d.tur)+(transferredAmt?' · Aktarılan +'+fmtShort(transferredAmt):'')+'</div>'+
+        '<div class="rem-row"><span class="rem-l">'+(isMissed?'Kalan borç (ödenmedi)':'Ödenince kalan borç')+'</span>'+
+          '<span style="display:flex; align-items:center; gap:5px;">'+(balOv?'<button class="xfer-btn undo" style="padding:3px 6px;" data-action="balance-reset" data-id="'+d.id+'" data-key="'+key+'" title="Hesaplanan değere dön">↺</button>':'')+
+          '<input class="mini-input rem-in'+(balOv?' ov':'')+'" data-action="balance" data-list="debts" data-id="'+d.id+'" data-key="'+key+'" value="'+editVal(bal)+'"></span></div>'+
+        '<div class="prog-track"><div class="prog-fill" style="width:'+pct0+'%"></div></div>'+
+        warn+
+        '<div class="debt-foot">'+
+          (rateFields ? '<span class="edit-pill" data-action="toggle-rate-pop" data-for="rp_'+d.id+'">✎</span>' : '')+
+          (d.tur==='kredi_karti' ? '<span class="mini-label">Harcama</span><input class="mini-input" data-action="cc-spend" data-id="'+d.id+'" data-key="'+key+'" value="'+editVal(manualSpend)+'">' : '')+
+          '<span style="flex:1"></span>'+
+          '<span class="move-btns h">'+moveBtnsInner('debts',d.id)+'</span>'+
+          '<span class="hide-x" data-action="hide-item" data-list="debts" data-id="'+d.id+'">🙈</span>'+
+          '<span class="del-x" data-action="del" data-list="debts" data-id="'+d.id+'">✕</span>'+
+        '</div>'+
+        (rateFields ? '<div class="rate-pop" id="rp_'+d.id+'">'+rateFields+'</div>' : '')+
+      '</div>';
+    });
+    return '<details class="acc" data-acc="debts"><summary><span class="acc-name"><span class="acc-ico">💳</span>Krediler &amp; Kartlar</span><span class="acc-right"><span class="acc-amt">'+fmtShort(totalPay)+'</span>'+secMoveHtml('debts')+'<span class="acc-chev">›</span></span></summary>'+
+      '<div class="acc-body">'+
+        '<div class="year-note" style="margin-top:10px;">Bu ay ödenecek <b>'+fmtShort(totalPay)+'</b> · ödenince kalan <b>'+fmtShort(totalBal)+'</b></div>'+
+        body+hiddenPanelHtml()+
+        '<button class="add-row-btn" data-action="open-add-debt">+ Borç Ekle</button><div id="addDebtSlot"></div>'+
+      '</div></details>';
+  }
+
+  function paidTickBtn(list,id,key,paidMonths){
+    var on = !!(paidMonths&&paidMonths[key]);
+    return '<button type="button" class="tick'+(on?' on':'')+'" style="border-radius:50%;" data-action="toggle-paid" data-list="'+list+'" data-id="'+id+'" data-key="'+key+'" title="Ödendi">'+(on?'✓':'')+'</button>';
+  }
+
+  /* ----- ortak küçük parçalar ----- */
+  function moveBtnsInner(list,id){
+    return '<button type="button" class="move-btn" data-action="move-up" data-list="'+list+'" data-id="'+id+'" title="Yukarı">▲</button>'+
+      '<button type="button" class="move-btn" data-action="move-down" data-list="'+list+'" data-id="'+id+'" title="Aşağı">▼</button>';
+  }
+  function moveBtnsHtml(list,id){ return '<span class="move-btns">'+moveBtnsInner(list,id)+'</span>'; }
+  function missedBtn(list,id,key,missedMonths){
+    var on = !!(missedMonths&&missedMonths[key]);
+    return '<button type="button" class="tick miss'+(on?' on':'')+'" data-action="toggle-missed" data-list="'+list+'" data-id="'+id+'" data-key="'+key+'" title="Ödenemedi">'+(on?'✕':'')+'</button>';
+  }
+  function repeatRowHtml(list,id,key){
+    return '<div class="xfer-row"><span class="rep-tag">↻ her ay tekrar</span>'+
+      '<button class="xfer-btn" data-action="rep-apply" data-list="'+list+'" data-id="'+id+'" data-key="'+key+'">Bu tutarı sonrakilere uygula</button>'+
+      '<button class="xfer-btn undo" data-action="rep-stop" data-list="'+list+'" data-id="'+id+'" data-key="'+key+'">Durdur</button></div>';
+  }
+  function quickAddHtml(kind,key){
+    var ph = kind==='expense' ? 'ör. Kira' : (kind==='bill' ? 'ör. Elektrik' : 'ör. Market');
+    var rep = kind!=='ob';
+    return '<div class="add-form">'+
+      '<div class="fr"><label>Ad</label><input type="text" id="qaAd" placeholder="'+ph+'"></div>'+
+      '<div class="fr"><label>Tutar</label><input type="text" inputmode="decimal" id="qaAmt" placeholder="0,00"></div>'+
+      '<label class="chk-row"><input type="checkbox" id="qaRep"'+(rep?' checked':'')+'> Her ay otomatik tekrarla</label>'+
+      '<div style="display:flex; gap:8px; justify-content:flex-end; margin-top:8px;">'+
+        '<button class="sheet-close" style="width:auto; padding:8px 14px; margin:0;" data-action="qa-cancel" data-kind="'+kind+'">Vazgeç</button>'+
+        '<button class="xfer-btn" style="padding:8px 14px;" data-action="qa-save" data-kind="'+kind+'" data-key="'+key+'">Ekle</button></div>'+
+    '</div>';
+  }
+  function hiddenPanelHtml(){
+    var hidden = STATE.debts.filter(function(d){return d.hidden;}).concat(STATE.ekBorclular.filter(function(d){return d.hidden;}));
+    if(!hidden.length) return '';
+    return '<div class="year-note" style="margin-top:14px;">Gizlenen '+hidden.length+' kalem · '+
+      hidden.map(function(d){return esc(d.ad)+' <span data-action="show-item" data-list="'+(d.tur?'debts':'ekBorclular')+'" data-id="'+d.id+'" style="text-decoration:underline; cursor:pointer;">Göster</span>';}).join(' · ')+'</div>';
+  }
+  function sortedBySortOrder(list){ return list.slice().sort(function(a,b){return (a.sortOrder||0)-(b.sortOrder||0);}); }
+
+  function renderFaturalarAcc(key){
+    var creditCards = sortedVisible(STATE.debts).filter(function(d){return d.tur==='kredi_karti';});
+    var total = 0, rows = '';
+    sortedBySortOrder(STATE.faturalar).forEach(function(f){
+      if(absIndexFromKey(key) < absIndexFromKey(f.startMonthKey||EPOCH_KEY)){
+        rows += '<div class="line-row" style="opacity:.4;"><span class="n">'+esc(f.ad)+'</span><span style="font-size:10px;">henüz başlamadı</span></div>';
+        return;
+      }
+      var tr = (f.cardTransfers||{})[key];
+      var amt = billAmountForMonth(f,key);
+      if(!tr) total += amt;
+      rows += '<div class="line-row">'+moveBtnsHtml('faturalar',f.id)+'<span class="n">'+(tr?'':paidTickBtn('faturalar',f.id,key,f.paidMonths))+'<input class="name-edit" data-action="name" data-list="faturalar" data-id="'+f.id+'" value="'+esc(f.ad)+'"></span>'+
+        (tr ? '<input class="amt" data-action="bill-transfer-amt" data-id="'+f.id+'" data-key="'+key+'" value="'+editVal(tr.amount)+'">' : '<input class="amt" data-action="bill-amt" data-id="'+f.id+'" data-key="'+key+'" value="'+editVal(amt)+'">')+
+        '<span class="del-x" data-action="del" data-list="faturalar" data-id="'+f.id+'">✕</span></div>';
+      if(tr){
+        var card = STATE.debts.filter(function(c){return c.id===tr.cardId;})[0];
+        rows += '<div class="xfer-row"><span style="color:var(--text-faint);">→ '+esc(card?card.ad:'silinmiş kart')+' ('+monthNameFromKey(tr.targetMonth)+')</span><button class="xfer-btn undo" data-action="undo-bill-transfer" data-id="'+f.id+'" data-key="'+key+'">Geri al</button></div>';
+      } else if(creditCards.length){
+        var opts = creditCards.map(function(c){return '<option value="'+c.id+'">'+esc(c.ad)+'</option>';}).join('');
+        rows += '<div class="xfer-row"><select id="fc_'+f.id+'"><option value="">Kart seç</option>'+opts+'</select><button class="xfer-btn" data-action="transfer-bill" data-id="'+f.id+'" data-key="'+key+'">Karta aktar</button></div>';
+      }
+      if(f.repeat) rows += repeatRowHtml('faturalar',f.id,key);
+    });
+    return '<details class="acc" data-acc="faturalar"><summary><span class="acc-name"><span class="acc-ico">🧾</span>Faturalar</span><span class="acc-right"><span class="acc-amt">'+fmtShort(total)+'</span>'+secMoveHtml('faturalar')+'<span class="acc-chev">›</span></span></summary>'+
+      '<div class="acc-body">'+rows+'<button class="add-row-btn" data-action="qa-open" data-kind="bill" data-key="'+key+'">+ Fatura Ekle</button><div id="qa-slot-bill"></div></div></details>';
+  }
+
+  function renderGiderlerAcc(key){
+    var total = 0, rows = '';
+    sortedBySortOrder(STATE.expenses).forEach(function(e){
+      if(absIndexFromKey(key) < absIndexFromKey(e.startMonthKey||EPOCH_KEY)){
+        rows += '<div class="line-row" style="opacity:.4;"><span class="n">'+esc(e.ad)+'</span><span style="font-size:10px;">henüz başlamadı</span></div>';
+        return;
+      }
+      var amt = billAmountForMonth(e,key); total += amt;
+      rows += '<div class="line-row">'+moveBtnsHtml('expenses',e.id)+'<span class="n">'+paidTickBtn('expenses',e.id,key,e.paidMonths)+'<input class="name-edit" data-action="name" data-list="expenses" data-id="'+e.id+'" value="'+esc(e.ad)+'"></span>'+
+        '<input class="amt" data-action="exp-amt" data-id="'+e.id+'" data-key="'+key+'" value="'+editVal(amt)+'">'+
+        '<span class="del-x" data-action="del" data-list="expenses" data-id="'+e.id+'">✕</span></div>';
+      if(e.repeat) rows += repeatRowHtml('expenses',e.id,key);
+    });
+    return '<details class="acc" data-acc="expenses"><summary><span class="acc-name"><span class="acc-ico">🏠</span>Kira &amp; Sabit Giderler</span><span class="acc-right"><span class="acc-amt">'+fmtShort(total)+'</span>'+secMoveHtml('expenses')+'<span class="acc-chev">›</span></span></summary>'+
+      '<div class="acc-body">'+(rows||'<div class="empty-note">Kalem yok</div>')+'<button class="add-row-btn" data-action="qa-open" data-kind="expense" data-key="'+key+'">+ Gider Ekle</button><div id="qa-slot-expense"></div></div></details>';
+  }
+
+  function renderEkBorclularAcc(key){
+    var total = 0, rows = '';
+    sortedBySortOrder(sortedVisible(STATE.ekBorclular)).forEach(function(d){
+      if(absIndexFromKey(key) < absIndexFromKey(d.startMonthKey)){
+        rows += '<div class="line-row" style="opacity:.4;"><span class="n">'+esc(d.ad)+'</span><span style="font-size:10px;">henüz başlamadı</span></div>';
+        return;
+      }
+      var ser = calcEkSeries(STATE,d,key);
+      var bal = ser.balances[key]||0; total += bal;
+      var payVal = (d.payments&&hasOwn(d.payments,key)) ? d.payments[key] : (ser.carryIn[key]||0);
+      rows += '<div class="line-row">'+moveBtnsHtml('ekBorclular',d.id)+'<span class="n">'+paidTickBtn('ekBorclular',d.id,key,d.paidMonths)+missedBtn('ekBorclular',d.id,key,d.missedMonths)+'<input class="name-edit" data-action="name" data-list="ekBorclular" data-id="'+d.id+'" value="'+esc(d.ad)+'"></span>'+
+        '<span style="font-family:var(--font-num); color:var(--text-faint); font-size:10px;">'+fmtShort(bal)+'</span>'+
+        '<input class="amt" style="width:70px;" data-action="pay" data-list="ekBorclular" data-id="'+d.id+'" data-key="'+key+'" value="'+editVal(payVal)+'">'+
+        '<span class="hide-x" data-action="hide-item" data-list="ekBorclular" data-id="'+d.id+'">🙈</span>'+
+        '<span class="del-x" data-action="del" data-list="ekBorclular" data-id="'+d.id+'">✕</span></div>';
+      if(d.missedMonths && d.missedMonths[key]) rows += '<div class="xfer-row"><span class="warn-row">⚠ Bu ay ödenmedi — '+fmtShort(ser.carryOut[key]||0)+' '+monthNameFromKey(addMonths(key,1))+' ayına ertelendi</span></div>';
+      else if((ser.carryIn[key]||0)>0) rows += '<div class="xfer-row"><span class="warn-row late">⏳ Geçen aydan geciken '+fmtShort(ser.carryIn[key])+' ödeme tutarına dahil</span></div>';
+    });
+    return '<details class="acc" data-acc="ek"><summary><span class="acc-name"><span class="acc-ico">👤</span>Ek Borçlular</span><span class="acc-right"><span class="acc-amt">'+fmtShort(total)+'</span>'+secMoveHtml('ek')+'<span class="acc-chev">›</span></span></summary>'+
+      '<div class="acc-body">'+rows+'<button class="add-row-btn" data-action="add-ek">+ Kişi Ekle</button></div></details>';
+  }
+
+  function renderOffBudgetAcc(key){
+    var creditCards = sortedVisible(STATE.debts).filter(function(d){return d.tur==='kredi_karti';});
+    var items = STATE.offBudgetExpenses[key]||[];
+    var total = 0, rows = '';
+    items.forEach(function(item){
+      if(!item.cardTransfer) total += Number(item.tutar||0);
+      rows += '<div class="line-row"><span class="n">'+(item.cardTransfer?'':paidTickBtnOff(item,key))+'<input class="name-edit" data-action="ob-name" data-id="'+item.id+'" data-key="'+key+'" value="'+esc(item.ad)+'"></span>'+
+        (item.cardTransfer ? '<input class="amt" data-action="ob-transfer-amt" data-id="'+item.id+'" data-key="'+key+'" value="'+editVal(item.cardTransfer.amount)+'">' : '<input class="amt" data-action="ob-amt" data-id="'+item.id+'" data-key="'+key+'" value="'+editVal(item.tutar)+'">')+
+        '<span class="del-x" data-action="ob-del" data-id="'+item.id+'" data-key="'+key+'">✕</span></div>';
+      if(item.cardTransfer){
+        var card = STATE.debts.filter(function(c){return c.id===item.cardTransfer.cardId;})[0];
+        rows += '<div class="xfer-row"><span style="color:var(--text-faint);">→ '+esc(card?card.ad:'silinmiş kart')+' ('+monthNameFromKey(item.cardTransfer.targetMonth)+')</span><button class="xfer-btn undo" data-action="ob-undo-transfer" data-id="'+item.id+'" data-key="'+key+'">Geri al</button></div>';
+      } else if(creditCards.length){
+        var opts = creditCards.map(function(c){return '<option value="'+c.id+'">'+esc(c.ad)+'</option>';}).join('');
+        rows += '<div class="xfer-row"><select id="oc_'+item.id+'"><option value="">Kart seç</option>'+opts+'</select><button class="xfer-btn" data-action="ob-transfer" data-id="'+item.id+'" data-key="'+key+'">Karta aktar</button></div>';
+      }
+      if(item.recurId) rows += repeatRowHtml('ob',item.id,key);
+    });
+    return '<details class="acc" data-acc="offbudget"><summary><span class="acc-name"><span class="acc-ico">🛍</span>Hesap Dışı Giderler</span><span class="acc-right"><span class="acc-amt">'+fmtShort(total)+'</span>'+secMoveHtml('offbudget')+'<span class="acc-chev">›</span></span></summary>'+
+      '<div class="acc-body">'+(rows||'<div class="empty-note">Harcama yok</div>')+'<button class="add-row-btn" data-action="qa-open" data-kind="ob" data-key="'+key+'">+ Harcama Ekle</button><div id="qa-slot-ob"></div></div></details>';
+  }
+  function paidTickBtnOff(item,key){
+    var on = !!item.paid;
+    return '<button type="button" class="tick'+(on?' on':'')+'" style="border-radius:50%;" data-action="ob-toggle-paid" data-id="'+item.id+'" data-key="'+key+'" title="Ödendi">'+(on?'✓':'')+'</button>';
+  }
+
+  /* ===================== BORÇLAR EKRANI ===================== */
+  function renderBorclar(){
+    var openKey = firstOpenKey(STATE, homeHorizon());
+    var closedUpto = addMonths(openKey,-1);
+    var totalStart = totalStartValue(STATE);
+    var kalan = 0;
+    STATE.debts.concat(STATE.ekBorclular).forEach(function(d){ kalan += itemBalanceAt(d, closedUpto); });
+    var pct = totalStart>0 ? Math.max(0,Math.min(100,Math.round((1-(kalan/totalStart))*100))) : 0;
+    var count = sortedVisible(STATE.debts).length + sortedVisible(STATE.ekBorclular).length;
+
+    function startOptions(sel){
+      var opts = '';
+      for(var i=0;i<60;i++){ var k = keyFromAbsIndex(i); opts += '<option value="'+k+'"'+(k===sel?' selected':'')+'>'+monthNameFromKey(k)+' '+yearFromKey(k)+'</option>'; }
+      return opts;
+    }
+    function installmentInfo(d, bal){
+      if(d.tur!=='kredi') return null;
+      var tk = Number(fieldMonthly(d,'taksit',openKey)||d.taksit||0);
+      if(!(tk>0) || !(d.baslangic>0)) return null;
+      var total = Math.max(1, Math.ceil(d.baslangic/tk - 0.01));
+      var done = Math.max(0, Math.min(total, Math.floor((d.baslangic-bal)/tk + 0.01)));
+      return {done:done, total:total, left:total-done};
+    }
+    function cardHtml(listName, d, badge){
+      var bal = itemBalanceAt(d, closedUpto);
+      var ins = installmentInfo(d, bal);
+      var pill = ins ? '<span class="tk-pill" title="'+ins.done+' / '+ins.total+' taksit ödendi">'+ins.done+'/'+ins.total+'</span>' : '';
+      var leftTxt = ins ? ' · '+(ins.left>0 ? ins.left+' taksit kaldı' : 'taksitler bitti') : '';
+      var p = d.baslangic>0 ? Math.max(0,Math.min(100,Math.round((1-(bal/d.baslangic))*100))) : 0;
+      var f = 'data-action="debt-edit" data-list="'+listName+'" data-id="'+d.id+'"';
+      var fields = '<label class="full">Ad<input type="text" '+f+' data-field="ad" value="'+esc(d.ad)+'"></label>'+
+        '<label>Başlangıç tutarı<input type="text" inputmode="decimal" '+f+' data-field="baslangic" value="'+editVal(d.baslangic)+'"></label>'+
+        '<label>Başlangıç ayı<select '+f+' data-field="startMonthKey">'+startOptions(d.startMonthKey)+'</select></label>';
+      if(d.tur==='kredi') fields += '<label>Aylık taksit (varsayılan)<input type="text" inputmode="decimal" '+f+' data-field="taksit" value="'+editVal(d.taksit)+'"></label>';
+      if(d.tur==='kredi_karti') fields += '<label>Asgari % (varsayılan)<input type="text" inputmode="decimal" '+f+' data-field="asgariYuzde" value="'+editVal(d.asgariYuzde)+'"></label>';
+      if(d.tur==='kredi_karti' || d.tur==='kmh') fields += '<label>Faiz % (varsayılan)<input type="text" inputmode="decimal" '+f+' data-field="faizYuzde" value="'+editVal(d.faizYuzde)+'"></label>';
+      var done = bal<=0 && absIndexFromKey(d.startMonthKey) <= absIndexFromKey(closedUpto);
+      return '<div class="debt-card"><div class="debt-top"><div style="min-width:0;"><div class="debt-name-input" style="font-weight:600;">'+esc(d.ad)+(done?' <span style="color:var(--acc); font-size:10px;">✓ bitti</span>':'')+'</div><div class="debt-badge">'+badge+' · başlangıç '+monthNameFromKey(d.startMonthKey)+' '+yearFromKey(d.startMonthKey)+'</div></div>'+
+        '<div class="debt-bal">'+pill+fmt(bal)+'<div class="debt-sub">başlangıç '+fmtShort(d.baslangic)+'</div></div></div>'+
+        '<div class="prog-track"><div class="prog-fill" style="width:'+p+'%"></div></div>'+
+        '<div class="debt-foot"><span class="edit-pill" data-action="toggle-rate-pop" data-for="ed_'+d.id+'">✎</span><span class="pct">%'+p+' ödendi'+leftTxt+'</span><span style="flex:1"></span>'+
+          '<span class="move-btns h">'+moveBtnsInner(listName,d.id)+'</span>'+
+          '<span class="hide-x" data-action="hide-item" data-list="'+listName+'" data-id="'+d.id+'" title="Gizle">🙈</span>'+
+          '<span class="del-x" data-action="del" data-list="'+listName+'" data-id="'+d.id+'">✕</span></div>'+
+        '<div class="rate-pop" id="ed_'+d.id+'"><div class="edit-grid">'+fields+'</div></div></div>';
+    }
+
+    var lastTur = null, body = '';
+    sortedVisibleDebts().forEach(function(d){
+      if(d.tur!==lastTur){
+        lastTur=d.tur;
+        var grpStart = 0, grpNow = 0;
+        sortedVisibleDebts().forEach(function(x){ if(x.tur===d.tur){ grpStart += Number(x.baslangic||0); grpNow += itemBalanceAt(x, closedUpto); } });
+        body += '<div class="section-title" style="margin-top:20px;">'+GROUP_LABELS[d.tur]+' · '+fmtShort(grpNow)+' <span style="text-transform:none; color:var(--text-faint); font-family:var(--font-num);">/ '+fmtShort(grpStart)+'</span></div>';
+      }
+      var extra = d.tur==='kredi_karti' ? 'asg %'+fieldMonthly(d,'asgariYuzde',currentMonthKey)+' · faiz %'+fieldMonthly(d,'faizYuzde',currentMonthKey)
+        : d.tur==='kmh' ? 'faiz %'+fieldMonthly(d,'faizYuzde',currentMonthKey)
+        : d.tur==='kredi' ? 'taksit '+fmtShort(fieldMonthly(d,'taksit',currentMonthKey)) : 'manuel takip';
+      body += cardHtml('debts', d, extra);
+    });
+    sortedBySortOrder(sortedVisible(STATE.ekBorclular)).forEach(function(d,idx){
+      if(idx===0) body += '<div class="section-title" style="margin-top:20px;">Ek Borçlular</div>';
+      body += cardHtml('ekBorclular', d, 'MANUEL TAKİP');
+    });
+
+    var html = ''+
+    '<div class="month-head" style="margin-top:4px;"><div class="month-title" style="font-size:20px;">Tüm Borçlar</div><div class="month-chip">'+count+' kalem</div></div>'+
+    '<div class="hero-card" style="padding:16px 18px; margin-top:10px;"><div class="hero-prog" style="margin-top:0;"><div class="track"><div class="fill" style="width:'+pct+'%"></div></div>'+
+      '<div class="meta"><span>Başlangıç: <b>'+fmtShort(totalStart)+'</b></span><span>Şu An Kalan: <b style="color:var(--text)">'+fmtShort(kalan)+'</b></span></div></div>'+
+      '<div style="font-size:10px; color:var(--text-faint); margin-top:9px;">Tiklediğin ödemelere göre · '+monthNameFromKey(openKey)+' henüz kapanmadı</div></div>'+
+    body+hiddenPanelHtml()+
+    '<button class="add-row-btn" data-action="hide-done">🙈 Biten borçları gizle</button>'+
+    '<button class="add-row-btn" style="margin-top:8px;" data-action="open-add-debt">+ Borç Ekle</button><div id="addDebtSlot2"></div>'+
+    '<button class="add-row-btn" style="margin-top:8px;" data-action="add-ek">+ Ek Borçlu Ekle</button>';
+
+    document.getElementById('s-borclar').innerHTML = html;
+  }
+
+  function renderAll(){ renderOzet(); renderAylar(); renderBorclar(); }
+
+  /* ===================== GERİ AL ===================== */
+  var lastDeleted = null;
+  var undoTimeoutId = null;
+  var undoToastEl = document.getElementById('undoToast');
+  var undoToastMsgEl = document.getElementById('undoToastMsg');
+  function showUndoToast(msg){
+    if(!undoToastEl) return;
+    undoToastMsgEl.textContent = msg;
+    undoToastEl.classList.add('show');
+    clearTimeout(undoTimeoutId);
+    undoTimeoutId = setTimeout(function(){ undoToastEl.classList.remove('show'); lastDeleted=null; }, 7000);
+  }
+  function performUndo(){
+    if(!lastDeleted) return;
+    if(lastDeleted.type==='offbudget'){
+      if(lastDeleted.item && lastDeleted.item.recurId){
+        var tplU = STATE.recurringOb.filter(function(x){return x.id===lastDeleted.item.recurId;})[0];
+        if(tplU && tplU.skip) delete tplU.skip[lastDeleted.offKey];
+      }
+      var arr = STATE.offBudgetExpenses[lastDeleted.offKey] || (STATE.offBudgetExpenses[lastDeleted.offKey]=[]);
+      arr.splice(Math.min(lastDeleted.index,arr.length), 0, lastDeleted.item);
+    } else {
+      var list = findList(lastDeleted.listName);
+      if(list) list.splice(Math.min(lastDeleted.index,list.length), 0, lastDeleted.item);
+    }
+    lastDeleted = null; clearTimeout(undoTimeoutId);
+    undoToastEl.classList.remove('show');
+    save(); renderAll();
+  }
+  var undoBtnEl = document.getElementById('undoBtn');
+  if(undoBtnEl) undoBtnEl.addEventListener('click', performUndo);
+
+  /* ===================== EKLEME FORMU (ortak) ===================== */
+  function addDebtFormHtml(defKey){
+    return '<div class="add-form">'+
+      '<div class="fr"><label>Ad</label><input type="text" id="ndAd" placeholder="ör. Bonus Kart"></div>'+
+      '<div class="fr"><label>Tür</label><select id="ndTur"><option value="kredi_karti">Kredi Kartı</option><option value="kmh">KMH</option><option value="kredi">Kredi</option><option value="manuel">Manuel</option></select></div>'+
+      '<div class="fr"><label>Başlangıç ayı</label><select id="ndStart">'+(function(){ var sel=defKey||homeKey(), o=''; for(var i=0;i<60;i++){ var k=keyFromAbsIndex(i); o+='<option value="'+k+'"'+(k===sel?' selected':'')+'>'+monthNameFromKey(k)+' '+yearFromKey(k)+'</option>'; } return o; })()+'</select></div>'+
+      '<div class="fr"><label>Güncel Borç</label><input type="text" inputmode="decimal" id="ndBaslangic" placeholder="0,00"></div>'+
+      '<div class="fr" id="ndKKRow"><label>Asgari % / Faiz %</label><span style="display:flex; gap:6px;"><input type="text" inputmode="decimal" id="ndAsgari" value="20" style="width:52px;"><input type="text" inputmode="decimal" id="ndFaiz" value="5" style="width:52px;"></span></div>'+
+      '<div class="fr" id="ndKMHRow" style="display:none;"><label>Aylık Faiz %</label><input type="text" inputmode="decimal" id="ndKmhFaiz" value="5" style="width:52px;"></div>'+
+      '<div class="fr" id="ndKrediRow" style="display:none;"><label>Aylık Taksit</label><span style="display:flex; gap:6px; flex:1; min-width:0; justify-content:flex-end;"><input type="text" inputmode="decimal" id="ndTaksit" placeholder="0,00" style="flex:1; min-width:0;"><input type="text" inputmode="numeric" id="ndTaksitSayi" placeholder="adet" title="Taksit sayısı" style="width:56px; flex:none; text-align:center;"></span></div>'+
+      '<div id="ndKrediHint" style="display:none; font-size:10px; color:var(--text-faint); margin:-2px 0 6px; text-align:right;">Borç, taksit tutarı ve adetten ikisini yaz, üçüncüsü otomatik hesaplanır.</div>'+
+      '<div style="display:flex; gap:8px; justify-content:flex-end; margin-top:6px;"><button class="sheet-close" style="width:auto; padding:8px 14px; margin:0;" id="ndCancel">Vazgeç</button><button class="xfer-btn" style="padding:8px 14px;" id="ndSave">Ekle</button></div>'+
+    '</div>';
+  }
+  function wireAddDebtForm(slotId, defKey){
+    var slot = document.getElementById(slotId);
+    slot.innerHTML = addDebtFormHtml(defKey);
+    var turSel = document.getElementById('ndTur');
+    turSel.addEventListener('change', function(){
+      document.getElementById('ndKKRow').style.display = turSel.value==='kredi_karti'?'flex':'none';
+      document.getElementById('ndKMHRow').style.display = turSel.value==='kmh'?'flex':'none';
+      document.getElementById('ndKrediRow').style.display = turSel.value==='kredi'?'flex':'none';
+    });
+    /* Kredi: borç / taksit tutarı / taksit adedinden ikisi girilince üçüncüsü hesaplanır */
+    var kFields = {borc:document.getElementById('ndBaslangic'), taksit:document.getElementById('ndTaksit'), adet:document.getElementById('ndTaksitSayi')};
+    var kTouched = [];
+    function kAuto(){
+      if(turSel.value!=='kredi' || kTouched.length<2) return;
+      var auto = ['borc','taksit','adet'].filter(function(f){return kTouched.indexOf(f)===-1;})[0];
+      var b = parseNum(kFields.borc.value), tk = parseNum(kFields.taksit.value), n = Math.round(parseNum(kFields.adet.value));
+      var vals = {borc:b, taksit:tk, adet:n};
+      if(!(vals[kTouched[0]]>0) || !(vals[kTouched[1]]>0)){ kFields[auto].value=''; kFields[auto].classList.remove('nd-auto'); return; }
+      if(auto==='borc') kFields.borc.value = editVal(Math.round(tk*n*100)/100);
+      else if(auto==='taksit') kFields.taksit.value = editVal(Math.round(b/n*100)/100);
+      else kFields.adet.value = String(Math.max(1, Math.ceil(b/tk - 0.01)));
+      ['borc','taksit','adet'].forEach(function(f){ kFields[f].classList.toggle('nd-auto', f===auto); });
+    }
+    Object.keys(kFields).forEach(function(f){
+      kFields[f].addEventListener('input', function(){
+        kFields[f].classList.remove('nd-auto');
+        kTouched = [f].concat(kTouched.filter(function(x){return x!==f;})).slice(0,2);
+        kAuto();
+      });
+    });
+    turSel.addEventListener('change', function(){ document.getElementById('ndKrediHint').style.display = turSel.value==='kredi'?'block':'none'; });
+    document.getElementById('ndCancel').addEventListener('click', function(){ slot.innerHTML=''; });
+    document.getElementById('ndSave').addEventListener('click', function(){
+      var ad = document.getElementById('ndAd').value.trim()||'Yeni Borç';
+      var tur = turSel.value;
+      var baslangic = parseNum(document.getElementById('ndBaslangic').value);
+      var nd = {id:uid(), ad:ad, tur:tur, baslangic:baslangic, startMonthKey:(document.getElementById('ndStart')||{}).value||homeKey(), payments:{}, balanceOverrides:{}, additions:{}, paidMonths:{}, missedMonths:{}, hidden:false, sortOrder:STATE.debts.length};
+      if(tur==='kredi_karti'){ nd.asgariYuzde=parseNum(document.getElementById('ndAsgari').value)||20; nd.faizYuzde=parseNum(document.getElementById('ndFaiz').value)||5; }
+      else if(tur==='kmh'){ nd.faizYuzde=parseNum(document.getElementById('ndKmhFaiz').value)||5; }
+      else if(tur==='kredi'){ nd.taksit=parseNum(document.getElementById('ndTaksit').value)||baslangic; }
+      STATE.debts.push(nd);
+      save(); renderAll();
+    });
+  }
+
+  /* ===================== OLAY YÖNETİMİ ===================== */
+  function onChange(e){
+    var t = e.target;
+    var action = t.dataset.action;
+    if(!action) return;
+
+    if(action==='sal-field'){
+      if(String(t.value).trim()===''){ setSalaryField(STATE,t.dataset.field,t.dataset.key,null); }
+      else setSalaryField(STATE,t.dataset.field,t.dataset.key, parseNum(t.value));
+      save(); renderAll(); return;
+    }
+    if(action==='pm-set'){
+      var mk = t.dataset.key;
+      if(!STATE.salaryMonthly[mk]) STATE.salaryMonthly[mk] = {pazarGun:0,mesaiSaat:0};
+      STATE.salaryMonthly[mk][t.dataset.field] = Math.max(0, Math.round(parseNum(t.value)||0));
+      save(); renderAll(); return;
+    }
+    if(action==='rate-field'){
+      if(String(t.value).trim()===''){ rerenderKeepOpen(); return; }
+      var list9 = findList(t.dataset.list);
+      var item9 = list9.filter(function(x){return x.id===t.dataset.id;})[0];
+      if(item9){ setFieldMonthly(item9, t.dataset.field, t.dataset.key, Math.max(0,parseNum(t.value))); save(); renderAll(); }
+      return;
+    }
+    if(action==='pay'){
+      var list3 = findList(t.dataset.list);
+      var item3 = list3.filter(function(x){return x.id===t.dataset.id;})[0];
+      if(item3){
+        item3.payments = item3.payments||{};
+        if(String(t.value).trim()===''){ delete item3.payments[t.dataset.key]; }
+        else item3.payments[t.dataset.key] = parseNum(t.value);
+        save(); renderAll();
+      }
+      return;
+    }
+    if(action==='balance'){
+      var dB = findList(t.dataset.list).filter(function(x){return x.id===t.dataset.id;})[0];
+      if(dB){
+        dB.balanceOverrides = dB.balanceOverrides||{};
+        if(String(t.value).trim()==='') delete dB.balanceOverrides[t.dataset.key];
+        else dB.balanceOverrides[t.dataset.key] = Math.max(0, parseNum(t.value));
+        save(); renderAll();
+      }
+      return;
+    }
+    if(action==='debt-edit'){
+      var dE = findList(t.dataset.list).filter(function(x){return x.id===t.dataset.id;})[0];
+      var fld = t.dataset.field;
+      if(dE){
+        if(fld==='ad') dE.ad = t.value.trim() || dE.ad;
+        else if(fld==='startMonthKey') dE.startMonthKey = t.value;
+        else if(String(t.value).trim()!=='') dE[fld] = Math.max(0, parseNum(t.value));
+        save(); renderAll();
+        var pop = document.getElementById('ed_'+dE.id); if(pop) pop.classList.add('open');
+      }
+      return;
+    }
+    if(action==='cc-spend'){
+      var card = STATE.debts.filter(function(x){return x.id===t.dataset.id;})[0];
+      if(card){
+        card.additions = card.additions||{};
+        if(String(t.value).trim()===''){ delete card.additions[t.dataset.key]; }
+        else card.additions[t.dataset.key] = Math.max(0,parseNum(t.value));
+        save(); renderAll();
+      }
+      return;
+    }
+    if(action==='bill-amt'){
+      if(String(t.value).trim()===''){ renderAll(); return; }
+      var bill = STATE.faturalar.filter(function(x){return x.id===t.dataset.id;})[0];
+      if(bill){ bill.monthlyAmounts[t.dataset.key] = Math.max(0,parseNum(t.value)); save(); renderAll(); }
+      return;
+    }
+    if(action==='exp-amt'){
+      if(String(t.value).trim()===''){ renderAll(); return; }
+      var exp = STATE.expenses.filter(function(x){return x.id===t.dataset.id;})[0];
+      if(exp){ exp.monthlyAmounts[t.dataset.key] = Math.max(0,parseNum(t.value)); save(); renderAll(); }
+      return;
+    }
+    if(action==='bill-transfer-amt'){
+      if(String(t.value).trim()===''){ renderAll(); return; }
+      var bill2 = STATE.faturalar.filter(function(x){return x.id===t.dataset.id;})[0];
+      var tr2 = bill2 && bill2.cardTransfers ? bill2.cardTransfers[t.dataset.key] : null;
+      if(tr2){ tr2.amount = Math.max(0,parseNum(t.value)); save(); renderAll(); }
+      return;
+    }
+    if(action==='ob-amt'){
+      if(String(t.value).trim()===''){ renderAll(); return; }
+      var list = STATE.offBudgetExpenses[t.dataset.key]||[];
+      var item = list.filter(function(x){return x.id===t.dataset.id;})[0];
+      if(item){ item.tutar = Math.max(0,parseNum(t.value)); save(); renderAll(); }
+      return;
+    }
+    if(action==='ob-transfer-amt'){
+      if(String(t.value).trim()===''){ renderAll(); return; }
+      var list5 = STATE.offBudgetExpenses[t.dataset.key]||[];
+      var item5 = list5.filter(function(x){return x.id===t.dataset.id;})[0];
+      if(item5 && item5.cardTransfer){ item5.cardTransfer.amount = Math.max(0,parseNum(t.value)); save(); renderAll(); }
+      return;
+    }
+    if(action==='name'){
+      var list4 = findList(t.dataset.list);
+      var item4 = list4.filter(function(x){return x.id===t.dataset.id;})[0];
+      if(item4){ item4.ad = t.value; save(); }
+      return;
+    }
+    if(action==='ob-name'){
+      var list6 = STATE.offBudgetExpenses[t.dataset.key]||[];
+      var item6 = list6.filter(function(x){return x.id===t.dataset.id;})[0];
+      if(item6){ item6.ad = t.value; save(); }
+      return;
+    }
+  }
+
+  function rerenderKeepOpen(){ renderAll(); }
+
+  function moveItem(listName, id, dir){
+    var list = findList(listName); if(!list) return;
+    var sorted = sortedBySortOrder(list);
+    sorted.forEach(function(x,i){ x.sortOrder = i; });
+    var i = sorted.findIndex(function(x){return x.id===id;});
+    if(i<0) return;
+    var j = i+dir;
+    while(j>=0 && j<sorted.length && (sorted[j].hidden || (listName==='debts' && sorted[j].tur!==sorted[i].tur))) j += dir;
+    if(j<0 || j>=sorted.length) return;
+    var tmp = sorted[i].sortOrder; sorted[i].sortOrder = sorted[j].sortOrder; sorted[j].sortOrder = tmp;
+    save(); renderAll();
+  }
+
+  function quickAddSave(kind, key){
+    var adEl = document.getElementById('qaAd'), amtEl = document.getElementById('qaAmt'), repEl = document.getElementById('qaRep');
+    var defName = kind==='expense' ? 'Yeni Gider' : (kind==='bill' ? 'Yeni Fatura' : 'Yeni Harcama');
+    var ad = (adEl && adEl.value.trim()) || defName;
+    var amt = Math.max(0, parseNum(amtEl ? amtEl.value : 0));
+    var rep = !!(repEl && repEl.checked);
+    if(kind==='bill' || kind==='expense'){
+      var list = kind==='bill' ? STATE.faturalar : STATE.expenses;
+      var o = {id:uid(), ad:ad, monthlyAmounts:{}, cardTransfers:{}, paidMonths:{}, startMonthKey:key, sortOrder:list.length, repeat:rep, repeatAmount:amt};
+      if(!rep) o.monthlyAmounts[key] = amt;
+      list.push(o);
+    } else if(rep){
+      STATE.recurringOb.push({id:uid(), ad:ad, tutar:amt, startMonthKey:key, endMonthKey:null, skip:{}});
+      ensureRecurring(STATE);
+    } else {
+      if(!STATE.offBudgetExpenses[key]) STATE.offBudgetExpenses[key] = [];
+      STATE.offBudgetExpenses[key].push({id:uid(), ad:ad, tutar:amt, paid:false});
+    }
+    save(); renderAll();
+  }
+
+  // Tekrar eden kalemlerde: "bu tutarı sonrakilere uygula" ve "tekrarı durdur"
+  function repeatAction(action, listName, id, key){
+    if(listName==='ob'){
+      var item = (STATE.offBudgetExpenses[key]||[]).filter(function(x){return x.id===id;})[0];
+      var tpl = item && STATE.recurringOb.filter(function(x){return x.id===item.recurId;})[0];
+      if(!tpl) return;
+      if(action==='rep-apply'){
+        var amtO = item.cardTransfer ? Number(item.cardTransfer.amount||0) : Number(item.tutar||0);
+        tpl.tutar = amtO;
+        Object.keys(STATE.offBudgetExpenses).forEach(function(k){
+          if(absIndexFromKey(k) <= absIndexFromKey(key)) return;
+          STATE.offBudgetExpenses[k].forEach(function(x){ if(x.recurId===tpl.id && !x.paid && !x.cardTransfer) x.tutar = amtO; });
+        });
+      } else {
+        tpl.endMonthKey = key;
+        Object.keys(STATE.offBudgetExpenses).forEach(function(k){
+          if(absIndexFromKey(k) <= absIndexFromKey(key)) return;
+          STATE.offBudgetExpenses[k] = STATE.offBudgetExpenses[k].filter(function(x){ return !(x.recurId===tpl.id && !x.paid && !x.cardTransfer); });
+        });
+      }
+      save(); renderAll(); return;
+    }
+    var it = findList(listName).filter(function(x){return x.id===id;})[0];
+    if(!it) return;
+    it.monthlyAmounts = it.monthlyAmounts||{};
+    var start = it.startMonthKey||EPOCH_KEY;
+    // Geçmiş aylar değişmesin diye, bu aya kadar olan tutarları sabitle
+    keysBetween(start, key).forEach(function(k){
+      if(!hasOwn(it.monthlyAmounts,k)) it.monthlyAmounts[k] = billAmountForMonth(it,k);
+    });
+    if(action==='rep-apply'){
+      var tr = (it.cardTransfers||{})[key];
+      var amt = tr ? Number(tr.amount||0) : billAmountForMonth(it,key);
+      it.repeat = true; it.repeatAmount = amt;
+      Object.keys(it.monthlyAmounts).forEach(function(k){
+        if(absIndexFromKey(k) > absIndexFromKey(key) && !(it.cardTransfers && it.cardTransfers[k])) delete it.monthlyAmounts[k];
+      });
+    } else {
+      it.repeat = false;
+    }
+    save(); renderAll();
+  }
+
+  function onClick(e){
+    var t = e.target.closest('[data-action]');
+    if(!t) return;
+    var action = t.dataset.action;
+
+    if(action==='todo-tick'){
+      if(t.dataset.list==='offbudget'){
+        var ob = (STATE.offBudgetExpenses[t.dataset.key]||[]).filter(function(x){return x.id===t.dataset.id;})[0];
+        if(ob){ ob.paid = true; save(); renderAll(); }
+      } else {
+        var list = findList(t.dataset.list);
+        var item = list.filter(function(x){return x.id===t.dataset.id;})[0];
+        if(item){ item.paidMonths = item.paidMonths||{}; item.paidMonths[t.dataset.key] = true; if(item.missedMonths) delete item.missedMonths[t.dataset.key]; save(); renderAll(); }
+      }
+      return;
+    }
+    if(action==='toggle-paid'){
+      var listP = findList(t.dataset.list);
+      var itemP = listP.filter(function(x){return x.id===t.dataset.id;})[0];
+      if(itemP){
+        itemP.paidMonths = itemP.paidMonths||{}; itemP.missedMonths = itemP.missedMonths||{};
+        if(itemP.paidMonths[t.dataset.key]) delete itemP.paidMonths[t.dataset.key];
+        else { itemP.paidMonths[t.dataset.key]=true; delete itemP.missedMonths[t.dataset.key]; }
+        save(); renderAll();
+      }
+      return;
+    }
+    if(action==='ob-toggle-paid'){
+      var obl = STATE.offBudgetExpenses[t.dataset.key]||[];
+      var obi = obl.filter(function(x){return x.id===t.dataset.id;})[0];
+      if(obi){ obi.paid = !obi.paid; save(); renderAll(); }
+      return;
+    }
+    if(action==='toggle-rate-pop'){
+      var pop = document.getElementById(t.dataset.for);
+      if(pop) pop.classList.toggle('open');
+      return;
+    }
+    if(action==='hide-item'){
+      var listH = findList(t.dataset.list);
+      var itemH = listH.filter(function(x){return x.id===t.dataset.id;})[0];
+      if(itemH){ itemH.hidden = true; save(); renderAll(); }
+      return;
+    }
+    if(action==='show-item'){
+      var listS = findList(t.dataset.list);
+      var itemS = listS.filter(function(x){return x.id===t.dataset.id;})[0];
+      if(itemS){ itemS.hidden = false; save(); renderAll(); }
+      return;
+    }
+    if(action==='del'){
+      var listD = findList(t.dataset.list);
+      var i = listD.findIndex(function(x){return x.id===t.dataset.id;});
+      if(i>-1){
+        var delItem = listD[i];
+        lastDeleted = {type:'list', listName:t.dataset.list, item:delItem, index:i};
+        listD.splice(i,1); save(); renderAll();
+        showUndoToast('"'+(delItem.ad||'Kalem')+'" silindi.');
+      }
+      return;
+    }
+    if(action==='transfer-bill'){
+      var bill3 = STATE.faturalar.filter(function(x){return x.id===t.dataset.id;})[0];
+      var sel = document.getElementById('fc_'+t.dataset.id);
+      var cardId = sel?sel.value:'';
+      if(!cardId){ alert('Kart seçin.'); return; }
+      var amt3 = billAmountForMonth(bill3, t.dataset.key);
+      bill3.cardTransfers = bill3.cardTransfers||{};
+      bill3.cardTransfers[t.dataset.key] = {cardId:cardId, amount:amt3, targetMonth:addMonths(t.dataset.key,1)};
+      bill3.monthlyAmounts[t.dataset.key] = 0;
+      save(); renderAll(); return;
+    }
+    if(action==='undo-bill-transfer'){
+      var bill4 = STATE.faturalar.filter(function(x){return x.id===t.dataset.id;})[0];
+      var tr4 = bill4 && bill4.cardTransfers ? bill4.cardTransfers[t.dataset.key] : null;
+      if(bill4 && tr4){ bill4.monthlyAmounts[t.dataset.key] = Number(tr4.amount||0); delete bill4.cardTransfers[t.dataset.key]; save(); renderAll(); }
+      return;
+    }
+    if(action==='ob-transfer'){
+      var obl2 = STATE.offBudgetExpenses[t.dataset.key]||[];
+      var obi2 = obl2.filter(function(x){return x.id===t.dataset.id;})[0];
+      var sel2 = document.getElementById('oc_'+t.dataset.id);
+      var cardId2 = sel2?sel2.value:'';
+      if(!cardId2){ alert('Kart seçin.'); return; }
+      if(obi2){
+        var amt2 = Number(obi2.tutar||0);
+        obi2.cardTransfer = {cardId:cardId2, amount:amt2, targetMonth:addMonths(t.dataset.key,1)};
+        obi2.tutar = 0; save(); renderAll();
+      }
+      return;
+    }
+    if(action==='ob-undo-transfer'){
+      var obl3 = STATE.offBudgetExpenses[t.dataset.key]||[];
+      var obi3 = obl3.filter(function(x){return x.id===t.dataset.id;})[0];
+      if(obi3 && obi3.cardTransfer){ obi3.tutar = Number(obi3.cardTransfer.amount||0); obi3.cardTransfer=null; save(); renderAll(); }
+      return;
+    }
+    if(action==='toggle-missed'){
+      var itemM = findList(t.dataset.list).filter(function(x){return x.id===t.dataset.id;})[0];
+      if(itemM){
+        itemM.missedMonths = itemM.missedMonths||{}; itemM.paidMonths = itemM.paidMonths||{};
+        if(itemM.missedMonths[t.dataset.key]) delete itemM.missedMonths[t.dataset.key];
+        else { itemM.missedMonths[t.dataset.key]=true; delete itemM.paidMonths[t.dataset.key]; }
+        save(); renderAll();
+      }
+      return;
+    }
+    if(action==='sec-move'){
+      e.preventDefault();
+      var ord = sectionOrder(), idx = ord.indexOf(t.dataset.id), j = idx + parseInt(t.dataset.dir,10);
+      if(idx>-1 && j>=0 && j<ord.length){ var tmp = ord[idx]; ord[idx] = ord[j]; ord[j] = tmp; STATE.sectionOrder = ord; save(); renderAll(); }
+      return;
+    }
+    if(action==='balance-reset'){
+      var dR = STATE.debts.filter(function(x){return x.id===t.dataset.id;})[0];
+      if(dR && dR.balanceOverrides){ delete dR.balanceOverrides[t.dataset.key]; save(); renderAll(); }
+      return;
+    }
+    if(action==='hide-done'){
+      var openK = firstOpenKey(STATE, homeHorizon()), closedK = addMonths(openK,-1), cnt = 0;
+      STATE.debts.concat(STATE.ekBorclular).forEach(function(d){
+        if(d.hidden) return;
+        if(absIndexFromKey(d.startMonthKey) <= absIndexFromKey(closedK) && itemBalanceAt(d, closedK) <= 0){ d.hidden = true; cnt++; }
+      });
+      if(cnt){ save(); renderAll(); } else alert('Bitmiş (kalan borcu 0 olan) borç yok.');
+      return;
+    }
+    if(action==='move-up' || action==='move-down'){ moveItem(t.dataset.list, t.dataset.id, action==='move-up'?-1:1); return; }
+    if(action==='qa-open'){
+      var slotQ = document.getElementById('qa-slot-'+t.dataset.kind);
+      if(slotQ){ slotQ.innerHTML = quickAddHtml(t.dataset.kind, t.dataset.key); var inp = document.getElementById('qaAd'); if(inp) inp.focus(); }
+      return;
+    }
+    if(action==='qa-cancel'){
+      var slotC = document.getElementById('qa-slot-'+t.dataset.kind); if(slotC) slotC.innerHTML=''; return;
+    }
+    if(action==='qa-save'){ quickAddSave(t.dataset.kind, t.dataset.key); return; }
+    if(action==='rep-apply' || action==='rep-stop'){ repeatAction(action, t.dataset.list, t.dataset.id, t.dataset.key); return; }
+    if(action==='ob-del'){
+      var obl4 = STATE.offBudgetExpenses[t.dataset.key]||[];
+      var idx4 = obl4.findIndex(function(x){return x.id===t.dataset.id;});
+      if(idx4>-1){
+        var delOb = obl4[idx4];
+        if(delOb.recurId){
+          var tplD = STATE.recurringOb.filter(function(x){return x.id===delOb.recurId;})[0];
+          if(tplD){ tplD.skip = tplD.skip||{}; tplD.skip[t.dataset.key] = true; }
+        }
+        lastDeleted = {type:'offbudget', offKey:t.dataset.key, item:delOb, index:idx4};
+        obl4.splice(idx4,1); save(); renderAll();
+        showUndoToast('"'+(delOb.ad||'Kalem')+'" silindi.');
+      }
+      return;
+    }
+    if(action==='add-ek'){
+      STATE.ekBorclular.push({id:uid(), ad:'Yeni Kişi', baslangic:0, startMonthKey:currentMonthKey, payments:{}, balanceOverrides:{}, additions:{}, paidMonths:{}, missedMonths:{}, hidden:false, sortOrder:STATE.ekBorclular.length});
+      save(); renderAll(); return;
+    }
+    if(action==='open-add-debt'){
+      var scr = t.closest('.screen');
+      var slotEl = scr && scr.querySelector('[id^="addDebtSlot"]');
+      ['addDebtSlot','addDebtSlot2'].forEach(function(id){ var e = document.getElementById(id); if(e) e.innerHTML=''; });
+      if(slotEl) wireAddDebtForm(slotEl.id, scr.id==='s-ay' ? currentMonthKey : homeKey());
+      return;
+    }
+    if(action==='month-prev'){ currentMonthKey = addMonths(currentMonthKey,-1); currentPickerYear = yearFromKey(currentMonthKey); renderAll(); return; }
+    if(action==='month-next'){ currentMonthKey = addMonths(currentMonthKey,1); currentPickerYear = yearFromKey(currentMonthKey); renderAll(); return; }
+    if(action==='pick-month'){
+      if(t.classList.contains('off')) return;
+      currentMonthKey = t.dataset.key; renderAll(); return;
+    }
+  }
+
+  function onPmStep(e){
+    var t = e.target.closest('[data-action="pm-step"]');
+    if(!t) return;
+    var mk = t.dataset.key, field = t.dataset.field, d = parseInt(t.dataset.d,10);
+    if(!STATE.salaryMonthly[mk]) STATE.salaryMonthly[mk] = {pazarGun:0,mesaiSaat:0};
+    STATE.salaryMonthly[mk][field] = Math.max(0, (STATE.salaryMonthly[mk][field]||0)+d);
+    save(); renderAll();
+  }
+
+  document.getElementById('s-ay').addEventListener('toggle', function(e){
+    var d = e.target; if(d && d.dataset && d.dataset.acc){ _accOpen[d.dataset.acc] = d.open; persistAcc(); }
+  }, true);
+  document.getElementById('phone').addEventListener('change', onChange);
+  document.getElementById('phone').addEventListener('click', function(e){
+    if(e.target.closest('[data-action="pm-step"]')){ onPmStep(e); return; }
+    onClick(e);
+  });
+
+  /* ===================== YIL SEÇİCİ (Aylar ekranı) delege ===================== */
+  document.getElementById('s-ay').addEventListener('click', function(e){
+    var yb = e.target.closest('.year-picker .yr');
+    if(yb){
+      currentPickerYear = Number(yb.dataset.y);
+      renderAylar();
+    }
+  });
+
+  /* ===================== SEKME ÇUBUĞU ===================== */
+  document.querySelectorAll('.tabbar .tab').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('.tabbar .tab').forEach(function(b){b.classList.remove('active');});
+      btn.classList.add('active');
+      currentTab = btn.dataset.s;
+      document.querySelectorAll('.screen').forEach(function(s){ s.classList.toggle('active', s.id===currentTab); });
+    });
+  });
+
+  /* ===================== AYARLAR PANELİ ===================== */
+  var gearBtn = document.getElementById('gearBtn');
+  var sheetOverlay = document.getElementById('sheetOverlay');
+  if(gearBtn) gearBtn.addEventListener('click', function(){ sheetOverlay.classList.add('show'); });
+  var sheetClose = document.getElementById('sheetClose');
+  if(sheetClose) sheetClose.addEventListener('click', function(){ sheetOverlay.classList.remove('show'); });
+  sheetOverlay.addEventListener('click', function(e){ if(e.target===sheetOverlay) sheetOverlay.classList.remove('show'); });
+  function hexA(hex, a){
+    var h = String(hex||'').replace('#',''); if(h.length===3) h = h.split('').map(function(c){return c+c;}).join('');
+    var n = parseInt(h,16); if(isNaN(n)) return 'rgba(212,255,63,'+a+')';
+    return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')';
+  }
+  function applyTheme(){
+    var th = THEMES[(STATE.theme&&STATE.theme.name)] || THEMES.siyah;
+    var c = (STATE.theme&&STATE.theme.accent) || th.accents[0];
+    var st = document.documentElement.style;
+    st.setProperty('--bg', th.bg); st.setProperty('--surface', th.surface); st.setProperty('--surface2', th.surface2);
+    st.setProperty('--line', th.line); st.setProperty('--text', th.text); st.setProperty('--text-dim', th.dim); st.setProperty('--text-faint', th.faint);
+    st.setProperty('--ink', th.ink); st.setProperty('--red', th.red); st.setProperty('--amber', th.amber);
+    st.setProperty('--on-acc', th.onAcc); st.setProperty('--tabbar', th.tabbar);
+    st.setProperty('--acc', c); st.setProperty('--acc-dim', hexA(c,.16));
+    var meta = document.querySelector('meta[name="theme-color"]'); if(meta) meta.setAttribute('content', th.meta);
+    renderThemePickers();
+  }
+  function renderThemePickers(){
+    var cur = (STATE.theme&&STATE.theme.name) || 'siyah';
+    var th = THEMES[cur] || THEMES.siyah, acc = (STATE.theme&&STATE.theme.accent) || th.accents[0];
+    var tr = document.getElementById('themeRow');
+    if(tr) tr.innerHTML = THEME_ORDER.map(function(id){
+      var t = THEMES[id];
+      return '<button type="button" class="theme-card'+(id===cur?' active':'')+'" data-theme="'+id+'"><span class="theme-dots"><i style="background:'+t.bg+'"></i><i style="background:'+t.surface+'"></i><i style="background:'+t.surface2+'"></i><i style="background:'+t.accents[0]+'"></i></span>'+t.label+'</button>';
+    }).join('');
+    var sr = document.getElementById('swatchRow');
+    if(sr) sr.innerHTML = th.accents.map(function(c){
+      return '<button type="button" class="swatch'+(c.toLowerCase()===String(acc).toLowerCase()?' active':'')+'" style="background:'+c+';" data-c="'+c+'"></button>';
+    }).join('');
+  }
+  document.getElementById('themeRow').addEventListener('click', function(e){
+    var b = e.target.closest('[data-theme]'); if(!b) return;
+    STATE.theme.name = b.dataset.theme; STATE.theme.accent = THEMES[b.dataset.theme].accents[0];
+    applyTheme(); renderAll(); save();
+  });
+  document.getElementById('swatchRow').addEventListener('click', function(e){
+    var b = e.target.closest('[data-c]'); if(!b) return;
+    STATE.theme.accent = b.dataset.c; applyTheme(); renderAll(); save();
+  });
+  var exportBtn = document.getElementById('exportBtn');
+  if(exportBtn) exportBtn.addEventListener('click', function(){
+    var blob = new Blob([JSON.stringify(STATE,null,2)], {type:'application/json'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a'); a.href=url; a.download='private-ledger-yedek.json';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  });
+  var importInput = document.getElementById('importInput');
+  if(importInput) importInput.addEventListener('change', function(){
+    var file = importInput.files && importInput.files[0];
+    if(!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev){
+      try{ STATE = normalizeState(JSON.parse(ev.target.result)); save(); renderAll(); applyTheme(); alert('Yedek yüklendi.'); }
+      catch(err){ alert('Dosya okunamadı.'); }
+    };
+    reader.readAsText(file);
+    importInput.value='';
+  });
+
+  if(syncDotEl) syncDotEl.addEventListener('click', function(){
+    if(syncDotEl.classList.contains('error')){
+      alert('⚠ Buluta ulaşılamıyor\n\nHata: '+lastSyncErrorDetail+'\n\nVerilerin bu cihazda güvende. Şimdi tekrar deniyorum…');
+    }
+    refreshFromCloud(true);
+  });
+  document.addEventListener('visibilitychange', function(){ if(!document.hidden) refreshFromCloud(false); });
+  window.addEventListener('focus', function(){ refreshFromCloud(false); });
+  setInterval(function(){ if(!document.hidden) refreshFromCloud(false); }, 25000);
+
+  /* ===================== GÖRÜNÜR ALANA SABİTLE ===================== */
+  // Telefon tarayıcılarında vh/dvh ölçüsü, adres çubuğu ve klavye yüzünden görünür alandan farklı olabiliyor.
+  // Uygulama kabuğunu gerçek görünür alana (visualViewport) kilitliyoruz; üst/alt çubuk hep ekranda kalır.
+  var phoneEl = document.getElementById('phone');
+  function fitApp(){
+    var vv = window.visualViewport;
+    var h = window.innerHeight, top = 0;
+    if(vv && vv.scale <= 1.02){ h = vv.height; top = vv.offsetTop; }
+    document.documentElement.style.setProperty('--app-h', Math.round(h)+'px');
+    phoneEl.style.top = Math.round(top)+'px';
+    if(window.scrollY) window.scrollTo(0,0);
+  }
+  window.addEventListener('resize', fitApp);
+  window.addEventListener('orientationchange', function(){ setTimeout(fitApp,200); });
+  window.addEventListener('scroll', fitApp);
+  document.addEventListener('focusout', function(){ setTimeout(fitApp,150); });
+  if(window.visualViewport){ window.visualViewport.addEventListener('resize', fitApp); window.visualViewport.addEventListener('scroll', fitApp); }
+  fitApp();
+
+  /* ===================== BAŞLAT ===================== */
+  if('serviceWorker' in navigator){
+    window.addEventListener('load', function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); });
+  }
+  try{ var _l0 = loadLocalState(); if(_l0){ STATE.theme = _l0.theme; } }catch(e){}
+  applyTheme();
+  loadFromSupabase().then(function(){
+    currentMonthKey = homeKey();
+    currentPickerYear = yearFromKey(currentMonthKey);
+    applyTheme();
+    renderAll();
+  });
+
+})();
+</script>
+</body>
+</html>

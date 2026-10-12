@@ -1,0 +1,33 @@
+var CACHE_NAME = 'private-ledger-v9';
+var SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
+
+self.addEventListener('install', function(e){
+  self.skipWaiting();
+  e.waitUntil(caches.open(CACHE_NAME).then(function(cache){ return cache.addAll(SHELL); }));
+});
+
+self.addEventListener('activate', function(e){
+  e.waitUntil(
+    caches.keys().then(function(keys){
+      return Promise.all(keys.filter(function(k){ return k!==CACHE_NAME; }).map(function(k){ return caches.delete(k); }));
+    }).then(function(){ return self.clients.claim(); })
+  );
+});
+
+self.addEventListener('fetch', function(e){
+  var url = e.request.url;
+  // Supabase ve diğer uzak API çağrılarına dokunma, direkt ağa bırak
+  if(url.indexOf('supabase.co') !== -1 || e.request.method !== 'GET'){ return; }
+  e.respondWith(
+    caches.match(e.request).then(function(cached){
+      var network = fetch(e.request).then(function(resp){
+        if(resp && resp.status===200){
+          var copy = resp.clone();
+          caches.open(CACHE_NAME).then(function(cache){ cache.put(e.request, copy); });
+        }
+        return resp;
+      }).catch(function(){ return cached; });
+      return cached || network;
+    })
+  );
+});
