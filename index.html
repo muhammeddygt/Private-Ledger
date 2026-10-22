@@ -423,6 +423,7 @@ details.sv-sum[open] summary{color:var(--text);}
       epoch: EPOCH_KEY,
       salaryDefault:{netMaas:0, sendika:0, aile:0, pazarRate:0, mesaiRate:0},
       salaryDefaultByMonth:{},
+      spendNextFrom: EPOCH_KEY,
       salaryMonthly:{},
       debts:[], ekBorclular:[], expenses:[], faturalar:[],
       offBudgetExpenses:{}, recurringOb:[], sectionOrder:['expenses','faturalar','offbudget','kk','kmh','kredi','manuel','ek','savings'],
@@ -516,16 +517,27 @@ details.sv-sum[open] summary{color:var(--text);}
       if(d.tur === 'kredi_karti'){
         var eskiBakiye = bal;                 // eksi ise: karta fazla yatırılmış tutar (alacak)
         var eklenen = additionsForDebt(STATE,d,key);
-        bal = eskiBakiye + eklenen;           // yeni harcama önce alacaktan düşer
         var faizYuzdeVal = fieldMonthly(d,'faizYuzde',key);
         var asgariYuzdeVal = fieldMonthly(d,'asgariYuzde',key);
         var faizTutari = Math.max(0,eskiBakiye)*(faizYuzdeVal/100);
-        var faizli = bal + faizTutari;
-        sugg = Math.max(0,bal)*(asgariYuzdeVal/100) + faizTutari + carry;
-        var due = hasOv ? Number(d.payments[key]) : sugg;
-        payment = missed ? 0 : due;
-        carryOut[key] = missed ? due : 0;
-        bal = faizli-payment;                 // fazla ödeme 0'a kırpılmaz, sonraki aya alacak olarak geçer
+        // Harcama kuralı: borç ödendikten sonra yapılan harcama bu ayın değil, sonraki ayın ödemesine yansır.
+        // (spendNextFrom öncesi aylar eski hesabı korur: harcama aynı ayın ödemesine eklenirdi)
+        var sonrakiAy = absIndexFromKey(key) >= absIndexFromKey(STATE.spendNextFrom||EPOCH_KEY);
+        if(sonrakiAy){
+          sugg = Math.max(0,eskiBakiye)*(asgariYuzdeVal/100) + faizTutari + carry;
+          var due = hasOv ? Number(d.payments[key]) : sugg;
+          payment = missed ? 0 : due;
+          carryOut[key] = missed ? due : 0;
+          bal = eskiBakiye + faizTutari - payment + eklenen;   // harcama ödemeden sonra borca eklenir
+        } else {
+          bal = eskiBakiye + eklenen;           // yeni harcama önce alacaktan düşer
+          var faizli = bal + faizTutari;
+          sugg = Math.max(0,bal)*(asgariYuzdeVal/100) + faizTutari + carry;
+          var due0 = hasOv ? Number(d.payments[key]) : sugg;
+          payment = missed ? 0 : due0;
+          carryOut[key] = missed ? due0 : 0;
+          bal = faizli-payment;                 // fazla ödeme 0'a kırpılmaz, sonraki aya alacak olarak geçer
+        }
       } else if(d.tur === 'kmh'){
         bal += additionsForDebt(STATE,d,key);
         var faizK = fieldMonthly(d,'faizYuzde',key);
@@ -648,6 +660,7 @@ details.sv-sum[open] summary{color:var(--text);}
     var out = Object.assign({}, def, parsed||{});
     out.salaryDefault = Object.assign({}, def.salaryDefault, (parsed&&parsed.salaryDefault)||{});
     out.salaryDefaultByMonth = (parsed&&parsed.salaryDefaultByMonth)||{};
+    out.spendNextFrom = (parsed && /^\d{4}-\d{2}$/.test(parsed.spendNextFrom||'')) ? parsed.spendNextFrom : '2026-10'; // kart harcaması sonraki ayın ödemesine yansır (bu aydan itibaren)
     out.salaryMonthly = (parsed&&parsed.salaryMonthly)||{};
     out.debts = (Array.isArray(out.debts)?out.debts:[]).map(function(d,idx){
       return Object.assign({}, d, {
@@ -1630,7 +1643,7 @@ details.sv-sum[open] summary{color:var(--text);}
     var meta = DEBT_SEC_META[secId];
     return '<details class="acc" data-acc="'+secId+'"><summary><span class="acc-name"><span class="acc-ico">'+meta.ico+'</span>'+meta.name+'</span><span class="acc-right"><span class="acc-amt">'+fmtShort(totalPay)+'</span>'+secMoveHtml(secId)+'<span class="acc-chev">›</span></span></summary>'+
       '<div class="acc-body">'+
-        '<div class="year-note" style="margin-top:10px;">Bu ay ödenecek <b>'+fmtShort(totalPay)+'</b> · ödenince kalan <b>'+fmtShort(totalBal)+'</b></div>'+
+        '<div class="year-note" style="margin-top:10px;">Bu ay ödenecek <b>'+fmtShort(totalPay)+'</b> · ödenince kalan <b>'+fmtShort(totalBal)+'</b>'+(tur0==='kredi_karti'?'<br>Harcama ve karta aktarılanlar ödemeden sonra borca eklenir, sonraki ayın ödemesine yansır.':'')+'</div>'+
         body+(firstShown?hiddenPanelHtml():'')+
         '<button class="add-row-btn" data-action="open-add-debt" data-tur="'+tur0+'">+ Borç Ekle</button><div id="addDebtSlot_'+secId+'"></div>'+
       '</div></details>';
