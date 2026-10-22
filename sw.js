@@ -1,4 +1,4 @@
-var CACHE_NAME = 'private-ledger-v9';
+var CACHE_NAME = 'private-ledger-v18';
 var SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', function(e){
@@ -17,7 +17,7 @@ self.addEventListener('activate', function(e){
 self.addEventListener('fetch', function(e){
   var url = e.request.url;
   // Supabase ve diğer uzak API çağrılarına dokunma, direkt ağa bırak
-  if(url.indexOf('supabase.co') !== -1 || e.request.method !== 'GET'){ return; }
+  if(url.indexOf('supabase.co') !== -1 || url.indexOf('malatyakuyumcular') !== -1 || url.indexOf('allorigins') !== -1 || url.indexOf('truncgil') !== -1 || url.indexOf('doviz.com') !== -1 || e.request.method !== 'GET'){ return; }
   e.respondWith(
     caches.match(e.request).then(function(cached){
       var network = fetch(e.request).then(function(resp){

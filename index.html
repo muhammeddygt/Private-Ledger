@@ -261,6 +261,21 @@ details.acc-sub[open] summary{color:var(--acc);}
   .month-total-line .mtl-v{font-family:var(--font-num); font-weight:600; color:var(--text); white-space:nowrap;}
 .tk-pill{display:inline-block; font-family:var(--font-num); font-size:10.5px; font-weight:600; padding:2px 7px; margin-right:8px; border-radius:999px; border:1px solid var(--line); color:var(--acc); vertical-align:2px;}
 .nd-auto{color:var(--acc) !important; font-style:italic;}
+.stat-mini.gold{border-color:var(--amber); background:linear-gradient(180deg, rgba(232,200,75,.14), rgba(232,200,75,.05));}
+.stat-mini.gold .l{color:var(--amber);}
+.stat-mini.gold .v{color:var(--amber); font-weight:600;}
+details.sv-sum{margin:8px 2px 2px; border:1px solid var(--line); border-radius:10px; padding:0 12px; background:var(--surface);}
+details.sv-sum summary{gap:8px; font-size:11px; padding:8px 0; border-bottom:none;}
+details.sv-sum summary > span:first-child{min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+details.sv-sum[open] summary{color:var(--text);}
+.sum-wrap{overflow-x:auto; -webkit-overflow-scrolling:touch;}
+.sum-tbl{width:100%; border-collapse:collapse; font-family:var(--font-num); font-size:10.5px;}
+.sum-tbl th{font-family:var(--font-ui); font-weight:600; font-size:9.5px; color:var(--text-faint); text-align:right; padding:4px 4px;}
+.sum-tbl th:first-child, .sum-tbl td:first-child{text-align:left; font-family:var(--font-ui);}
+.sum-tbl td{text-align:right; padding:5px 4px; border-top:1px solid var(--line); color:var(--text-dim);}
+.sum-tbl tr.cur td{color:var(--text); font-weight:600;}
+.sum-tbl td:last-child{color:var(--amber);}
+#gdKind{background:var(--bg); color:var(--text); border:1px solid var(--line); border-radius:7px; padding:6px 8px; font-size:11px; font-family:var(--font-ui);}
 </style>
 </head>
 <body>
@@ -372,7 +387,9 @@ details.acc-sub[open] summary{color:var(--acc);}
       salaryDefaultByMonth:{},
       salaryMonthly:{},
       debts:[], ekBorclular:[], expenses:[], faturalar:[],
-      offBudgetExpenses:{}, recurringOb:[], sectionOrder:['expenses','faturalar','offbudget','debts','ek'],
+      offBudgetExpenses:{}, recurringOb:[], sectionOrder:['expenses','faturalar','offbudget','kk','kmh','kredi','manuel','ek','savings'],
+      savings:{rate:3.1, rateByMonth:{}, deposits:{}},
+      gold:{prices:{k22:{alis:0,satis:0}, k24:{alis:0,satis:0}, s1:{fiyat:0, ratio:0, est:false, src:''}, ts:null, src:''}, entries:{}},
       theme:{name:'siyah', accent:'#D4FF3F'}
     };
   }
@@ -459,18 +476,18 @@ details.acc-sub[open] summary{color:var(--acc);}
       var missed = !!(d.missedMonths && d.missedMonths[key]);
       carryIn[key] = carry;
       if(d.tur === 'kredi_karti'){
-        var eskiBakiye = bal;
+        var eskiBakiye = bal;                 // eksi ise: karta fazla yatırılmış tutar (alacak)
         var eklenen = additionsForDebt(STATE,d,key);
-        bal = eskiBakiye + eklenen;
+        bal = eskiBakiye + eklenen;           // yeni harcama önce alacaktan düşer
         var faizYuzdeVal = fieldMonthly(d,'faizYuzde',key);
         var asgariYuzdeVal = fieldMonthly(d,'asgariYuzde',key);
-        var faizTutari = eskiBakiye*(faizYuzdeVal/100);
+        var faizTutari = Math.max(0,eskiBakiye)*(faizYuzdeVal/100);
         var faizli = bal + faizTutari;
-        sugg = bal*(asgariYuzdeVal/100) + faizTutari + carry;
+        sugg = Math.max(0,bal)*(asgariYuzdeVal/100) + faizTutari + carry;
         var due = hasOv ? Number(d.payments[key]) : sugg;
         payment = missed ? 0 : due;
         carryOut[key] = missed ? due : 0;
-        bal = Math.max(0, faizli-payment);
+        bal = faizli-payment;                 // fazla ödeme 0'a kırpılmaz, sonraki aya alacak olarak geçer
       } else if(d.tur === 'kmh'){
         bal += additionsForDebt(STATE,d,key);
         var faizK = fieldMonthly(d,'faizYuzde',key);
@@ -586,6 +603,8 @@ details.acc-sub[open] summary{color:var(--acc);}
   }
 
   /* ===================== NORMALİZE ===================== */
+  var GOLD_KINDS = {k22:{label:'22 Ayar', unit:'gr'}, k24:{label:'24 Ayar', unit:'gr'}, s1:{label:'Altın S1', unit:'lot'}};
+  var GOLD_ORDER = ['k22','k24','s1'];
   function normalizeState(parsed){
     var def = defaultState();
     var out = Object.assign({}, def, parsed||{});
@@ -630,7 +649,19 @@ details.acc-sub[open] summary{color:var(--acc);}
       return Object.assign({endMonthKey:null}, t, {skip:t.skip||{}});
     });
     ensureRecurring(out);
-    out.sectionOrder = Array.isArray(out.sectionOrder) ? out.sectionOrder : ['expenses','faturalar','offbudget','debts','ek'];
+    out.sectionOrder = Array.isArray(out.sectionOrder) ? out.sectionOrder : ['expenses','faturalar','offbudget','kk','kmh','kredi','manuel','ek','savings'];
+    var sv = (parsed&&parsed.savings)||{};
+    out.savings = {rate:(typeof sv.rate==='number'&&sv.rate>=0)?sv.rate:3.1, rateByMonth:sv.rateByMonth||{}, deposits:sv.deposits||{}};
+    var gd = (parsed&&parsed.gold)||{}, gp = gd.prices||{};
+    function pr(o,a,b){ o=o||{}; var r={}; r[a]=Number(o[a]||0); if(b) r[b]=Number(o[b]||0); return r; }
+    var s1p = pr(gp.s1,'fiyat'); s1p.ratio = Number((gp.s1||{}).ratio||0); s1p.est = !!(gp.s1||{}).est; s1p.src = String((gp.s1||{}).src||'');
+    out.gold = {prices:{k22:pr(gp.k22,'alis','satis'), k24:pr(gp.k24,'alis','satis'), s1:s1p, ts:gp.ts||null, src:gp.src||''}, entries:gd.entries||{}};
+    Object.keys(out.gold.entries).forEach(function(mk){
+      out.gold.entries[mk] = (out.gold.entries[mk]||[]).filter(function(x){return GOLD_KINDS[x.kind];}).map(function(x){ return {id:x.id||uid(), kind:x.kind, qty:Number(x.qty||0), price:Number(x.price||0)}; });
+    });
+    Object.keys(out.savings.deposits).forEach(function(mk){
+      out.savings.deposits[mk] = (out.savings.deposits[mk]||[]).map(function(x){ return {id:x.id||uid(), tutar:Number(x.tutar||0)}; });
+    });
     out.theme = Object.assign({name:'siyah', accent:'#D4FF3F'}, (parsed&&parsed.theme)||{});
     if(!THEMES[out.theme.name]) out.theme.name = 'siyah';
     return out;
@@ -783,6 +814,12 @@ details.acc-sub[open] summary{color:var(--acc);}
       return;
     }
     if(newRowMissing){
+      // Bulutta satır yok ama bu cihazda dolu veri varsa: eski defterden yeniden göç etme, yerel veriyi buluta geri yaz
+      var cached = null;
+      try{ if(localStorage.getItem(STORAGE_KEY)) cached = loadLocalState(); }catch(e4){}
+      var hasData = cached && (cached.debts.length || cached.ekBorclular.length || cached.expenses.length || cached.faturalar.length ||
+        Object.keys((cached.savings&&cached.savings.deposits)||{}).length || Object.keys(cached.offBudgetExpenses||{}).some(function(k){return (cached.offBudgetExpenses[k]||[]).length;}));
+      if(hasData){ STATE = cached; await save(); return; }
       try{
         var oldRes = await _supabase.from('app_state').select('data').eq('id', 1).maybeSingle();
         if(oldRes.error) throw oldRes.error;
@@ -868,6 +905,17 @@ details.acc-sub[open] summary{color:var(--acc);}
     return total;
   }
 
+  function savingsOzetHtml(){
+    var nk = nowKey(), st = savingsTotals(nk);
+    if(!st.any) return '<div class="save-card" style="border-style:dashed; opacity:.85;"><div><div class="l">Birikim</div><div class="s">Aylar → Birikim bölümünden TL, altın veya Altın S1 ekle; kar payı ve değer burada büyüsün</div></div></div>';
+    var nextKar = st.tl*savingsRate(addMonths(nk,1))/100;
+    var parts = [];
+    if(st.tl>0.005) parts.push('Nakit '+fmtShort(st.tl));
+    GOLD_ORDER.forEach(function(k){ if(Math.abs(st.gold.qty[k])>1e-9) parts.push(GOLD_KINDS[k].label+' '+fmtQty(st.gold.qty[k],GOLD_KINDS[k].unit)); });
+    return '<div class="save-card" style="flex-wrap:wrap; border-color:var(--amber);"><div><div class="l" style="color:var(--amber);">Toplam Birikim</div><div class="s">'+parts.join(' · ')+'</div></div><div class="v" style="color:var(--amber);">'+fmtShort(st.total)+'</div>'+
+      (st.tl>0.005 ? '<div class="s" style="flex-basis:100%; margin-top:6px;">TL kar payı toplamı +'+fmtShort(st.kar)+' · '+monthNameFromKey(addMonths(nk,1))+' beklenen <b>+'+fmtShort(nextKar)+'</b> (%'+String(savingsRate(addMonths(nk,1))).replace('.',',')+' aylık)</div>' : '')+
+      (st.gold.hasPrice ? '' : '<div class="s" style="flex-basis:100%; margin-top:6px;">Altın değeri için Aylar → Birikim → Güncel Fiyatlar bölümüne fiyat gir.</div>')+'</div>';
+  }
   function renderOzet(){
     var hk = homeKey();
     var openKey = firstOpenKey(STATE, homeHorizon());
@@ -1026,6 +1074,7 @@ details.acc-sub[open] summary{color:var(--acc);}
       '<div class="stat-mini"><div class="l">Toplam Ödenen<small>'+monthNameFromKey(EPOCH_KEY)+'\'den beri · kira hariç</small></div><div class="v">'+fmtShort(toplamOdenen)+'</div></div>'+
       '<div class="stat-mini tap" id="yearEndCard"><div class="l">Yıl Sonu Kalan Borç<small>'+yearEndCycleYear+' · Ocak ödemesi dahil ↻</small></div><div class="v">'+fmtShort(yearEndVal)+'</div></div>'+
     '</div>'+
+    savingsOzetHtml()+
     '<div class="save-card"><div><div class="l">Genel Birikim</div><div class="s">'+closedCount+' ay kapandı · maaştan kalanlar toplanır, getiri eklenmez</div></div><div class="v">'+fmtShort(birikim)+'</div></div>'+
     '<div class="section-title">Kalan Borç Trendi</div>'+
     '<div class="chart-card"><div class="trend-wrap" id="trendWrap"><svg id="trendSvg" viewBox="0 0 300 76" preserveAspectRatio="none"></svg></div>'+
@@ -1074,21 +1123,259 @@ details.acc-sub[open] summary{color:var(--acc);}
   }
 
   /* ===================== AYLAR EKRANI ===================== */
-  var DEFAULT_SECTIONS = ['expenses','faturalar','offbudget','debts','ek'];
+  var DEFAULT_SECTIONS = ['expenses','faturalar','offbudget','kk','kmh','kredi','manuel','ek','savings'];
+
+  /* ---------- Birikim (kar payı) ----------
+     Ay sonu bakiyesi = önceki bakiye + o ayın kar payı + o ayın yatırımları.
+     Kar payı, önceki ayın bakiyesi üzerinden işler (yatırılan tutar ertesi aydan itibaren kazanır),
+     böylece her ay bir öncekinin üstüne eklenerek bileşik ilerler. Oran her ay değiştirilebilir;
+     değiştirilen oran sonraki aylara da geçerli kalır. */
+  function parseRate(str){ var v = parseFloat(String(str||'').trim().replace(',','.')); return isNaN(v)?0:Math.max(0,v); }
+  function savingsRate(key){
+    var S = STATE.savings, best = null;
+    Object.keys(S.rateByMonth||{}).forEach(function(k){
+      if(absIndexFromKey(k) <= absIndexFromKey(key) && (best===null || absIndexFromKey(k) > absIndexFromKey(best))) best = k;
+    });
+    return best!==null ? Number(S.rateByMonth[best]) : Number(S.rate);
+  }
+  function savingsStartKey(){
+    var ks = Object.keys(STATE.savings.deposits||{}).filter(function(k){ return (STATE.savings.deposits[k]||[]).length; });
+    if(!ks.length) return null;
+    return ks.reduce(function(a,b){ return absIndexFromKey(b)<absIndexFromKey(a)?b:a; });
+  }
+  function savingsSeries(uptoKey){
+    var start = savingsStartKey();
+    if(start===null || absIndexFromKey(start) > absIndexFromKey(uptoKey)) return {start:start, rows:{}, bal:0, dep:0, kar:0};
+    var bal = 0, depT = 0, karT = 0, rows = {};
+    keysBetween(start, uptoKey).forEach(function(k){
+      var r = savingsRate(k);
+      var kar = bal>0 ? bal*r/100 : 0;
+      var dep = (STATE.savings.deposits[k]||[]).reduce(function(a,x){return a+Number(x.tutar||0);},0);
+      bal = Math.max(0, bal + kar + dep); depT += dep; karT += kar;
+      rows[k] = {bal:bal, kar:kar, dep:dep, rate:r};
+    });
+    return {start:start, rows:rows, bal:bal, dep:depT, kar:karT};
+  }
+  /* ---------- Altın / sertifika ---------- */
+  function goldSellPrice(kind){            // satarken eline geçecek birim fiyat
+    var P = STATE.gold.prices;
+    return kind==='s1' ? Number(P.s1.fiyat||0) : Number((P[kind]||{}).alis||0);
+  }
+  function goldBuyDefault(kind){           // alırken varsayılan birim fiyat
+    var P = STATE.gold.prices;
+    return kind==='s1' ? Number(P.s1.fiyat||0) : Number((P[kind]||{}).satis||0);
+  }
+  function goldHoldings(uptoKey){          // uptoKey dahil toplam miktar, net maliyet ve aylık kümülatif
+    var ent = STATE.gold.entries, keys = Object.keys(ent).filter(function(k){return (ent[k]||[]).length;});
+    var qty = {k22:0,k24:0,s1:0}, cost = {k22:0,k24:0,s1:0}, months = {}, start = null;
+    if(!keys.length) return {qty:qty, cost:cost, months:months, start:null, value:0, hasPrice:true};
+    start = keys.reduce(function(a,b){return absIndexFromKey(b)<absIndexFromKey(a)?b:a;});
+    if(absIndexFromKey(start) <= absIndexFromKey(uptoKey)){
+      keysBetween(start, uptoKey).forEach(function(k){
+        (ent[k]||[]).forEach(function(x){ qty[x.kind] += Number(x.qty||0); cost[x.kind] += Number(x.qty||0)*Number(x.price||0); });
+        months[k] = {qty:{k22:qty.k22,k24:qty.k24,s1:qty.s1}, cost:{k22:cost.k22,k24:cost.k24,s1:cost.s1}};
+      });
+    }
+    var value = 0, hasPrice = true;
+    GOLD_ORDER.forEach(function(kd){
+      if(Math.abs(qty[kd])<1e-9) return;
+      var sp = goldSellPrice(kd); if(!(sp>0)) hasPrice = false;
+      value += qty[kd]*sp;
+    });
+    return {qty:qty, cost:cost, months:months, start:start, value:value, hasPrice:hasPrice};
+  }
+  // gram için nokta ondalık sayılır (5.5 = 5,5 gr); lot için nokta binlik ayracıdır (1.500 = 1500 lot)
+  function parseQty(str, kind){ return kind==='s1' ? parseNum(str) : parseNum(String(str).replace(/\./g,',')); }
+  function fmtQty(n, unit){ return Number(n).toLocaleString('tr-TR',{maximumFractionDigits:unit==='lot'?0:3})+' '+unit; }
+  function savingsTotals(key){
+    var sv = savingsSeries(key), gh = goldHoldings(key);
+    return {tl:sv.bal, kar:sv.kar, dep:sv.dep, gold:gh, total: sv.bal + gh.value, any: sv.start!==null || gh.start!==null};
+  }
+  var GOLD_URL = 'https://malatyakuyumcular.net/';
+  function parseGoldText(html){
+    var txt = String(html||'').replace(/<script[\s\S]*?<\/script>/gi,' ').replace(/<style[\s\S]*?<\/style>/gi,' ').replace(/<[^>]+>/g,' ').replace(/&nbsp;/g,' ').replace(/\s+/g,' ');
+    function pick(ayar){
+      var m = new RegExp(ayar+'\\s*Ayar[^0-9]{0,40}([0-9][0-9.]*(?:,[0-9]+)?)\\s+([0-9][0-9.]*(?:,[0-9]+)?)','i').exec(txt);
+      if(!m) return null;
+      var a = parseNum(m[1]), b = parseNum(m[2]);
+      if(!(a>0 && b>0)) return null;
+      return {alis:Math.min(a,b), satis:Math.max(a,b)};
+    }
+    var k22 = pick('22'), k24 = pick('24');
+    return (k22||k24) ? {k22:k22, k24:k24} : null;
+  }
+  var TRUNCGIL_URL = 'https://finans.truncgil.com/v4/today.json';
+  function goldRef24(){            // S1 tahmini için 24 ayar referans fiyatı (alış-satış ortası)
+    var k = STATE.gold.prices.k24; if(k.alis>0 && k.satis>0) return (k.alis+k.satis)/2; return k.satis>0?k.satis:(k.alis>0?k.alis:0);
+  }
+  function applyS1Estimate(){      // son elle girdiğin S1 fiyatının gram altına oranıyla güncel S1'i tahmin et
+    var P = STATE.gold.prices, ref = goldRef24();
+    if(P.s1.ratio>0 && ref>0){ P.s1.fiyat = Math.round(ref*0.01*P.s1.ratio*100)/100; P.s1.est = true; P.s1.src = ''; return true; }
+    return false;
+  }
+  async function getText(url){
+    var variants = [url, 'https://api.allorigins.win/raw?url='+encodeURIComponent(url)];
+    for(var i=0;i<variants.length;i++){
+      try{
+        var ctrl = (typeof AbortController!=='undefined') ? new AbortController() : null;
+        var tm = setTimeout(function(){ if(ctrl) ctrl.abort(); }, 9000);
+        var r = await fetch(variants[i], {cache:'no-store', signal: ctrl?ctrl.signal:undefined});
+        clearTimeout(tm);
+        if(r.ok) return await r.text();
+      }catch(e){}
+    }
+    return null;
+  }
+  function parseTruncgil(txt){
+    try{
+      var j = JSON.parse(txt), has = j.HAS || j.GRA, yia = j.YIA, n = function(v){ return typeof v==='number' ? v : parseNum(v); };
+      var out = {};
+      if(has && n(has.Buying)>0 && n(has.Selling)>0) out.k24 = {alis:n(has.Buying), satis:n(has.Selling)};
+      if(yia && n(yia.Buying)>0 && n(yia.Selling)>0) out.k22 = {alis:n(yia.Buying), satis:n(yia.Selling)};
+      return (out.k22||out.k24) ? out : null;
+    }catch(e){ return null; }
+  }
+  async function fetchGoldPrices(){
+    var P = STATE.gold.prices, got = null, src = '';
+    var t1 = await getText(GOLD_URL); if(t1){ got = parseGoldText(t1); if(got) src = 'Malatya Kuyumcular'; }
+    if(!got){ var t2 = await getText(TRUNCGIL_URL); if(t2){ got = parseTruncgil(t2); if(got) src = 'Truncgil piyasa fiyatı'; } }
+    if(!got) return false;
+    if(got.k22) P.k22 = got.k22;
+    if(got.k24) P.k24 = got.k24;
+    P.ts = Date.now(); P.src = src;
+    var gotS1 = await fetchS1Doviz();
+    if(!gotS1) applyS1Estimate();
+    return true;
+  }
+  var S1_URL = 'https://borsa.doviz.com/hisseler/altins1-darphane-altin-sertifikasi';
+  // Sayfa metninden S1 lot fiyatı: ALTINS1 geçtiği yerden sonraki sayıları tara, gram altından beklenen aralıktaki (±%15) ilkini al.
+  // Aralık dışındaki sayılar (kur, gram altın, hacim) reddedilir; uygun sayı yoksa hiçbir şey değiştirilmez.
+  function parseS1Text(html, ref){
+    if(!(ref>0)) return null;
+    var txt = String(html||'').replace(/<script[\s\S]*?<\/script>/gi,' ').replace(/<style[\s\S]*?<\/style>/gi,' ').replace(/<[^>]+>/g,' ').replace(/&nbsp;/g,' ').replace(/\s+/g,' ');
+    var i = txt.search(/ALTINS1/i); if(i<0) return null;
+    var win = txt.slice(i, i+1500), re = /(\d{1,3}(?:\.\d{3})*,\d{2})(?!\d)/g, m, lo = ref*0.01*0.85, hi = ref*0.01*1.15;
+    while((m = re.exec(win))){ var v = parseNum(m[1]); if(v>=lo && v<=hi) return v; }
+    return null;
+  }
+  async function fetchS1Doviz(){
+    var ref = goldRef24(); if(!(ref>0)) return false;
+    var t = await getText(S1_URL); if(!t) return false;
+    var v = parseS1Text(t, ref); if(!(v>0)) return false;
+    var P = STATE.gold.prices;
+    P.s1.fiyat = v; P.s1.est = false; P.s1.src = 'doviz.com'; P.s1.ratio = v/(ref*0.01);
+    return true;
+  }
+  function goldStatusText(){
+    var P = STATE.gold.prices;
+    if(!P.ts) return 'Fiyat henüz girilmedi';
+    var d = new Date(P.ts), pad = function(n){return String(n).padStart(2,'0');};
+    return 'Son: '+pad(d.getDate())+'.'+pad(d.getMonth()+1)+' '+pad(d.getHours())+':'+pad(d.getMinutes())+' ('+(P.src||'elle')+')';
+  }
+  function renderGoldSection(key){
+    var P = STATE.gold.prices;
+    function pin(k,f,v){ return '<input class="amt" style="width:74px;" inputmode="decimal" data-action="gd-price" data-k="'+k+'" data-f="'+f+'" value="'+(v>0?editVal(v):'')+'" placeholder="0,00">'; }
+    var prices =
+      '<div class="line-row"><span class="n">22 Ayar <small style="color:var(--text-faint);">alış / satış (TL/gr)</small></span>'+pin('k22','alis',P.k22.alis)+pin('k22','satis',P.k22.satis)+'</div>'+
+      '<div class="line-row"><span class="n">24 Ayar <small style="color:var(--text-faint);">alış / satış (TL/gr)</small></span>'+pin('k24','alis',P.k24.alis)+pin('k24','satis',P.k24.satis)+'</div>'+
+      '<div class="line-row"><span class="n">Altın S1 <small style="color:var(--text-faint);">lot fiyatı (TL)'+(P.s1.est?' · tahmini':(P.s1.src?' · '+P.s1.src:''))+'</small></span>'+pin('s1','fiyat',P.s1.fiyat)+'</div>'+
+      '<div class="line-row" style="gap:6px; flex-wrap:wrap;"><a href="https://borsa.doviz.com/hisseler/altins1-darphane-altin-sertifikasi" target="_blank" rel="noopener" style="font-size:10.5px; color:var(--acc);">S1 güncel fiyatına bak (doviz.com) ↗</a>'+
+        '<button class="xfer-btn" data-action="gd-s1-est" '+(P.s1.ratio>0&&goldRef24()>0?'':'disabled style="opacity:.4;"')+' title="Son girdiğin S1 fiyatını gram altına oranlayıp günceller">≈ Gram altından tahmin et</button></div>'+
+      '<div class="line-row" style="gap:6px;"><span class="n" id="gdStatus" style="font-size:10px; color:var(--text-faint);">'+goldStatusText()+'</span><button class="xfer-btn" data-action="gd-fetch">↻ Fiyatları çek</button></div>';
+    var ents = STATE.gold.entries[key]||[];
+    var rows = ents.map(function(x){
+      var kd = GOLD_KINDS[x.kind];
+      return '<div class="line-row"><span class="n" style="color:var(--text-dim);">'+kd.label+(x.qty<0?' satış':'')+'</span>'+
+        '<input class="amt" style="width:62px;" inputmode="decimal" data-action="gd-qty" data-id="'+x.id+'" data-key="'+key+'" value="'+String(x.qty).replace('.',',')+'" title="Miktar ('+kd.unit+')">'+
+        '<input class="amt" style="width:74px;" inputmode="decimal" data-action="gd-eprice" data-id="'+x.id+'" data-key="'+key+'" value="'+editVal(x.price)+'" title="Birim fiyat">'+
+        '<span class="del-x" data-action="gd-del" data-id="'+x.id+'" data-key="'+key+'">✕</span></div>'+
+        '<div class="xfer-row"><span style="color:var(--text-faint);">'+fmtQty(x.qty,kd.unit)+' × '+fmt(x.price)+' = <b style="color:var(--text-dim);">'+fmt(x.qty*x.price)+'</b> '+(x.qty<0?'(maaştan kalana eklendi)':'(maaştan kalandan düştü)')+'</span></div>';
+    }).join('');
+    var hold = goldHoldings(key);
+    var posRows = GOLD_ORDER.filter(function(k){return Math.abs(hold.qty[k])>1e-9;}).map(function(k){
+      var kd = GOLD_KINDS[k], sp = goldSellPrice(k), val = hold.qty[k]*sp;
+      var diff = sp>0 ? val - hold.cost[k] : null;
+      return '<div class="line-row"><span class="n">'+kd.label+' · '+fmtQty(hold.qty[k],kd.unit)+(k==='s1'?' <small style="color:var(--text-faint);">(≈ '+Number(hold.qty[k]*0.01).toLocaleString('tr-TR',{maximumFractionDigits:3})+' gr)</small>':'')+'</span>'+
+        '<span style="font-family:var(--font-num); font-size:11px; text-align:right;">'+(sp>0?'<b>'+fmt(val)+'</b><br><span style="color:var(--text-faint); font-size:9.5px;">maliyet '+fmtShort(hold.cost[k])+' · '+(diff>=0?'+':'')+fmtShort(diff)+'</span>':'<span style="color:var(--text-faint);">fiyat gir</span>')+'</span></div>';
+    }).join('');
+    var opts = GOLD_ORDER.map(function(k){return '<option value="'+k+'">'+GOLD_KINDS[k].label+' ('+GOLD_KINDS[k].unit+')</option>';}).join('');
+    return '<div class="section-title" style="margin:16px 0 4px; font-size:10.5px;">Altın &amp; Sertifika</div>'+
+      (posRows ? '<div class="year-note" style="margin:0 0 2px;">Şu an satarsan eline geçecek (alış fiyatıyla):</div>'+posRows : '')+
+      (rows || '<div class="empty-note">Bu ay altın alımı yok</div>')+
+      '<div class="line-row" style="gap:6px; flex-wrap:wrap;"><select id="gdKind" data-action="gd-kind" style="flex:1; min-width:110px;">'+opts+'</select>'+
+        '<input class="amt" style="width:64px;" id="gdQty" inputmode="decimal" placeholder="miktar">'+
+        '<input class="amt" style="width:78px;" id="gdPrice" inputmode="decimal" placeholder="aldığın fiyat" value="'+(goldBuyDefault('k22')>0?editVal(goldBuyDefault('k22')):'')+'"></div>'+
+      '<div class="line-row" style="gap:6px;"><span class="n" style="font-size:10px; color:var(--text-faint);">gram / lot · birim fiyat (satış için eksi miktar yaz)</span><button class="xfer-btn" data-action="gd-add" data-key="'+key+'">+ Ekle</button></div>'+
+      '<div class="year-note">Yazdığın miktar × fiyat, bu ayın "Maaştan Kalan"ından düşer. Fiyat kutusu güncel satış fiyatıyla dolar, kendi aldığın fiyatı yazabilirsin. 1 lot Altın S1 ≈ 0,01 gr altındır; lot fiyatını aracı kurumundan elle gir.</div>'+
+      '<div class="section-title" style="margin:16px 0 4px; font-size:10.5px;">Güncel Fiyatlar</div>'+prices;
+  }
+  function savingsSumHtml(key, st){
+    if(!st.any) return '';
+    var sv = savingsSeries(key), gh = st.gold;
+    var startKs = [sv.start, gh.start].filter(Boolean);
+    var startK = startKs.length ? startKs.reduce(function(a,b){return absIndexFromKey(b)<absIndexFromKey(a)?b:a;}) : null;
+    var cells = [];
+    if(st.tl>0.005) cells.push('Nakit '+fmtShort(st.tl));
+    GOLD_ORDER.forEach(function(k){ if(Math.abs(gh.qty[k])>1e-9) cells.push(GOLD_KINDS[k].label+' '+fmtQty(gh.qty[k],GOLD_KINDS[k].unit)); });
+    var body = '';
+    if(startK && absIndexFromKey(startK) <= absIndexFromKey(key)){
+      var keys = keysBetween(startK, key).slice(-12);
+      body = '<div class="sum-wrap"><table class="sum-tbl"><thead><tr><th>Ay</th><th>TL</th><th>22 gr</th><th>24 gr</th><th>S1 lot</th><th>Toplam*</th></tr></thead><tbody>'+
+        keys.map(function(k){
+          var r = sv.rows[k], g = gh.months[k];
+          var tl = r ? r.bal : 0, q = g ? g.qty : {k22:0,k24:0,s1:0}, c = g ? g.cost : {k22:0,k24:0,s1:0};
+          var tot = tl + c.k22 + c.k24 + c.s1;
+          var n = function(v,d){ return Math.abs(v)<1e-9 ? '–' : Number(v).toLocaleString('tr-TR',{maximumFractionDigits:d}); };
+          return '<tr'+(k===key?' class="cur"':'')+'><td>'+monthAbbrFromKey(k)+' \''+String(yearFromKey(k)).slice(2)+'</td><td>'+n(tl,0)+'</td><td>'+n(q.k22,2)+'</td><td>'+n(q.k24,2)+'</td><td>'+n(q.s1,0)+'</td><td>'+n(tot,0)+'</td></tr>';
+        }).join('')+
+        '</tbody></table></div>'+
+        '<div class="year-note">*Toplam: o aya kadar TL bakiyen (kar payıyla) + altın/sertifikaya ödediğin tutar. Altının bugünkü satış değeri üstteki kartta ve aşağıda.</div>'+
+        '<div class="line-row"><span class="n">Bugünkü satış değeri (altın + sertifika)</span><b style="font-family:var(--font-num);">'+(gh.hasPrice?fmtShort(gh.value):'fiyat gir')+'</b></div>'+
+        '<div class="line-row"><span class="n"><b>Toplam birikim (TL + altın değeri)</b></span><b style="font-family:var(--font-num); color:var(--amber);">'+fmtShort(st.total)+'</b></div>';
+    }
+    return '<details class="acc-sub sv-sum" data-acc="svsum"><summary><span>'+monthNameFromKey(key)+' birikimi · '+(cells.join(' · ')||'—')+'</span><span style="color:var(--amber); font-family:var(--font-num);">'+fmtShort(st.total)+' ›</span></summary>'+body+'</details>';
+  }
+  function renderSavingsAcc(key){
+    var ser = savingsSeries(key), row = ser.rows[key];
+    var r = savingsRate(key), ov = hasOwn(STATE.savings.rateByMonth||{}, key);
+    var deps = STATE.savings.deposits[key]||[];
+    var rows = deps.map(function(x){
+      return '<div class="line-row"><span class="n" style="color:var(--text-dim);">'+(x.tutar<0?'Çekim':'Yatırım')+'</span>'+
+        '<input class="amt" data-action="sv-amt" data-id="'+x.id+'" data-key="'+key+'" value="'+editVal(x.tutar)+'">'+
+        '<span class="del-x" data-action="sv-del" data-id="'+x.id+'" data-key="'+key+'">✕</span></div>';
+    }).join('');
+    var nextKey = addMonths(key,1), nextKar = (row?row.bal:ser.bal)*savingsRate(nextKey)/100;
+    var bal = row ? row.bal : ser.bal;
+    return '<details class="acc" data-acc="savings"><summary><span class="acc-name"><span class="acc-ico">🌱</span>Birikim</span><span class="acc-right"><span class="acc-amt">'+fmtShort(savingsTotals(key).total)+'</span>'+secMoveHtml('savings')+'<span class="acc-chev">›</span></span></summary>'+
+      '<div class="acc-body">'+
+        '<div class="section-title" style="margin:6px 0 4px; font-size:10.5px;">TL Birikim · Kar Payı</div>'+
+        '<div class="line-row"><span class="n" style="color:var(--text-dim);">Aylık kar payı %'+(ov?' <small style="color:var(--acc);">(bu ay değişti)</small>':'')+'</span>'+
+          '<input class="amt" style="width:70px;" data-action="sv-rate" data-key="'+key+'" value="'+String(r).replace('.',',')+'"></div>'+
+        (rows || '<div class="empty-note">Bu ay yatırım yok</div>')+
+        '<div class="line-row" style="gap:6px;"><input class="amt" style="flex:1; text-align:left;" id="svNew" inputmode="decimal" placeholder="Yatırılan tutar (çekim için −)"><button class="xfer-btn" data-action="sv-add" data-key="'+key+'">+ Ekle</button></div>'+
+        '<div class="year-note" style="margin-top:8px;">Bu ay kar payı <b>'+fmt(row?row.kar:0)+'</b> · toplam yatırılan <b>'+fmtShort(ser.dep)+'</b> · toplam kar payı <b>'+fmt(ser.kar)+'</b></div>'+
+        '<div class="year-note">'+monthNameFromKey(nextKey)+' için beklenen kar payı ≈ <b>'+fmt(nextKar)+'</b> (%'+String(savingsRate(nextKey)).replace('.',',')+')</div>'+
+        '<div class="year-note" style="opacity:.8;">Yatırdığın tutar bu ayın "Maaştan Kalan"ından düşer, çekim ise eklenir.</div>'+
+        renderGoldSection(key)+
+      '</div></details>';
+  }
   function sectionOrder(){
-    var o = Array.isArray(STATE.sectionOrder) ? STATE.sectionOrder.filter(function(id){return DEFAULT_SECTIONS.indexOf(id)>-1;}) : [];
+    var raw = Array.isArray(STATE.sectionOrder) ? STATE.sectionOrder : [];
+    var o = [];
+    raw.forEach(function(id){ if(id==='debts'){ ['kk','kmh','kredi','manuel'].forEach(function(x){ o.push(x); }); } else o.push(id); });
+    o = o.filter(function(id){return DEFAULT_SECTIONS.indexOf(id)>-1;});
     DEFAULT_SECTIONS.forEach(function(id){ if(o.indexOf(id)===-1) o.push(id); });
     return o.filter(function(id,i){return o.indexOf(id)===i;});
   }
   function sectionsHtml(key){
-    var map = {expenses:renderGiderlerAcc, faturalar:renderFaturalarAcc, offbudget:renderOffBudgetAcc, debts:renderDebtGroupsAcc, ek:renderEkBorclularAcc};
+    var map = {expenses:renderGiderlerAcc, faturalar:renderFaturalarAcc, offbudget:renderOffBudgetAcc, kk:function(k){return renderDebtGroupsAcc(k,'kk');}, kmh:function(k){return renderDebtGroupsAcc(k,'kmh');}, kredi:function(k){return renderDebtGroupsAcc(k,'kredi');}, manuel:function(k){return renderDebtGroupsAcc(k,'manuel');}, ek:renderEkBorclularAcc, savings:renderSavingsAcc};
     return sectionOrder().map(function(id){ return map[id](key); }).join('');
   }
   function secMoveHtml(id){
     return '<span class="move-btns h" style="margin-right:4px;"><button type="button" class="move-btn" data-action="sec-move" data-id="'+id+'" data-dir="-1" title="Bölümü yukarı al">▲</button><button type="button" class="move-btn" data-action="sec-move" data-id="'+id+'" data-dir="1" title="Bölümü aşağı al">▼</button></span>';
   }
   var ACC_KEY = 'privateLedger_acc';
-  var _accOpen = (function(){ try{ var o = JSON.parse(localStorage.getItem(ACC_KEY)||'null'); if(o && typeof o==='object') return o; }catch(e){} return {debts:true}; })();
+  var _accOpen = (function(){ try{ var o = JSON.parse(localStorage.getItem(ACC_KEY)||'null'); if(o && typeof o==='object'){ if(o.kk===undefined && o.debts!==undefined){ o.kk=o.kmh=o.kredi=o.manuel=!!o.debts; } return o; } }catch(e){} return {kk:true,kmh:true,kredi:true,manuel:true}; })();
   function persistAcc(){ try{ localStorage.setItem(ACC_KEY, JSON.stringify(_accOpen)); }catch(e){} }
   function captureAcc(){
     var ds = document.getElementById('s-ay').querySelectorAll('details[data-acc]');
@@ -1119,6 +1406,7 @@ details.acc-sub[open] summary{color:var(--acc);}
 
     var mt = computeMonthTotals(currentMonthKey);
     var kalanGenel = computeGrandTotal(STATE, currentMonthKey);
+    var stT = savingsTotals(currentMonthKey);
 
     var html = ''+
     '<div class="month-title" style="font-size:20px;">Aylar</div>'+
@@ -1129,11 +1417,13 @@ details.acc-sub[open] summary{color:var(--acc);}
       '<div class="month-nav"><button data-action="month-prev">‹</button><div><div class="month-title">'+monthNameFromKey(currentMonthKey)+'</div><div style="font-size:11px; color:var(--text-faint); margin-top:1px;">'+yearFromKey(currentMonthKey)+'</div></div><button data-action="month-next">›</button></div>'+
       '<div class="month-chip">'+monthNameFromKey(currentMonthKey)+' ödenince kalan<b>'+fmtShort(kalanGenel)+'</b></div>'+
     '</div>'+
-    '<div class="stat-row c2" style="margin-top:14px;">'+
+    '<div class="stat-row" style="margin-top:14px;">'+
       '<div class="stat-mini"><div class="l">Bu Ay Ödenecek Borç</div><div class="v">'+fmtShort(mt.debtDue)+'</div></div>'+
       '<div class="stat-mini"><div class="l">Maaştan Kalan</div><div class="v">'+fmtShort(mt.netKalan)+'</div></div>'+
+      '<div class="stat-mini gold"><div class="l">Toplam Birikim<small>güncel satış değeri</small></div><div class="v">'+fmtShort(stT.total)+'</div></div>'+
     '</div>'+
-    '<div class="month-total-line"><span class="mtl-l">'+monthNameFromKey(currentMonthKey)+' toplam gider <small>(hepsi dahil)</small></span><span class="mtl-v">'+fmtShort(mt.debtDue+mt.faturaTotal+mt.expTotal+mt.offTotal)+'</span></div>'+
+    savingsSumHtml(currentMonthKey, stT)+
+    '<div class="month-total-line"><span class="mtl-l">'+monthNameFromKey(currentMonthKey)+' toplam gider <small>('+((mt.savDep||mt.goldNet)?'birikim hariç':'hepsi dahil')+')</small></span><span class="mtl-v">'+fmtShort(mt.debtDue+mt.faturaTotal+mt.expTotal+mt.offTotal)+'</span></div>'+
     renderSalaryAcc(currentMonthKey)+
     sectionsHtml(currentMonthKey);
 
@@ -1166,10 +1456,15 @@ details.acc-sub[open] summary{color:var(--acc);}
       return s+billAmountForMonth(e,key);
     },0);
     var offTotal = (STATE.offBudgetExpenses[key]||[]).reduce(function(s,i){return s+(i.cardTransfer?0:Number(i.tutar||0));},0);
-    var netKalan = gelir - debtDue - faturaTotal - expTotal - offTotal;
-    return {gelir:gelir, debtDue:debtDue, faturaTotal:faturaTotal, expTotal:expTotal, offTotal:offTotal, netKalan:netKalan};
+    // Birikime yatırılan tutar maaştan kalandan düşer (çekim ise kalana eklenir)
+    var savDep = ((STATE.savings&&STATE.savings.deposits&&STATE.savings.deposits[key])||[]).reduce(function(a,x){return a+Number(x.tutar||0);},0);
+    // Altın / sertifika alımı kendi aldığın fiyattan maaştan kalandan düşer (satış ise eklenir)
+    var goldNet = ((STATE.gold&&STATE.gold.entries&&STATE.gold.entries[key])||[]).reduce(function(a,x){return a+Number(x.qty||0)*Number(x.price||0);},0);
+    var netKalan = gelir - debtDue - faturaTotal - expTotal - offTotal - savDep - goldNet;
+    return {gelir:gelir, debtDue:debtDue, faturaTotal:faturaTotal, expTotal:expTotal, offTotal:offTotal, savDep:savDep, goldNet:goldNet, netKalan:netKalan};
   }
 
+  var salBulkMsg = '';
   function renderSalaryAcc(key){
     var pazarGun = (STATE.salaryMonthly[key]&&STATE.salaryMonthly[key].pazarGun)||0;
     var mesaiSaat = (STATE.salaryMonthly[key]&&STATE.salaryMonthly[key].mesaiSaat)||0;
@@ -1186,6 +1481,20 @@ details.acc-sub[open] summary{color:var(--acc);}
             '<div class="pm-row"><span class="pm-lbl">Pazar günü<small>'+fmtShort(pazarRate)+'/gün</small></span><div class="stepper"><button data-action="pm-step" data-field="pazarGun" data-key="'+key+'" data-d="-1">−</button><input data-action="pm-set" data-field="pazarGun" data-key="'+key+'" value="'+pazarGun+'"><button data-action="pm-step" data-field="pazarGun" data-key="'+key+'" data-d="1">+</button></div></div>'+
             '<div class="pm-row"><span class="pm-lbl">Mesai saati<small>'+fmtShort(mesaiRate)+'/saat</small></span><div class="stepper"><button data-action="pm-step" data-field="mesaiSaat" data-key="'+key+'" data-d="-1">−</button><input data-action="pm-set" data-field="mesaiSaat" data-key="'+key+'" value="'+mesaiSaat+'"><button data-action="pm-step" data-field="mesaiSaat" data-key="'+key+'" data-d="1">+</button></div></div>'+
             '<div class="pm-row"><span class="pm-lbl">Gün/saat ücreti<small>bu ay için</small></span><div style="display:flex; gap:5px;"><input class="mini-input" style="width:64px;" data-action="sal-field" data-field="pazarRate" data-key="'+key+'" value="'+editVal(pazarRate)+'"><input class="mini-input" style="width:64px;" data-action="sal-field" data-field="mesaiRate" data-key="'+key+'" value="'+editVal(mesaiRate)+'"></div></div>'+
+          '</div>'+
+        '</details>'+
+        '<details class="acc-sub" data-acc="salbulk"><summary><span>Toplu ekle · birden çok aya uygula</span><span class="edit-pill">＋</span></summary>'+
+          '<div class="pm-detail">'+
+            '<div class="year-note" style="margin:0 0 6px;">Doldurduğun alanlar, seçtiğin aydan başlayarak kaç ay yazarsan o kadar aya yazılır (o aylardaki eski değerlerin üzerine). Boş bıraktığın alana dokunulmaz.</div>'+
+            '<div class="pm-row"><span class="pm-lbl">Başlangıç ayı</span><select class="mini-input" id="salBulkFrom" style="width:auto;">'+keysBetween(EPOCH_KEY, addMonths(EPOCH_KEY,71)).map(function(k){ return '<option value="'+k+'"'+(k===key?' selected':'')+'>'+monthNameFromKey(k)+' '+yearFromKey(k)+'</option>'; }).join('')+'</select></div>'+
+            '<div class="pm-row"><span class="pm-lbl">Kaç ay<small>1–60</small></span><input class="mini-input" id="salBulkN" inputmode="numeric" style="width:64px;" value="12"></div>'+
+            '<div class="pm-row"><span class="pm-lbl">Net Maaş</span><input class="mini-input" id="salBulkNet" inputmode="decimal" style="width:96px;" placeholder="—"></div>'+
+            '<div class="pm-row"><span class="pm-lbl">Sendika</span><input class="mini-input" id="salBulkSend" inputmode="decimal" style="width:96px;" placeholder="—"></div>'+
+            '<div class="pm-row"><span class="pm-lbl">Aile Yardımı</span><input class="mini-input" id="salBulkAile" inputmode="decimal" style="width:96px;" placeholder="—"></div>'+
+            '<div class="pm-row"><span class="pm-lbl">Pazar günü ücreti</span><input class="mini-input" id="salBulkPR" inputmode="decimal" style="width:96px;" placeholder="—"></div>'+
+            '<div class="pm-row"><span class="pm-lbl">Mesai saat ücreti</span><input class="mini-input" id="salBulkMR" inputmode="decimal" style="width:96px;" placeholder="—"></div>'+
+            '<button class="xfer-btn" data-action="sal-bulk" style="margin-top:6px;">Seçili aylara uygula</button>'+
+            (salBulkMsg?'<div class="year-note" style="margin-top:6px; color:var(--acc);">'+salBulkMsg+'</div>':'')+
           '</div>'+
         '</details>'+
         '<div class="year-note">Her alan bu aya özel — değiştirirsen sadece '+monthNameFromKey(key)+' etkilenir, diğer aylar kendi değerinde kalır.</div>'+
@@ -1209,8 +1518,20 @@ details.acc-sub[open] summary{color:var(--acc);}
   }
   function turLabel(t){ return t==='kredi_karti'?'K.KARTI':(t==='kmh'?'KMH':(t==='kredi'?'KREDİ':'MANUEL')); }
 
-  function renderDebtGroupsAcc(key){
-    var list = sortedVisibleDebts();
+  var DEBT_SECS = {kk:'kredi_karti', kmh:'kmh', kredi:'kredi', manuel:'manuel'};
+  var DEBT_SEC_META = {kk:{ico:'💳', name:'Kredi Kartları'}, kmh:{ico:'🏦', name:'KMH Hesapları'}, kredi:{ico:'🏷️', name:'Krediler'}, manuel:{ico:'✍️', name:'Manuel Takip'}};
+  function debtGroupHas(tur){ return STATE.debts.some(function(d){ return !d.hidden && d.tur===tur; }); }
+  function debtSecVisible(id){
+    var tur = DEBT_SECS[id];
+    if(debtGroupHas(tur)) return true;
+    // hiç borç yoksa, ekleme yolu kalsın diye yalnız Kredi Kartları bölümü görünür
+    return id==='kk' && !Object.keys(DEBT_SECS).some(function(i){ return debtGroupHas(DEBT_SECS[i]); });
+  }
+  function renderDebtGroupsAcc(key, secId){
+    var tur0 = DEBT_SECS[secId];
+    if(!debtSecVisible(secId)) return '';
+    var firstShown = Object.keys(DEBT_SECS).filter(debtSecVisible)[0]===secId;
+    var list = sortedVisibleDebts().filter(function(d){ return d.tur===tur0; });
     var groupTotalsM = {};
     list.forEach(function(d){
       if(absIndexFromKey(key) < absIndexFromKey(d.startMonthKey)) return;
@@ -1223,11 +1544,6 @@ details.acc-sub[open] summary{color:var(--acc);}
 
     var lastTur = null, body = '';
     list.forEach(function(d){
-      if(d.tur !== lastTur){
-        lastTur = d.tur;
-        var gt = groupTotalsM[d.tur]||{payment:0,balance:0};
-        body += '<div class="section-title" style="margin:16px 0 8px; font-size:10.5px;">'+GROUP_LABELS[d.tur]+' <span style="color:var(--text-faint); font-family:var(--font-num); text-transform:none;">('+fmtShort(gt.payment).replace(' TL','')+'/'+fmtShort(gt.balance).replace(' TL','')+')</span></div>';
-      }
       if(absIndexFromKey(key) < absIndexFromKey(d.startMonthKey)){
         body += '<div class="debt-card" style="opacity:.4;"><div class="debt-top"><div class="debt-id"><span class="debt-name-input">'+esc(d.ad)+'</span></div></div><div style="font-size:10px; color:var(--text-faint); margin-top:4px;">henüz başlamadı</div></div>';
         return;
@@ -1257,7 +1573,7 @@ details.acc-sub[open] summary{color:var(--acc);}
         '<div class="debt-top"><div class="debt-id">'+paidTickBtn('debts',d.id,key,d.paidMonths)+missedBtn('debts',d.id,key,d.missedMonths)+'<input class="debt-name-input" data-action="name" data-list="debts" data-id="'+d.id+'" value="'+esc(d.ad)+'"></div>'+
           '<div class="pay-box"><span class="mini-label">Ödenecek</span><input class="mini-input pay-big" data-action="pay" data-list="debts" data-id="'+d.id+'" data-key="'+key+'" value="'+editVal(payVal)+'"></div></div>'+
         '<div class="debt-badge">'+turLabel(d.tur)+(transferredAmt?' · Aktarılan +'+fmtShort(transferredAmt):'')+'</div>'+
-        '<div class="rem-row"><span class="rem-l">'+(isMissed?'Kalan borç (ödenmedi)':'Ödenince kalan borç')+'</span>'+
+        '<div class="rem-row"><span class="rem-l">'+(isMissed?'Kalan borç (ödenmedi)':(bal<-0.005?'Fazla ödeme (sonraki aya düşer)':'Ödenince kalan borç'))+'</span>'+
           '<span style="display:flex; align-items:center; gap:5px;">'+(balOv?'<button class="xfer-btn undo" style="padding:3px 6px;" data-action="balance-reset" data-id="'+d.id+'" data-key="'+key+'" title="Hesaplanan değere dön">↺</button>':'')+
           '<input class="mini-input rem-in'+(balOv?' ov':'')+'" data-action="balance" data-list="debts" data-id="'+d.id+'" data-key="'+key+'" value="'+editVal(bal)+'"></span></div>'+
         '<div class="prog-track"><div class="prog-fill" style="width:'+pct0+'%"></div></div>'+
@@ -1273,11 +1589,12 @@ details.acc-sub[open] summary{color:var(--acc);}
         (rateFields ? '<div class="rate-pop" id="rp_'+d.id+'">'+rateFields+'</div>' : '')+
       '</div>';
     });
-    return '<details class="acc" data-acc="debts"><summary><span class="acc-name"><span class="acc-ico">💳</span>Krediler &amp; Kartlar</span><span class="acc-right"><span class="acc-amt">'+fmtShort(totalPay)+'</span>'+secMoveHtml('debts')+'<span class="acc-chev">›</span></span></summary>'+
+    var meta = DEBT_SEC_META[secId];
+    return '<details class="acc" data-acc="'+secId+'"><summary><span class="acc-name"><span class="acc-ico">'+meta.ico+'</span>'+meta.name+'</span><span class="acc-right"><span class="acc-amt">'+fmtShort(totalPay)+'</span>'+secMoveHtml(secId)+'<span class="acc-chev">›</span></span></summary>'+
       '<div class="acc-body">'+
         '<div class="year-note" style="margin-top:10px;">Bu ay ödenecek <b>'+fmtShort(totalPay)+'</b> · ödenince kalan <b>'+fmtShort(totalBal)+'</b></div>'+
-        body+hiddenPanelHtml()+
-        '<button class="add-row-btn" data-action="open-add-debt">+ Borç Ekle</button><div id="addDebtSlot"></div>'+
+        body+(firstShown?hiddenPanelHtml():'')+
+        '<button class="add-row-btn" data-action="open-add-debt" data-tur="'+tur0+'">+ Borç Ekle</button><div id="addDebtSlot_'+secId+'"></div>'+
       '</div></details>';
   }
 
@@ -1448,10 +1765,17 @@ details.acc-sub[open] summary{color:var(--acc);}
         '<label>Başlangıç ayı<select '+f+' data-field="startMonthKey">'+startOptions(d.startMonthKey)+'</select></label>';
       if(d.tur==='kredi') fields += '<label>Aylık taksit (varsayılan)<input type="text" inputmode="decimal" '+f+' data-field="taksit" value="'+editVal(d.taksit)+'"></label>';
       if(d.tur==='kredi_karti') fields += '<label>Asgari % (varsayılan)<input type="text" inputmode="decimal" '+f+' data-field="asgariYuzde" value="'+editVal(d.asgariYuzde)+'"></label>';
+      if(d.tur==='kredi_karti' || d.tur==='kmh') fields += '<label>Limit (0 = yok)<input type="text" inputmode="decimal" '+f+' data-field="limit" value="'+editVal(d.limit)+'"></label>';
       if(d.tur==='kredi_karti' || d.tur==='kmh') fields += '<label>Faiz % (varsayılan)<input type="text" inputmode="decimal" '+f+' data-field="faizYuzde" value="'+editVal(d.faizYuzde)+'"></label>';
+      var limHtml = '';
+      if((d.tur==='kredi_karti'||d.tur==='kmh') && Number(d.limit)>0){
+        var used = Math.max(0,bal), lim = Number(d.limit), over = used-lim;
+        var lp = Math.round(used/lim*100);
+        limHtml = '<div class="debt-sub" style="'+(over>0?'color:var(--red);':'')+'">limit '+fmtShort(lim)+' · '+(over>0 ? 'limit aşımı '+fmtShort(over)+' (%'+lp+')' : 'kalan limit '+fmtShort(lim-used)+' (%'+lp+' dolu)')+'</div>';
+      }
       var done = bal<=0 && absIndexFromKey(d.startMonthKey) <= absIndexFromKey(closedUpto);
       return '<div class="debt-card"><div class="debt-top"><div style="min-width:0;"><div class="debt-name-input" style="font-weight:600;">'+esc(d.ad)+(done?' <span style="color:var(--acc); font-size:10px;">✓ bitti</span>':'')+'</div><div class="debt-badge">'+badge+' · başlangıç '+monthNameFromKey(d.startMonthKey)+' '+yearFromKey(d.startMonthKey)+'</div></div>'+
-        '<div class="debt-bal">'+pill+fmt(bal)+'<div class="debt-sub">başlangıç '+fmtShort(d.baslangic)+'</div></div></div>'+
+        '<div class="debt-bal">'+pill+fmt(bal)+'<div class="debt-sub">başlangıç '+fmtShort(d.baslangic)+'</div>'+limHtml+'</div></div>'+
         '<div class="prog-track"><div class="prog-fill" style="width:'+p+'%"></div></div>'+
         '<div class="debt-foot"><span class="edit-pill" data-action="toggle-rate-pop" data-for="ed_'+d.id+'">✎</span><span class="pct">%'+p+' ödendi'+leftTxt+'</span><span style="flex:1"></span>'+
           '<span class="move-btns h">'+moveBtnsInner(listName,d.id)+'</span>'+
@@ -1533,13 +1857,14 @@ details.acc-sub[open] summary{color:var(--acc);}
       '<div class="fr"><label>Başlangıç ayı</label><select id="ndStart">'+(function(){ var sel=defKey||homeKey(), o=''; for(var i=0;i<60;i++){ var k=keyFromAbsIndex(i); o+='<option value="'+k+'"'+(k===sel?' selected':'')+'>'+monthNameFromKey(k)+' '+yearFromKey(k)+'</option>'; } return o; })()+'</select></div>'+
       '<div class="fr"><label>Güncel Borç</label><input type="text" inputmode="decimal" id="ndBaslangic" placeholder="0,00"></div>'+
       '<div class="fr" id="ndKKRow"><label>Asgari % / Faiz %</label><span style="display:flex; gap:6px;"><input type="text" inputmode="decimal" id="ndAsgari" value="20" style="width:52px;"><input type="text" inputmode="decimal" id="ndFaiz" value="5" style="width:52px;"></span></div>'+
+      '<div class="fr" id="ndLimitRow"><label>Kart limiti<small style="color:var(--text-faint);"> (isteğe bağlı)</small></label><input type="text" inputmode="decimal" id="ndLimit" placeholder="0,00"></div>'+
       '<div class="fr" id="ndKMHRow" style="display:none;"><label>Aylık Faiz %</label><input type="text" inputmode="decimal" id="ndKmhFaiz" value="5" style="width:52px;"></div>'+
       '<div class="fr" id="ndKrediRow" style="display:none;"><label>Aylık Taksit</label><span style="display:flex; gap:6px; flex:1; min-width:0; justify-content:flex-end;"><input type="text" inputmode="decimal" id="ndTaksit" placeholder="0,00" style="flex:1; min-width:0;"><input type="text" inputmode="numeric" id="ndTaksitSayi" placeholder="adet" title="Taksit sayısı" style="width:56px; flex:none; text-align:center;"></span></div>'+
       '<div id="ndKrediHint" style="display:none; font-size:10px; color:var(--text-faint); margin:-2px 0 6px; text-align:right;">Borç, taksit tutarı ve adetten ikisini yaz, üçüncüsü otomatik hesaplanır.</div>'+
       '<div style="display:flex; gap:8px; justify-content:flex-end; margin-top:6px;"><button class="sheet-close" style="width:auto; padding:8px 14px; margin:0;" id="ndCancel">Vazgeç</button><button class="xfer-btn" style="padding:8px 14px;" id="ndSave">Ekle</button></div>'+
     '</div>';
   }
-  function wireAddDebtForm(slotId, defKey){
+  function wireAddDebtForm(slotId, defKey, defTur){
     var slot = document.getElementById(slotId);
     slot.innerHTML = addDebtFormHtml(defKey);
     var turSel = document.getElementById('ndTur');
@@ -1547,7 +1872,9 @@ details.acc-sub[open] summary{color:var(--acc);}
       document.getElementById('ndKKRow').style.display = turSel.value==='kredi_karti'?'flex':'none';
       document.getElementById('ndKMHRow').style.display = turSel.value==='kmh'?'flex':'none';
       document.getElementById('ndKrediRow').style.display = turSel.value==='kredi'?'flex':'none';
+      document.getElementById('ndLimitRow').style.display = (turSel.value==='kredi_karti'||turSel.value==='kmh')?'flex':'none';
     });
+    if(defTur){ turSel.value = defTur; turSel.dispatchEvent(new Event('change')); }
     /* Kredi: borç / taksit tutarı / taksit adedinden ikisi girilince üçüncüsü hesaplanır */
     var kFields = {borc:document.getElementById('ndBaslangic'), taksit:document.getElementById('ndTaksit'), adet:document.getElementById('ndTaksitSayi')};
     var kTouched = [];
@@ -1578,6 +1905,7 @@ details.acc-sub[open] summary{color:var(--acc);}
       var nd = {id:uid(), ad:ad, tur:tur, baslangic:baslangic, startMonthKey:(document.getElementById('ndStart')||{}).value||homeKey(), payments:{}, balanceOverrides:{}, additions:{}, paidMonths:{}, missedMonths:{}, hidden:false, sortOrder:STATE.debts.length};
       if(tur==='kredi_karti'){ nd.asgariYuzde=parseNum(document.getElementById('ndAsgari').value)||20; nd.faizYuzde=parseNum(document.getElementById('ndFaiz').value)||5; }
       else if(tur==='kmh'){ nd.faizYuzde=parseNum(document.getElementById('ndKmhFaiz').value)||5; }
+      if(tur==='kredi_karti'||tur==='kmh'){ var lm=parseNum(document.getElementById('ndLimit').value); if(lm>0) nd.limit=lm; }
       else if(tur==='kredi'){ nd.taksit=parseNum(document.getElementById('ndTaksit').value)||baslangic; }
       STATE.debts.push(nd);
       save(); renderAll();
@@ -1669,6 +1997,37 @@ details.acc-sub[open] summary{color:var(--acc);}
       var tr2 = bill2 && bill2.cardTransfers ? bill2.cardTransfers[t.dataset.key] : null;
       if(tr2){ tr2.amount = Math.max(0,parseNum(t.value)); save(); renderAll(); }
       return;
+    }
+    if(action==='gd-price'){
+      var P = STATE.gold.prices, gk = t.dataset.k, gf = t.dataset.f;
+      P[gk][gf] = String(t.value).trim()==='' ? 0 : Math.max(0, parseNum(t.value));
+      if(gk==='s1'){ P.s1.est = false; P.s1.src = ''; var rf = goldRef24(); if(P.s1.fiyat>0 && rf>0) P.s1.ratio = P.s1.fiyat/(rf*0.01); }
+      else { applyS1Estimate(); }
+      P.ts = Date.now(); P.src = 'elle';
+      save(); renderAll(); return;
+    }
+    if(action==='gd-kind'){
+      var gpIn = document.getElementById('gdPrice'); if(gpIn){ var dv = goldBuyDefault(t.value); gpIn.value = dv>0 ? editVal(dv) : ''; }
+      return;
+    }
+    if(action==='gd-qty' || action==='gd-eprice'){
+      if(String(t.value).trim()===''){ renderAll(); return; }
+      var gl = STATE.gold.entries[t.dataset.key]||[];
+      var gi = gl.filter(function(x){return x.id===t.dataset.id;})[0];
+      if(gi){ if(action==='gd-qty') gi.qty = parseQty(t.value, gi.kind); else gi.price = Math.max(0,parseNum(t.value)); save(); renderAll(); }
+      return;
+    }
+    if(action==='sv-amt'){
+      if(String(t.value).trim()===''){ renderAll(); return; }
+      var svl = STATE.savings.deposits[t.dataset.key]||[];
+      var svi = svl.filter(function(x){return x.id===t.dataset.id;})[0];
+      if(svi){ svi.tutar = parseNum(t.value); save(); renderAll(); }
+      return;
+    }
+    if(action==='sv-rate'){
+      if(String(t.value).trim()===''){ delete STATE.savings.rateByMonth[t.dataset.key]; }
+      else STATE.savings.rateByMonth[t.dataset.key] = parseRate(t.value);
+      save(); renderAll(); return;
     }
     if(action==='ob-amt'){
       if(String(t.value).trim()===''){ renderAll(); return; }
@@ -1915,6 +2274,61 @@ details.acc-sub[open] summary{color:var(--acc);}
     }
     if(action==='qa-save'){ quickAddSave(t.dataset.kind, t.dataset.key); return; }
     if(action==='rep-apply' || action==='rep-stop'){ repeatAction(action, t.dataset.list, t.dataset.id, t.dataset.key); return; }
+    if(action==='gd-fetch'){
+      var st0 = document.getElementById('gdStatus'); if(st0) st0.textContent = 'Fiyatlar çekiliyor…';
+      fetchGoldPrices().then(function(okk){
+        if(okk){ save(); renderAll(); }
+        else { var st1 = document.getElementById('gdStatus'); if(st1) st1.textContent = 'Siteden okunamadı — fiyatları elle girebilirsin'; }
+      });
+      return;
+    }
+    if(action==='gd-s1-est'){
+      if(applyS1Estimate()){ save(); renderAll(); }
+      return;
+    }
+    if(action==='gd-add'){
+      var gk2 = document.getElementById('gdKind').value;
+      var gq = parseQty(document.getElementById('gdQty').value, gk2);
+      var gp2 = parseNum(document.getElementById('gdPrice').value);
+      if(!gq){ document.getElementById('gdQty').focus(); return; }
+      if(!(gp2>0)){ document.getElementById('gdPrice').focus(); return; }
+      var gmk = t.dataset.key;
+      (STATE.gold.entries[gmk] = STATE.gold.entries[gmk]||[]).push({id:uid(), kind:gk2, qty:gq, price:gp2});
+      save(); renderAll(); return;
+    }
+    if(action==='gd-del'){
+      var gdl = STATE.gold.entries[t.dataset.key]||[];
+      var gdi = gdl.findIndex(function(x){return x.id===t.dataset.id;});
+      if(gdi>-1){ gdl.splice(gdi,1); save(); renderAll(); }
+      return;
+    }
+    if(action==='sal-bulk'){
+      var gv = function(id){ var e=document.getElementById(id); return e?String(e.value).trim():''; };
+      var fromK = gv('salBulkFrom'), nM = Math.round(parseNum(gv('salBulkN'))||0);
+      if(!fromK || nM<1 || nM>60){ salBulkMsg='Kaç ay alanına 1 ile 60 arasında bir sayı yaz.'; renderAll(); return; }
+      var fields = [['netMaas','salBulkNet'],['sendika','salBulkSend'],['aile','salBulkAile'],['pazarRate','salBulkPR'],['mesaiRate','salBulkMR']]
+        .map(function(f){ return [f[0], gv(f[1])]; }).filter(function(f){ return f[1]!==''; });
+      if(!fields.length){ salBulkMsg='En az bir tutar yaz.'; renderAll(); return; }
+      keysBetween(fromK, addMonths(fromK, nM-1)).forEach(function(k){
+        fields.forEach(function(f){ setSalaryField(STATE, f[0], k, parseNum(f[1])); });
+      });
+      var toK = addMonths(fromK, nM-1);
+      salBulkMsg = '✓ '+monthNameFromKey(fromK)+' '+yearFromKey(fromK)+' – '+monthNameFromKey(toK)+' '+yearFromKey(toK)+' ('+nM+' ay) güncellendi.';
+      save(); renderAll(); return;
+    }
+    if(action==='sv-add'){
+      var inp = document.getElementById('svNew'), amt = parseNum(inp?inp.value:'');
+      if(!amt){ if(inp) inp.focus(); return; }
+      var sk = t.dataset.key;
+      (STATE.savings.deposits[sk] = STATE.savings.deposits[sk]||[]).push({id:uid(), tutar:amt});
+      save(); renderAll(); return;
+    }
+    if(action==='sv-del'){
+      var sdl = STATE.savings.deposits[t.dataset.key]||[];
+      var sdi = sdl.findIndex(function(x){return x.id===t.dataset.id;});
+      if(sdi>-1){ sdl.splice(sdi,1); save(); renderAll(); }
+      return;
+    }
     if(action==='ob-del'){
       var obl4 = STATE.offBudgetExpenses[t.dataset.key]||[];
       var idx4 = obl4.findIndex(function(x){return x.id===t.dataset.id;});
@@ -1936,9 +2350,9 @@ details.acc-sub[open] summary{color:var(--acc);}
     }
     if(action==='open-add-debt'){
       var scr = t.closest('.screen');
-      var slotEl = scr && scr.querySelector('[id^="addDebtSlot"]');
-      ['addDebtSlot','addDebtSlot2'].forEach(function(id){ var e = document.getElementById(id); if(e) e.innerHTML=''; });
-      if(slotEl) wireAddDebtForm(slotEl.id, scr.id==='s-ay' ? currentMonthKey : homeKey());
+      var slotEl = (t.nextElementSibling && /^addDebtSlot/.test(t.nextElementSibling.id)) ? t.nextElementSibling : (scr && scr.querySelector('[id^="addDebtSlot"]'));
+      document.querySelectorAll('[id^="addDebtSlot"]').forEach(function(e){ e.innerHTML=''; });
+      if(slotEl) wireAddDebtForm(slotEl.id, scr.id==='s-ay' ? currentMonthKey : homeKey(), t.dataset.tur||'');
       return;
     }
     if(action==='month-prev'){ currentMonthKey = addMonths(currentMonthKey,-1); currentPickerYear = yearFromKey(currentMonthKey); renderAll(); return; }
