@@ -212,6 +212,42 @@ details.acc-sub[open] summary{color:var(--acc);}
 .undo-toast.show{opacity:1; transform:translate(-50%,0); pointer-events:auto;}
 .undo-toast button{background:var(--acc); color:var(--on-acc); border:none; border-radius:9px; padding:6px 12px; font-weight:700; font-size:12px;}
 
+/* ---- Rapor ---- */
+.rp-seg{display:flex; gap:6px; margin-top:10px;}
+.rp-seg button{flex:1; padding:9px 0; border-radius:10px; border:1px solid var(--line); background:var(--surface); color:var(--text-dim); font-family:var(--font-ui); font-size:12px; cursor:pointer;}
+.rp-seg button.on{border-color:var(--acc); color:var(--acc);}
+.rp-nav{display:flex; align-items:center; justify-content:space-between; margin-top:12px;}
+.rp-nav button{width:34px; height:34px; border-radius:10px; border:1px solid var(--line); background:var(--surface); color:var(--text); font-size:16px; cursor:pointer;}
+.rp-title{font-size:20px; font-weight:700; text-align:center;}
+.rp-title small{display:block; font-size:11px; font-weight:400; color:var(--text-faint); margin-top:1px;}
+.rp-card{background:var(--surface); border:1px solid var(--line); border-radius:14px; margin-top:12px; padding:4px 14px 8px;}
+.rp-h{display:flex; justify-content:space-between; align-items:baseline; padding:10px 0 4px; font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--text-faint);}
+.rp-h b{font-family:var(--font-num); font-size:12px; letter-spacing:0; color:var(--text); text-transform:none;}
+.rp-r{display:flex; justify-content:space-between; gap:8px; padding:5px 0; font-size:12px; border-bottom:1px dashed var(--line);}
+.rp-r:last-child{border-bottom:none;}
+.rp-r span:first-child{color:var(--text-dim); min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.rp-r span:last-child{font-family:var(--font-num); white-space:nowrap;}
+.rp-r small{color:var(--text-faint); font-size:10px;}
+.rp-sum{display:flex; justify-content:space-between; align-items:center; margin-top:12px; padding:14px 16px; border-radius:14px; border:1px solid var(--acc); background:var(--surface);}
+.rp-sum .l{font-size:12px; color:var(--text-dim);} .rp-sum .v{font-family:var(--font-num); font-size:20px; font-weight:700; color:var(--acc);}
+.rp-sum.neg .v{color:var(--red);}
+.rp-tbl{width:100%; border-collapse:collapse; font-size:11.5px; margin-top:4px;}
+.rp-tbl th{font-weight:500; font-size:10px; color:var(--text-faint); text-align:right; padding:6px 0; border-bottom:1px solid var(--line);}
+.rp-tbl th:first-child, .rp-tbl td:first-child{text-align:left;}
+.rp-tbl td{text-align:right; padding:6px 0; border-bottom:1px dashed var(--line); font-family:var(--font-num);}
+.rp-tbl td:first-child{font-family:var(--font-ui); color:var(--text-dim);}
+.rp-tbl tr.plan td{opacity:.55;}
+.rp-tbl tr.tot td{font-weight:700; border-bottom:none; border-top:1px solid var(--line);}
+.rp-acts{display:flex; gap:8px; margin-top:14px;}
+.rp-acts button{flex:1;}
+.rp-note{font-size:10px; color:var(--text-faint); margin-top:8px; line-height:1.5;}
+@media print{
+  :root{--bg:#fff !important; --surface:#fff !important; --surface2:#fff !important; --line:#bbb !important; --text:#000 !important; --text-dim:#222 !important; --text-faint:#555 !important; --acc:#000 !important; --red:#b00 !important;}
+  html,body,#phone{height:auto !important; overflow:visible !important; background:#fff !important;}
+  .tabbar, .rp-acts, .rp-seg, .rp-nav button, .topbar, #sheetOverlay{display:none !important;}
+  .screen{display:none !important; overflow:visible !important;}
+  #s-rapor.screen{display:block !important; padding:0 !important;}
+}
 .tabbar{flex:none; width:100%; background:var(--tabbar); border-top:1px solid var(--line); display:flex; padding:9px 10px calc(9px + env(safe-area-inset-bottom,0px));}
 .tabbar button{flex:1; background:none; border:none; color:var(--text-faint); font-family:var(--font-ui); font-size:10px; display:flex; flex-direction:column; align-items:center; gap:4px; padding:4px; cursor:pointer;}
 .tabbar button .ic{font-size:17px;}
@@ -288,11 +324,13 @@ details.sv-sum[open] summary{color:var(--text);}
   <div class="screen active" id="s-ozet"></div>
   <div class="screen" id="s-ay"></div>
   <div class="screen" id="s-borclar"></div>
+  <div class="screen" id="s-rapor"></div>
 
   <div class="tabbar">
     <button class="tab active" data-s="s-ozet"><span class="ic">◎</span>Özet</button>
     <button class="tab" data-s="s-ay"><span class="ic">▤</span>Aylar</button>
     <button class="tab" data-s="s-borclar"><span class="ic">≡</span>Borçlar</button>
+    <button class="tab" data-s="s-rapor"><span class="ic">▦</span>Rapor</button>
   </div>
 </div>
 
@@ -1377,12 +1415,12 @@ details.sv-sum[open] summary{color:var(--text);}
   var ACC_KEY = 'privateLedger_acc';
   var _accOpen = (function(){ try{ var o = JSON.parse(localStorage.getItem(ACC_KEY)||'null'); if(o && typeof o==='object'){ if(o.kk===undefined && o.debts!==undefined){ o.kk=o.kmh=o.kredi=o.manuel=!!o.debts; } return o; } }catch(e){} return {kk:true,kmh:true,kredi:true,manuel:true}; })();
   function persistAcc(){ try{ localStorage.setItem(ACC_KEY, JSON.stringify(_accOpen)); }catch(e){} }
-  function captureAcc(){
-    var ds = document.getElementById('s-ay').querySelectorAll('details[data-acc]');
+  function captureAcc(scr){
+    var ds = document.getElementById(scr||'s-ay').querySelectorAll('details[data-acc]');
     if(ds.length){ ds.forEach(function(d){ _accOpen[d.dataset.acc] = d.open; }); persistAcc(); }
   }
-  function restoreAcc(){
-    document.getElementById('s-ay').querySelectorAll('details[data-acc]').forEach(function(d){ d.open = !!_accOpen[d.dataset.acc]; });
+  function restoreAcc(scr){
+    document.getElementById(scr||'s-ay').querySelectorAll('details[data-acc]').forEach(function(d){ var v = _accOpen[d.dataset.acc]; d.open = (v===undefined) ? d.dataset.acc.indexOf('b_')===0 : !!v; });
   }
   function renderAylar(){
     captureAcc();
@@ -1732,6 +1770,7 @@ details.sv-sum[open] summary{color:var(--text);}
 
   /* ===================== BORÇLAR EKRANI ===================== */
   function renderBorclar(){
+    captureAcc('s-borclar');
     var openKey = firstOpenKey(STATE, homeHorizon());
     var closedUpto = addMonths(openKey,-1);
     var totalStart = totalStartValue(STATE);
@@ -1784,23 +1823,31 @@ details.sv-sum[open] summary{color:var(--text);}
         '<div class="rate-pop" id="ed_'+d.id+'"><div class="edit-grid">'+fields+'</div></div></div>';
     }
 
-    var lastTur = null, body = '';
-    sortedVisibleDebts().forEach(function(d){
-      if(d.tur!==lastTur){
-        lastTur=d.tur;
-        var grpStart = 0, grpNow = 0;
-        sortedVisibleDebts().forEach(function(x){ if(x.tur===d.tur){ grpStart += Number(x.baslangic||0); grpNow += itemBalanceAt(x, closedUpto); } });
-        body += '<div class="section-title" style="margin-top:20px;">'+GROUP_LABELS[d.tur]+' · '+fmtShort(grpNow)+' <span style="text-transform:none; color:var(--text-faint); font-family:var(--font-num);">/ '+fmtShort(grpStart)+'</span></div>';
-      }
-      var extra = d.tur==='kredi_karti' ? 'asg %'+fieldMonthly(d,'asgariYuzde',currentMonthKey)+' · faiz %'+fieldMonthly(d,'faizYuzde',currentMonthKey)
-        : d.tur==='kmh' ? 'faiz %'+fieldMonthly(d,'faizYuzde',currentMonthKey)
-        : d.tur==='kredi' ? 'taksit '+fmtShort(fieldMonthly(d,'taksit',currentMonthKey)) : 'manuel takip';
-      body += cardHtml('debts', d, extra);
+    var body = '';
+    var B_ICO = {kredi_karti:'💳', kmh:'🏦', kredi:'🏷️', manuel:'✍️', ek:'🤝'};
+    function groupAcc(accId, ico, name, now, start, inner){
+      return '<details class="acc" data-acc="b_'+accId+'"><summary><span class="acc-name"><span class="acc-ico">'+ico+'</span>'+name+'</span><span class="acc-right"><span class="acc-amt">'+fmtShort(now)+'</span><span class="acc-chev">›</span></span></summary>'+
+        '<div class="acc-body"><div class="year-note" style="margin-top:10px;">Başlangıç <b>'+fmtShort(start)+'</b> · şu an kalan <b>'+fmtShort(now)+'</b></div>'+inner+'</div></details>';
+    }
+    GROUP_ORDER.forEach(function(tur){
+      var items = sortedVisibleDebts().filter(function(d){ return d.tur===tur; });
+      if(!items.length) return;
+      var grpStart = 0, grpNow = 0, inner = '';
+      items.forEach(function(d){
+        grpStart += Number(d.baslangic||0); grpNow += itemBalanceAt(d, closedUpto);
+        var extra = d.tur==='kredi_karti' ? 'asg %'+fieldMonthly(d,'asgariYuzde',currentMonthKey)+' · faiz %'+fieldMonthly(d,'faizYuzde',currentMonthKey)
+          : d.tur==='kmh' ? 'faiz %'+fieldMonthly(d,'faizYuzde',currentMonthKey)
+          : d.tur==='kredi' ? 'taksit '+fmtShort(fieldMonthly(d,'taksit',currentMonthKey)) : 'manuel takip';
+        inner += cardHtml('debts', d, extra);
+      });
+      body += groupAcc(tur, B_ICO[tur]||'💳', GROUP_LABELS[tur], grpNow, grpStart, inner);
     });
-    sortedBySortOrder(sortedVisible(STATE.ekBorclular)).forEach(function(d,idx){
-      if(idx===0) body += '<div class="section-title" style="margin-top:20px;">Ek Borçlular</div>';
-      body += cardHtml('ekBorclular', d, 'MANUEL TAKİP');
-    });
+    var ekItems = sortedBySortOrder(sortedVisible(STATE.ekBorclular));
+    if(ekItems.length){
+      var eStart = 0, eNow = 0, eInner = '';
+      ekItems.forEach(function(d){ eStart += Number(d.baslangic||0); eNow += itemBalanceAt(d, closedUpto); eInner += cardHtml('ekBorclular', d, 'MANUEL TAKİP'); });
+      body += groupAcc('ek', B_ICO.ek, 'Ek Borçlular', eNow, eStart, eInner);
+    }
 
     var html = ''+
     '<div class="month-head" style="margin-top:4px;"><div class="month-title" style="font-size:20px;">Tüm Borçlar</div><div class="month-chip">'+count+' kalem</div></div>'+
@@ -1813,9 +1860,130 @@ details.sv-sum[open] summary{color:var(--text);}
     '<button class="add-row-btn" style="margin-top:8px;" data-action="add-ek">+ Ek Borçlu Ekle</button>';
 
     document.getElementById('s-borclar').innerHTML = html;
+    restoreAcc('s-borclar');
   }
 
-  function renderAll(){ renderOzet(); renderAylar(); renderBorclar(); }
+
+  /* ===================== RAPOR (aylık / yıllık) ===================== */
+  var rpMode = 'm', rpKey = null, rpYear = null, rpMsg = '';
+  function rpInit(){ if(!rpKey){ rpKey = nowKey(); rpYear = yearFromKey(rpKey); } }
+  function monthDebtBalance(key){
+    var bal = 0;
+    sortedVisible(STATE.debts).forEach(function(d){ if(absIndexFromKey(key) < absIndexFromKey(d.startMonthKey)) return; bal += Math.max(0, calcDebtSeries(STATE,d,key).balances[key]||0); });
+    sortedVisible(STATE.ekBorclular).forEach(function(d){ if(absIndexFromKey(key) < absIndexFromKey(d.startMonthKey)) return; bal += Math.max(0, calcEkSeries(STATE,d,key).balances[key]||0); });
+    return bal;
+  }
+  function monthReportData(key){
+    var t = computeMonthTotals(key), st = absIndexFromKey(key);
+    var d = {t:t, exp:[], fat:[], off:[], debts:[], ek:[]};
+    STATE.expenses.forEach(function(e){ if(st < absIndexFromKey(e.startMonthKey||EPOCH_KEY)) return; var a = billAmountForMonth(e,key); if(a) d.exp.push([e.ad, a]); });
+    STATE.faturalar.forEach(function(f){ if(st < absIndexFromKey(f.startMonthKey||EPOCH_KEY)) return; if((f.cardTransfers||{})[key]) return; var a = billAmountForMonth(f,key); if(a) d.fat.push([f.ad, a]); });
+    (STATE.offBudgetExpenses[key]||[]).forEach(function(i){ if(i.cardTransfer) return; var a = Number(i.tutar||0); if(a) d.off.push([i.ad||'Gider', a]); });
+    sortedVisible(STATE.debts).forEach(function(x){ if(st < absIndexFromKey(x.startMonthKey)) return; var ser = calcDebtSeries(STATE,x,key); d.debts.push([x.ad, ser.paid[key]||0, ser.balances[key]||0, x.tur]); });
+    sortedVisible(STATE.ekBorclular).forEach(function(x){ if(st < absIndexFromKey(x.startMonthKey)) return; var ser = calcEkSeries(STATE,x,key); d.ek.push([x.ad, ser.paid[key]||0, ser.balances[key]||0]); });
+    d.borcKalan = monthDebtBalance(key);
+    d.gider = t.debtDue + t.faturaTotal + t.expTotal + t.offTotal;
+    d.birikim = t.savDep + t.goldNet;
+    return d;
+  }
+  function rpRows(arr, fmtRow){ return arr.map(fmtRow).join(''); }
+  function rpSection(title, total, rows){
+    if(!rows) return '';
+    return '<div class="rp-h"><span>'+title+'</span><b>'+fmtShort(total)+'</b></div>'+rows;
+  }
+  function rpMonthHtml(key){
+    var d = monthReportData(key), t = d.t;
+    var line = function(r){ return '<div class="rp-r"><span>'+esc(r[0])+'</span><span>'+fmtShort(r[1])+'</span></div>'; };
+    var debtLine = function(r){ return '<div class="rp-r"><span>'+esc(r[0])+' <small>· kalan '+fmtShort(Math.max(0,r[2]))+'</small></span><span>'+fmtShort(r[1])+'</span></div>'; };
+    var body = '<div class="rp-card">'+
+      '<div class="rp-h"><span>Gelir</span><b>'+fmtShort(t.gelir)+'</b></div>'+
+      rpSection('Kira &amp; sabit giderler', t.expTotal, rpRows(d.exp,line))+
+      rpSection('Faturalar', t.faturaTotal, rpRows(d.fat,line))+
+      rpSection('Hesap dışı giderler', t.offTotal, rpRows(d.off,line))+
+      rpSection('Borç ödemeleri', t.debtDue, rpRows(d.debts,debtLine)+rpRows(d.ek,debtLine))+
+      ((t.savDep||t.goldNet) ? '<div class="rp-h"><span>Birikim</span><b>'+fmtShort(d.birikim)+'</b></div>'+(t.savDep?'<div class="rp-r"><span>TL birikim yatırımı</span><span>'+fmtShort(t.savDep)+'</span></div>':'')+(t.goldNet?'<div class="rp-r"><span>Altın / S1 alımı (net)</span><span>'+fmtShort(t.goldNet)+'</span></div>':'') : '')+
+    '</div>'+
+    '<div class="rp-card"><div class="rp-r"><span>Toplam gider <small>(birikim hariç)</small></span><span>'+fmtShort(d.gider)+'</span></div>'+
+      '<div class="rp-r"><span>Ay sonu kalan borç</span><span>'+fmtShort(d.borcKalan)+'</span></div></div>'+
+    '<div class="rp-sum'+(t.netKalan<0?' neg':'')+'"><span class="l">Maaştan kalan</span><span class="v">'+fmtShort(t.netKalan)+'</span></div>';
+    return body;
+  }
+  function rpYearMonths(y){
+    var out = [];
+    for(var m=1;m<=12;m++){ var k = y+'-'+String(m).padStart(2,'0'); if(absIndexFromKey(k) >= absIndexFromKey(EPOCH_KEY)) out.push(k); }
+    return out;
+  }
+  function yearReportData(y){
+    var keys = rpYearMonths(y), cur = nowKey();
+    var rows = keys.map(function(k){ var t = computeMonthTotals(k); return {k:k, t:t, gider:t.debtDue+t.faturaTotal+t.expTotal+t.offTotal, plan:absIndexFromKey(k) > absIndexFromKey(cur)}; });
+    var sum = {gelir:0, exp:0, fat:0, off:0, debt:0, bir:0, gider:0, kalan:0};
+    rows.forEach(function(r){ sum.gelir+=r.t.gelir; sum.exp+=r.t.expTotal; sum.fat+=r.t.faturaTotal; sum.off+=r.t.offTotal; sum.debt+=r.t.debtDue; sum.bir+=r.t.savDep+r.t.goldNet; sum.gider+=r.gider; sum.kalan+=r.t.netKalan; });
+    return {keys:keys, rows:rows, sum:sum, borcSon: keys.length ? monthDebtBalance(keys[keys.length-1]) : 0};
+  }
+  function rpYearHtml(y){
+    var d = yearReportData(y);
+    if(!d.rows.length) return '<div class="rp-card"><div class="rp-r"><span>Bu yıl için takip başlangıcından önce, veri yok.</span><span></span></div></div>';
+    var anyPlan = d.rows.some(function(r){return r.plan;});
+    var tbl = '<div class="rp-card"><table class="rp-tbl"><tr><th>Ay</th><th>Gelir</th><th>Gider</th><th>Kalan</th></tr>'+
+      d.rows.map(function(r){ return '<tr'+(r.plan?' class="plan"':'')+'><td>'+monthAbbrFromKey(r.k)+'</td><td>'+fmtShort(r.t.gelir).replace(' TL','')+'</td><td>'+fmtShort(r.gider).replace(' TL','')+'</td><td'+(r.t.netKalan<0?' style="color:var(--red);"':'')+'>'+fmtShort(r.t.netKalan).replace(' TL','')+'</td></tr>'; }).join('')+
+      '<tr class="tot"><td>Toplam</td><td>'+fmtShort(d.sum.gelir).replace(' TL','')+'</td><td>'+fmtShort(d.sum.gider).replace(' TL','')+'</td><td>'+fmtShort(d.sum.kalan).replace(' TL','')+'</td></tr></table>'+
+      (anyPlan?'<div class="rp-note">Soluk satırlar gelecek aylar: girdiğin plana ve önerilen ödemelere göre tahmindir.</div>':'')+'</div>';
+    var cat = '<div class="rp-card"><div class="rp-h"><span>Yıl toplamı</span><b></b></div>'+
+      '<div class="rp-r"><span>Gelir</span><span>'+fmtShort(d.sum.gelir)+'</span></div>'+
+      '<div class="rp-r"><span>Kira &amp; sabit giderler</span><span>'+fmtShort(d.sum.exp)+'</span></div>'+
+      '<div class="rp-r"><span>Faturalar</span><span>'+fmtShort(d.sum.fat)+'</span></div>'+
+      '<div class="rp-r"><span>Hesap dışı giderler</span><span>'+fmtShort(d.sum.off)+'</span></div>'+
+      '<div class="rp-r"><span>Borç ödemeleri</span><span>'+fmtShort(d.sum.debt)+'</span></div>'+
+      (d.sum.bir?'<div class="rp-r"><span>Birikime ayrılan</span><span>'+fmtShort(d.sum.bir)+'</span></div>':'')+
+      '<div class="rp-r"><span>'+y+' sonu kalan borç</span><span>'+fmtShort(d.borcSon)+'</span></div></div>';
+    return tbl+cat+'<div class="rp-sum'+(d.sum.kalan<0?' neg':'')+'"><span class="l">Yıl boyunca maaştan kalan</span><span class="v">'+fmtShort(d.sum.kalan)+'</span></div>';
+  }
+  function rpText(){
+    rpInit();
+    var L = [], n = function(x){ return fmtShort(x); };
+    if(rpMode==='m'){
+      var d = monthReportData(rpKey), t = d.t;
+      L.push('Private Ledger · '+monthNameFromKey(rpKey)+' '+yearFromKey(rpKey)+' raporu','');
+      L.push('Gelir: '+n(t.gelir));
+      if(d.exp.length){ L.push('','Kira & sabit: '+n(t.expTotal)); d.exp.forEach(function(r){ L.push('  - '+r[0]+': '+n(r[1])); }); }
+      if(d.fat.length){ L.push('','Faturalar: '+n(t.faturaTotal)); d.fat.forEach(function(r){ L.push('  - '+r[0]+': '+n(r[1])); }); }
+      if(d.off.length){ L.push('','Hesap dışı: '+n(t.offTotal)); d.off.forEach(function(r){ L.push('  - '+r[0]+': '+n(r[1])); }); }
+      if(d.debts.length||d.ek.length){ L.push('','Borç ödemeleri: '+n(t.debtDue)); d.debts.concat(d.ek).forEach(function(r){ L.push('  - '+r[0]+': '+n(r[1])+' (kalan '+n(Math.max(0,r[2]))+')'); }); }
+      if(d.birikim) L.push('','Birikime ayrılan: '+n(d.birikim));
+      L.push('','Toplam gider (birikim hariç): '+n(d.gider),'Ay sonu kalan borç: '+n(d.borcKalan),'Maaştan kalan: '+n(t.netKalan));
+    } else {
+      var y = yearReportData(rpYear);
+      L.push('Private Ledger · '+rpYear+' yıllık rapor','');
+      y.rows.forEach(function(r){ L.push(monthAbbrFromKey(r.k)+': gelir '+n(r.t.gelir)+' · gider '+n(r.gider)+' · kalan '+n(r.t.netKalan)+(r.plan?' (plan)':'')); });
+      L.push('','Toplam gelir: '+n(y.sum.gelir),'Toplam gider: '+n(y.sum.gider),'Borç ödemeleri: '+n(y.sum.debt),'Maaştan kalan toplamı: '+n(y.sum.kalan),rpYear+' sonu kalan borç: '+n(y.borcSon));
+    }
+    return L.join('\n');
+  }
+  function renderRapor(){
+    rpInit();
+    var el = document.getElementById('s-rapor'); if(!el) return;
+    var title = rpMode==='m' ? monthNameFromKey(rpKey) : String(rpYear);
+    var sub = rpMode==='m' ? String(yearFromKey(rpKey)) : 'yıllık rapor';
+    el.innerHTML = '<div class="month-title" style="font-size:20px;">Rapor</div>'+
+      '<div class="rp-seg"><button class="'+(rpMode==='m'?'on':'')+'" data-action="rp-mode" data-m="m">Aylık</button><button class="'+(rpMode==='y'?'on':'')+'" data-action="rp-mode" data-m="y">Yıllık</button></div>'+
+      '<div class="rp-nav"><button data-action="rp-prev">‹</button><div class="rp-title">'+title+'<small>'+sub+'</small></div><button data-action="rp-next">›</button></div>'+
+      (rpMode==='m' ? rpMonthHtml(rpKey) : rpYearHtml(rpYear))+
+      '<div class="rp-acts"><button class="xfer-btn" data-action="rp-share">Paylaş / kopyala</button><button class="xfer-btn" data-action="rp-print">PDF / yazdır</button></div>'+
+      (rpMsg?'<div class="rp-note" style="color:var(--acc);">'+rpMsg+'</div>':'');
+  }
+  function rpShare(){
+    var txt = rpText();
+    var done = function(m){ rpMsg = m; renderRapor(); };
+    if(navigator.share){ navigator.share({text:txt}).catch(function(){}); return; }
+    try{
+      if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(function(){ done('Rapor panoya kopyalandı.'); }, function(){ done('Kopyalanamadı, tarayıcı izin vermedi.'); }); return; }
+    }catch(e){}
+    var ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta); ta.select();
+    var okc = false; try{ okc = document.execCommand('copy'); }catch(e){} document.body.removeChild(ta);
+    done(okc ? 'Rapor panoya kopyalandı.' : 'Kopyalanamadı.');
+  }
+
+  function renderAll(){ renderOzet(); renderAylar(); renderBorclar(); renderRapor(); }
 
   /* ===================== GERİ AL ===================== */
   var lastDeleted = null;
@@ -2355,6 +2523,13 @@ details.sv-sum[open] summary{color:var(--text);}
       if(slotEl) wireAddDebtForm(slotEl.id, scr.id==='s-ay' ? currentMonthKey : homeKey(), t.dataset.tur||'');
       return;
     }
+    if(action==='rp-mode'){ rpMode = t.dataset.m==='y' ? 'y' : 'm'; rpMsg=''; renderRapor(); return; }
+    if(action==='rp-prev' || action==='rp-next'){ var dir = action==='rp-next' ? 1 : -1; rpMsg='';
+      if(rpMode==='m'){ var nk = addMonths(rpKey, dir); if(absIndexFromKey(nk) >= absIndexFromKey(EPOCH_KEY)){ rpKey = nk; rpYear = yearFromKey(rpKey); } }
+      else { var ny = rpYear + dir; if(ny >= yearFromKey(EPOCH_KEY)) rpYear = ny; }
+      renderRapor(); return; }
+    if(action==='rp-share'){ rpShare(); return; }
+    if(action==='rp-print'){ window.print(); return; }
     if(action==='month-prev'){ currentMonthKey = addMonths(currentMonthKey,-1); currentPickerYear = yearFromKey(currentMonthKey); renderAll(); return; }
     if(action==='month-next'){ currentMonthKey = addMonths(currentMonthKey,1); currentPickerYear = yearFromKey(currentMonthKey); renderAll(); return; }
     if(action==='pick-month'){
@@ -2373,6 +2548,9 @@ details.sv-sum[open] summary{color:var(--text);}
   }
 
   document.getElementById('s-ay').addEventListener('toggle', function(e){
+    var d = e.target; if(d && d.dataset && d.dataset.acc){ _accOpen[d.dataset.acc] = d.open; persistAcc(); }
+  }, true);
+  document.getElementById('s-borclar').addEventListener('toggle', function(e){
     var d = e.target; if(d && d.dataset && d.dataset.acc){ _accOpen[d.dataset.acc] = d.open; persistAcc(); }
   }, true);
   document.getElementById('phone').addEventListener('change', onChange);
