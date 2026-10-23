@@ -1663,8 +1663,12 @@ details.sv-sum[open] summary{color:var(--text);}
   function limitMonthHtml(d, key, ser, bal){
     if((d.tur!=='kredi_karti' && d.tur!=='kmh') || !(Number(d.limit)>0)) return '';
     var pendO = (ser.pendOut && ser.pendOut[key]) || 0;
-    var lim = Number(d.limit), used = Math.max(0,bal) + pendO, over = used - lim, lp = Math.round(used/lim*100);
-    return '<div class="debt-sub" style="margin-top:6px; '+(over>0?'color:var(--red);':'')+'">limit '+fmtShort(lim)+' · '+(over>0 ? 'limit aşımı '+fmtShort(over)+' (%'+lp+')' : 'kalan limit '+fmtShort(lim-used)+' (%'+lp+' dolu)')+'<br><span style="color:var(--text-faint);">'+monthNameFromKey(key)+' ödemesinden sonra, bu ayın harcaması dahil</span></div>';
+    var odendi = !!(d.paidMonths && d.paidMonths[key]);
+    var odeme = (ser.paid && ser.paid[key]) || 0;
+    // Ödeme yapıldıysa (yeşil tik) limit ödeme kadar boşalır; yapılmadıysa borç ödeme öncesi haliyle sayılır.
+    var used = Math.max(0,bal) + pendO + (odendi ? 0 : odeme);
+    var lim = Number(d.limit), left = lim - used;
+    return '<div class="debt-sub" style="margin-top:6px; '+(left<0?'color:var(--red);':'')+'">'+(left<0 ? 'limit aşımı '+fmtShort(-left) : 'kalan limit '+fmtShort(left))+' <span style="color:var(--text-faint);">/ limit '+fmtShort(lim)+'</span><br><span style="color:var(--text-faint);">'+(odendi?'ödeme yapıldı, bu ayın harcaması dahil':'ödeme henüz işaretlenmedi, borç ödeme öncesi')+'</span></div>';
   }
   function paidTickBtn(list,id,key,paidMonths){
     var on = !!(paidMonths&&paidMonths[key]);
@@ -1840,8 +1844,7 @@ details.sv-sum[open] summary{color:var(--text);}
       if((d.tur==='kredi_karti'||d.tur==='kmh') && Number(d.limit)>0){
         var serL = calcDebtSeries(STATE,d,closedUpto), pendL = (serL.pendOut&&serL.pendOut[closedUpto])||0;
         var used = Math.max(0,bal+pendL), lim = Number(d.limit), over = used-lim;
-        var lp = Math.round(used/lim*100);
-        limHtml = '<div class="debt-sub" style="'+(over>0?'color:var(--red);':'')+'">limit '+fmtShort(lim)+' · '+(over>0 ? 'limit aşımı '+fmtShort(over)+' (%'+lp+')' : 'kalan limit '+fmtShort(lim-used)+' (%'+lp+' dolu)')+'</div>';
+        limHtml = '<div class="debt-sub" style="'+(over>0?'color:var(--red);':'')+'">'+(over>0 ? 'limit aşımı '+fmtShort(over) : 'kalan limit '+fmtShort(lim-used))+' / limit '+fmtShort(lim)+'</div>';
       }
       var done = bal<=0 && absIndexFromKey(d.startMonthKey) <= absIndexFromKey(closedUpto);
       return '<div class="debt-card"><div class="debt-top"><div style="min-width:0;"><div class="debt-name-input" style="font-weight:600;">'+esc(d.ad)+(done?' <span style="color:var(--acc); font-size:10px;">✓ bitti</span>':'')+'</div><div class="debt-badge">'+badge+' · başlangıç '+monthNameFromKey(d.startMonthKey)+' '+yearFromKey(d.startMonthKey)+'</div></div>'+
