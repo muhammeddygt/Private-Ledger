@@ -1618,6 +1618,7 @@ details.sv-sum[open] summary{color:var(--text);}
       var isMissed = !!(d.missedMonths && d.missedMonths[key]);
       var cIn = ser.carryIn[key]||0, cOut = ser.carryOut[key]||0;
       var balOv = !!(d.balanceOverrides && hasOwn(d.balanceOverrides,key));
+      var hasOv = !!(d.payments && hasOwn(d.payments,key));
       var rateFields = '';
       if(d.tur==='kredi_karti'){
         rateFields = '<span class="rate-field'+(fieldIsOverridden(d,'asgariYuzde',key)?' ov':'')+'"><span class="u">asg</span><input data-action="rate-field" data-list="debts" data-id="'+d.id+'" data-key="'+key+'" data-field="asgariYuzde" value="'+editVal(fieldMonthly(d,'asgariYuzde',key)).replace(',00','')+'"><span class="u">%</span></span>'+
@@ -1632,7 +1633,7 @@ details.sv-sum[open] summary{color:var(--text);}
       if(cIn>0) warn += '<div class="warn-row late">⏳ Geçen aydan geciken '+fmtShort(cIn)+' ödeme tutarına dahil</div>';
       body += '<div class="debt-card'+(isMissed?' missed':(cIn>0?' late':''))+'">'+
         '<div class="debt-top"><div class="debt-id">'+paidTickBtn('debts',d.id,key,d.paidMonths)+missedBtn('debts',d.id,key,d.missedMonths)+'<input class="debt-name-input" data-action="name" data-list="debts" data-id="'+d.id+'" value="'+esc(d.ad)+'"></div>'+
-          '<div class="pay-box"><span class="mini-label">Ödenecek</span><input class="mini-input pay-big" data-action="pay" data-list="debts" data-id="'+d.id+'" data-key="'+key+'" value="'+editVal(payVal)+'"></div></div>'+
+          '<div class="pay-box"><span class="mini-label" style="display:flex; align-items:center; justify-content:flex-end; gap:6px;">'+(hasOv ? '<button type="button" class="xfer-btn undo" style="padding:2px 7px; font-size:10px;" data-action="pay-auto" data-id="'+d.id+'" data-key="'+key+'" title="Elle yazdığın tutarı sil, otomatik hesaplanana dön">⟳ oto</button>' : '<span style="font-size:9.5px; color:var(--acc);" title="Tutar otomatik hesaplanıyor">oto ✓</span>')+'Ödenecek</span><input class="mini-input pay-big" data-action="pay" data-list="debts" data-id="'+d.id+'" data-key="'+key+'" value="'+editVal(payVal)+'"></div></div>'+
         '<div class="debt-badge">'+turLabel(d.tur)+(transferredAmt?' · Aktarılan +'+fmtShort(transferredAmt):'')+((ser.pendIn&&ser.pendIn[key])?' · Geçen ay harcaması +'+fmtShort(ser.pendIn[key]):'')+'</div>'+
         '<div class="rem-row"><span class="rem-l">'+(isMissed?'Kalan borç (ödenmedi)':(bal<-0.005?'Fazla ödeme (sonraki aya düşer)':'Ödenince kalan borç'))+'</span>'+
           '<span style="display:flex; align-items:center; gap:5px;">'+(balOv?'<button class="xfer-btn undo" style="padding:3px 6px;" data-action="balance-reset" data-id="'+d.id+'" data-key="'+key+'" title="Hesaplanan değere dön">↺</button>':'')+
@@ -2449,6 +2450,11 @@ details.sv-sum[open] summary{color:var(--text);}
       e.preventDefault();
       var ord = sectionOrder(), idx = ord.indexOf(t.dataset.id), j = idx + parseInt(t.dataset.dir,10);
       if(idx>-1 && j>=0 && j<ord.length){ var tmp = ord[idx]; ord[idx] = ord[j]; ord[j] = tmp; STATE.sectionOrder = ord; save(); renderAll(); }
+      return;
+    }
+    if(action==='pay-auto'){
+      var dPA = STATE.debts.filter(function(x){return x.id===t.dataset.id;})[0];
+      if(dPA && dPA.payments){ delete dPA.payments[t.dataset.key]; save(); renderAll(); }
       return;
     }
     if(action==='balance-reset'){
