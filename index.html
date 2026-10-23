@@ -721,7 +721,7 @@ details.sv-sum[open] summary{color:var(--text);}
       out.gold.entries[mk] = (out.gold.entries[mk]||[]).filter(function(x){return GOLD_KINDS[x.kind];}).map(function(x){ return {id:x.id||uid(), kind:x.kind, qty:Number(x.qty||0), price:Number(x.price||0)}; });
     });
     Object.keys(out.savings.deposits).forEach(function(mk){
-      out.savings.deposits[mk] = (out.savings.deposits[mk]||[]).map(function(x){ return {id:x.id||uid(), tutar:Number(x.tutar||0)}; });
+      out.savings.deposits[mk] = (out.savings.deposits[mk]||[]).map(function(x){ var o = {id:x.id||uid(), tutar:Number(x.tutar||0)}; var g = Math.round(Number(x.gun)); if(g>=1 && g<=31) o.gun = g; return o; });
     });
     out.theme = Object.assign({name:'siyah', accent:'#D4FF3F'}, (parsed&&parsed.theme)||{});
     if(!THEMES[out.theme.name]) out.theme.name = 'siyah';
@@ -969,12 +969,12 @@ details.sv-sum[open] summary{color:var(--text);}
   function savingsOzetHtml(){
     var nk = nowKey(), st = savingsTotals(nk);
     if(!st.any) return '<div class="save-card" style="border-style:dashed; opacity:.85;"><div><div class="l">Birikim</div><div class="s">Aylar → Birikim bölümünden TL, altın veya Altın S1 ekle; kar payı ve değer burada büyüsün</div></div></div>';
-    var nextKar = st.tl*savingsRate(addMonths(nk,1))/100;
+    var nextKar = st.tlEnd*savingsRate(addMonths(nk,1))/100;
     var parts = [];
     if(st.tl>0.005) parts.push('Nakit '+fmtShort(st.tl));
     GOLD_ORDER.forEach(function(k){ if(Math.abs(st.gold.qty[k])>1e-9) parts.push(GOLD_KINDS[k].label+' '+fmtQty(st.gold.qty[k],GOLD_KINDS[k].unit)); });
     return '<div class="save-card" style="flex-wrap:wrap; border-color:var(--amber);"><div><div class="l" style="color:var(--amber);">Toplam Birikim</div><div class="s">'+parts.join(' · ')+'</div></div><div class="v" style="color:var(--amber);">'+fmtShort(st.total)+'</div>'+
-      (st.tl>0.005 ? '<div class="s" style="flex-basis:100%; margin-top:6px;">TL kar payı toplamı +'+fmtShort(st.kar)+' · '+monthNameFromKey(addMonths(nk,1))+' beklenen <b>+'+fmtShort(nextKar)+'</b> (%'+String(savingsRate(addMonths(nk,1))).replace('.',',')+' aylık)</div>' : '')+
+      (st.tl>0.005 ? '<div class="s" style="flex-basis:100%; margin-top:6px;">Bugüne kadar işleyen TL kar payı +'+fmtShort(st.kar)+' · '+monthNameFromKey(addMonths(nk,1))+' beklenen <b>+'+fmtShort(nextKar)+'</b> (%'+String(savingsRate(addMonths(nk,1))).replace('.',',')+' aylık)</div>' : '')+
       (st.gold.hasPrice ? '' : '<div class="s" style="flex-basis:100%; margin-top:6px;">Altın değeri için Aylar → Birikim → Güncel Fiyatlar bölümüne fiyat gir.</div>')+'</div>';
   }
   function renderOzet(){
@@ -1204,16 +1204,30 @@ details.sv-sum[open] summary{color:var(--text);}
     if(!ks.length) return null;
     return ks.reduce(function(a,b){ return absIndexFromKey(b)<absIndexFromKey(a)?b:a; });
   }
+  function daysInMonthKey(key){ return new Date(yearFromKey(key), Number(key.split('-')[1]), 0).getDate(); }
+  /* Günlük kar payı: her gün, o günkü bakiye × aylık oran ÷ ayın gün sayısı.
+     Yatırım günü girildiyse o günden itibaren (o gün dahil) işler; günü girilmemiş (eski) kayıtlar ertesi aydan işler. */
+  function savingsDaily(key, open){
+    var dim = daysInMonthKey(key), r = savingsRate(key), deps = STATE.savings.deposits[key]||[];
+    var rows = [], cum = 0;
+    for(var d=1; d<=dim; d++){
+      var b = open;
+      deps.forEach(function(x){ if(x.gun && Math.min(x.gun,dim) <= d) b += Number(x.tutar||0); });
+      var base = Math.max(0,b), kar = base*r/100/dim; cum += kar;
+      rows.push({d:d, bal:base, kar:kar, cum:cum});
+    }
+    return {dim:dim, rate:r, rows:rows, kar:cum};
+  }
   function savingsSeries(uptoKey){
     var start = savingsStartKey();
     if(start===null || absIndexFromKey(start) > absIndexFromKey(uptoKey)) return {start:start, rows:{}, bal:0, dep:0, kar:0};
     var bal = 0, depT = 0, karT = 0, rows = {};
     keysBetween(start, uptoKey).forEach(function(k){
-      var r = savingsRate(k);
-      var kar = bal>0 ? bal*r/100 : 0;
+      var r = savingsRate(k), open = bal;
+      var kar = savingsDaily(k, open).kar;
       var dep = (STATE.savings.deposits[k]||[]).reduce(function(a,x){return a+Number(x.tutar||0);},0);
       bal = Math.max(0, bal + kar + dep); depT += dep; karT += kar;
-      rows[k] = {bal:bal, kar:kar, dep:dep, rate:r};
+      rows[k] = {bal:bal, kar:kar, dep:dep, rate:r, open:open};
     });
     return {start:start, rows:rows, bal:bal, dep:depT, kar:karT};
   }
@@ -1250,7 +1264,14 @@ details.sv-sum[open] summary{color:var(--text);}
   function fmtQty(n, unit){ return Number(n).toLocaleString('tr-TR',{maximumFractionDigits:unit==='lot'?0:3})+' '+unit; }
   function savingsTotals(key){
     var sv = savingsSeries(key), gh = goldHoldings(key);
-    return {tl:sv.bal, kar:sv.kar, dep:sv.dep, gold:gh, total: sv.bal + gh.value, any: sv.start!==null || gh.start!==null};
+    var tl = sv.bal, kar = sv.kar, row = sv.rows[key];
+    // Bu ay içindeysek bakiye "bugüne kadar işleyen" kar payıyla gösterilir (ay sonu tahmini değil); ay sonu bakiye tlEnd'de kalır.
+    if(row && key===nowKey()){
+      var td = new Date().getDate(), dd = savingsDaily(key, row.open), cum = dd.rows[Math.min(td,dd.dim)-1].cum;
+      var depSoFar = (STATE.savings.deposits[key]||[]).reduce(function(a,x){ return a + ((!x.gun || x.gun<=td) ? Number(x.tutar||0) : 0); },0);
+      tl = Math.max(0, row.open + depSoFar + cum); kar = (sv.kar - row.kar) + cum;
+    }
+    return {tl:tl, tlEnd:sv.bal, kar:kar, dep:sv.dep, gold:gh, total: tl + gh.value, any: sv.start!==null || gh.start!==null};
   }
   var GOLD_URL = 'https://malatyakuyumcular.net/';
   function parseGoldText(html){
@@ -1402,6 +1423,7 @@ details.sv-sum[open] summary{color:var(--text);}
     var deps = STATE.savings.deposits[key]||[];
     var rows = deps.map(function(x){
       return '<div class="line-row"><span class="n" style="color:var(--text-dim);">'+(x.tutar<0?'Çekim':'Yatırım')+'</span>'+
+        '<span style="display:flex; align-items:center; gap:4px; font-size:10px; color:var(--text-faint);">gün<input class="mini-input" style="width:40px;'+(x.gun?'':' border-color:var(--amber);')+'" inputmode="numeric" data-action="sv-day" data-id="'+x.id+'" data-key="'+key+'" value="'+(x.gun||'')+'" placeholder="?" title="'+(x.gun?'Yatırım günü':'Gün girilmedi: kar payı ertesi aydan başlar. Günü yaz.')+'"></span>'+
         '<input class="amt" data-action="sv-amt" data-id="'+x.id+'" data-key="'+key+'" value="'+editVal(x.tutar)+'">'+
         '<span class="del-x" data-action="sv-del" data-id="'+x.id+'" data-key="'+key+'">✕</span></div>';
     }).join('');
@@ -1413,10 +1435,17 @@ details.sv-sum[open] summary{color:var(--text);}
         '<div class="line-row"><span class="n" style="color:var(--text-dim);">Aylık kar payı %'+(ov?' <small style="color:var(--acc);">(bu ay değişti)</small>':'')+'</span>'+
           '<input class="amt" style="width:70px;" data-action="sv-rate" data-key="'+key+'" value="'+String(r).replace('.',',')+'"></div>'+
         (rows || '<div class="empty-note">Bu ay yatırım yok</div>')+
-        '<div class="line-row" style="gap:6px;"><input class="amt" style="flex:1; text-align:left;" id="svNew" inputmode="decimal" placeholder="Yatırılan tutar (çekim için −)"><button class="xfer-btn" data-action="sv-add" data-key="'+key+'">+ Ekle</button></div>'+
+        '<div class="line-row" style="gap:6px;"><input class="amt" style="flex:1; text-align:left;" id="svNew" inputmode="decimal" placeholder="Tutar (çekim için −)"><span style="display:flex; align-items:center; gap:4px; font-size:10px; color:var(--text-faint);">gün<input class="mini-input" style="width:40px;" id="svNewDay" inputmode="numeric" value="'+(key===nowKey()?new Date().getDate():1)+'" title="Yatırım günü (kar payı o günden işler)"></span><button class="xfer-btn" data-action="sv-add" data-key="'+key+'">+ Ekle</button></div>'+
+        (function(){
+          if(!row) return '';
+          var dd = savingsDaily(key, row.open), td = (key===nowKey()) ? new Date().getDate() : null, h = '';
+          if(td){ var rr = dd.rows[Math.min(td,dd.dim)-1]; h = '<div class="year-note" style="margin-top:8px;">Bugüne kadar işleyen kar payı <b>'+fmt(rr.cum)+'</b> ('+td+'/'+dd.dim+'. gün) · bugünkü günlük kar payı ≈ <b>'+fmt(rr.kar)+'</b></div>'; }
+          else { var avg = dd.kar/dd.dim; h = '<div class="year-note" style="margin-top:8px;">Günlük ortalama kar payı ≈ <b>'+fmt(avg)+'</b> ('+dd.dim+' gün)</div>'; }
+          return h;
+        })()+
         '<div class="year-note" style="margin-top:8px;">Bu ay kar payı <b>'+fmt(row?row.kar:0)+'</b> · toplam yatırılan <b>'+fmtShort(ser.dep)+'</b> · toplam kar payı <b>'+fmt(ser.kar)+'</b></div>'+
         '<div class="year-note">'+monthNameFromKey(nextKey)+' için beklenen kar payı ≈ <b>'+fmt(nextKar)+'</b> (%'+String(savingsRate(nextKey)).replace('.',',')+')</div>'+
-        '<div class="year-note" style="opacity:.8;">Yatırdığın tutar bu ayın "Maaştan Kalan"ından düşer, çekim ise eklenir.</div>'+
+        '<div class="year-note" style="opacity:.8;">Yatırdığın tutar bu ayın "Maaştan Kalan"ından düşer, çekim ise eklenir. Kar payı yatırım gününden (o gün dahil) günlük işler; günü yazılmamış eski kayıtlar ertesi aydan işler.</div>'+
         renderGoldSection(key)+
       '</div></details>';
   }
@@ -1938,6 +1967,7 @@ details.sv-sum[open] summary{color:var(--text);}
       rpSection('Borç ödemeleri', t.debtDue, rpRows(d.debts,debtLine)+rpRows(d.ek,debtLine))+
       ((t.savDep||t.goldNet) ? '<div class="rp-h"><span>Birikim</span><b>'+fmtShort(d.birikim)+'</b></div>'+(t.savDep?'<div class="rp-r"><span>TL birikim yatırımı</span><span>'+fmtShort(t.savDep)+'</span></div>':'')+(t.goldNet?'<div class="rp-r"><span>Altın / S1 alımı (net)</span><span>'+fmtShort(t.goldNet)+'</span></div>':'') : '')+
     '</div>'+
+    rpSavingsMonthHtml(key)+
     '<div class="rp-card"><div class="rp-r"><span>Toplam gider <small>(birikim hariç)</small></span><span>'+fmtShort(d.gider)+'</span></div>'+
       '<div class="rp-r"><span>Ay sonu kalan borç</span><span>'+fmtShort(d.borcKalan)+'</span></div></div>'+
     '<div class="rp-sum'+(t.netKalan<0?' neg':'')+'"><span class="l">Maaştan kalan</span><span class="v">'+fmtShort(t.netKalan)+'</span></div>';
@@ -1971,7 +2001,59 @@ details.sv-sum[open] summary{color:var(--text);}
       '<div class="rp-r"><span>Borç ödemeleri</span><span>'+fmtShort(d.sum.debt)+'</span></div>'+
       (d.sum.bir?'<div class="rp-r"><span>Birikime ayrılan</span><span>'+fmtShort(d.sum.bir)+'</span></div>':'')+
       '<div class="rp-r"><span>'+y+' sonu kalan borç</span><span>'+fmtShort(d.borcSon)+'</span></div></div>';
-    return tbl+cat+'<div class="rp-sum'+(d.sum.kalan<0?' neg':'')+'"><span class="l">Yıl boyunca maaştan kalan</span><span class="v">'+fmtShort(d.sum.kalan)+'</span></div>';
+    return tbl+cat+rpSavingsYearHtml(y)+'<div class="rp-sum'+(d.sum.kalan<0?' neg':'')+'"><span class="l">Yıl boyunca maaştan kalan</span><span class="v">'+fmtShort(d.sum.kalan)+'</span></div>';
+  }
+
+  /* ---- Rapor: birikim ---- */
+  function svRate2(r){ return String(r).replace('.',','); }
+  function goldLinesHtml(gh){
+    var out = '';
+    GOLD_ORDER.forEach(function(k){
+      var q = gh.qty[k]; if(Math.abs(q)<1e-9) return;
+      var sp = goldSellPrice(k);
+      out += '<div class="rp-r"><span>'+GOLD_KINDS[k].label+' <small>· '+fmtQty(q,GOLD_KINDS[k].unit)+' · maliyet '+fmtShort(gh.cost[k])+'</small></span><span>'+(sp>0 ? fmtShort(q*sp) : 'fiyat yok')+'</span></div>';
+    });
+    return out;
+  }
+  function rpSavingsMonthHtml(key){
+    var ser = savingsSeries(key), row = ser.rows[key], gh = goldHoldings(key);
+    var anyGold = GOLD_ORDER.some(function(k){ return Math.abs(gh.qty[k])>1e-9; });
+    if(!row && !anyGold) return '';
+    var h = '<div class="rp-card"><div class="rp-h"><span>Birikim · '+monthNameFromKey(key)+' sonu</span><b>'+fmtShort((row?row.bal:0)+(gh.hasPrice?gh.value:0))+'</b></div>';
+    if(row){
+      var dd = savingsDaily(key, row.open);
+      h += '<div class="rp-r"><span>TL açılış bakiyesi</span><span>'+fmtShort(row.open)+'</span></div>'+
+        '<div class="rp-r"><span>'+(row.dep<0?'Çekim':'Yatırım')+'</span><span>'+fmtShort(row.dep)+'</span></div>'+
+        '<div class="rp-r"><span>Kar payı <small>· %'+svRate2(row.rate)+' aylık, günlük işler</small></span><span>+'+fmtShort(row.kar)+'</span></div>'+
+        '<div class="rp-r"><span><b>TL kapanış bakiyesi</b></span><span><b>'+fmtShort(row.bal)+'</b></span></div>'+
+        '<details class="acc-sub" data-acc="rpdaily" style="margin-top:6px;"><summary><span>Günlük kar payı ('+dd.dim+' gün)</span><span class="edit-pill">›</span></summary>'+
+        '<table class="rp-tbl"><tr><th>Gün</th><th>Bakiye</th><th>Günlük</th><th>Toplam</th></tr>'+
+        dd.rows.map(function(r){ return '<tr><td>'+r.d+'</td><td>'+fmtShort(r.bal).replace(' TL','')+'</td><td>'+fmt(r.kar).replace(' TL','')+'</td><td>'+fmt(r.cum).replace(' TL','')+'</td></tr>'; }).join('')+
+        '</table></details>';
+    }
+    if(anyGold){ h += '<div class="rp-h" style="padding-top:12px;"><span>Altın / sertifika</span><b>'+(gh.hasPrice?fmtShort(gh.value):'fiyat gir')+'</b></div>'+goldLinesHtml(gh)+'<div class="rp-note">Altın değeri bugünkü satış fiyatıyla gösterilir.</div>'; }
+    return h+'</div>';
+  }
+  function rpSavingsYearHtml(y){
+    var keys = rpYearMonths(y); if(!keys.length) return '';
+    var lastK = keys[keys.length-1], ser = savingsSeries(lastK), gh = goldHoldings(lastK);
+    var anyGold = GOLD_ORDER.some(function(k){ return Math.abs(gh.qty[k])>1e-9; });
+    if(ser.start===null && !anyGold) return '';
+    var cur = nowKey(), rowsK = keys.filter(function(k){ return ser.start!==null && absIndexFromKey(k) >= absIndexFromKey(ser.start); });
+    var prevK = rowsK.length ? addMonths(rowsK[0],-1) : null;
+    var open = (prevK && ser.rows[prevK]) ? ser.rows[prevK].bal : 0;
+    var sumDep = 0, sumKar = 0;
+    rowsK.forEach(function(k){ sumDep += ser.rows[k].dep; sumKar += ser.rows[k].kar; });
+    var h = '<div class="rp-card"><div class="rp-h"><span>Birikim · '+y+'</span><b>'+fmtShort(ser.bal+(gh.hasPrice?gh.value:0))+'</b></div>';
+    if(rowsK.length){
+      h += '<div class="rp-r"><span>Yıl başı TL bakiyesi <small>(önceki yıllardan devreden)</small></span><span>'+fmtShort(open)+'</span></div>'+
+        '<table class="rp-tbl"><tr><th>Ay</th><th>Yatırım</th><th>Kar payı</th><th>Bakiye</th></tr>'+
+        rowsK.map(function(k){ var r = ser.rows[k]; return '<tr'+(absIndexFromKey(k)>absIndexFromKey(cur)?' class="plan"':'')+'><td>'+monthAbbrFromKey(k)+'</td><td>'+(r.dep?fmtShort(r.dep).replace(' TL',''):'–')+'</td><td>'+fmtShort(r.kar).replace(' TL','')+'</td><td>'+fmtShort(r.bal).replace(' TL','')+'</td></tr>'; }).join('')+
+        '<tr class="tot"><td>Toplam</td><td>'+fmtShort(sumDep).replace(' TL','')+'</td><td>'+fmtShort(sumKar).replace(' TL','')+'</td><td>'+fmtShort(ser.bal).replace(' TL','')+'</td></tr></table>'+
+        '<div class="rp-note">Kar payı her ay önceki bakiyenin üzerine eklenir. Soluk satırlar gelecek aylar, güncel orana göre tahmindir.</div>';
+    }
+    if(anyGold){ h += '<div class="rp-h" style="padding-top:12px;"><span>Altın / sertifika ('+y+' sonu)</span><b>'+(gh.hasPrice?fmtShort(gh.value):'fiyat gir')+'</b></div>'+goldLinesHtml(gh); }
+    return h+'</div>';
   }
   function rpText(){
     rpInit();
@@ -1985,11 +2067,15 @@ details.sv-sum[open] summary{color:var(--text);}
       if(d.off.length){ L.push('','Hesap dışı: '+n(t.offTotal)); d.off.forEach(function(r){ L.push('  - '+r[0]+': '+n(r[1])); }); }
       if(d.debts.length||d.ek.length){ L.push('','Borç ödemeleri: '+n(t.debtDue)); d.debts.concat(d.ek).forEach(function(r){ L.push('  - '+r[0]+': '+n(r[1])+' (kalan '+n(Math.max(0,r[2]))+')'); }); }
       if(d.birikim) L.push('','Birikime ayrılan: '+n(d.birikim));
+      var svr = savingsSeries(rpKey).rows[rpKey];
+      if(svr) L.push('','Birikim (TL): açılış '+n(svr.open)+' · '+(svr.dep<0?'çekim ':'yatırım ')+n(svr.dep)+' · kar payı +'+n(svr.kar)+' · kapanış '+n(svr.bal));
       L.push('','Toplam gider (birikim hariç): '+n(d.gider),'Ay sonu kalan borç: '+n(d.borcKalan),'Maaştan kalan: '+n(t.netKalan));
     } else {
       var y = yearReportData(rpYear);
       L.push('Private Ledger · '+rpYear+' yıllık rapor','');
       y.rows.forEach(function(r){ L.push(monthAbbrFromKey(r.k)+': gelir '+n(r.t.gelir)+' · gider '+n(r.gider)+' · kalan '+n(r.t.netKalan)+(r.plan?' (plan)':'')); });
+      var lastKy = y.keys[y.keys.length-1], sy = lastKy ? savingsSeries(lastKy) : null;
+      if(sy && sy.start!==null){ var sk0 = y.keys.filter(function(k){return absIndexFromKey(k)>=absIndexFromKey(sy.start);}); var sd=0, skr=0; sk0.forEach(function(k){ sd+=sy.rows[k].dep; skr+=sy.rows[k].kar; }); L.push('','Birikim '+rpYear+': yatırım '+n(sd)+' · kar payı +'+n(skr)+' · yıl sonu TL bakiye '+n(sy.bal)); }
       L.push('','Toplam gelir: '+n(y.sum.gelir),'Toplam gider: '+n(y.sum.gider),'Borç ödemeleri: '+n(y.sum.debt),'Maaştan kalan toplamı: '+n(y.sum.kalan),rpYear+' sonu kalan borç: '+n(y.borcSon));
     }
     return L.join('\n');
@@ -2225,6 +2311,16 @@ details.sv-sum[open] summary{color:var(--text);}
       var svl = STATE.savings.deposits[t.dataset.key]||[];
       var svi = svl.filter(function(x){return x.id===t.dataset.id;})[0];
       if(svi){ svi.tutar = parseNum(t.value); save(); renderAll(); }
+      return;
+    }
+    if(action==='sv-day'){
+      var svl2 = STATE.savings.deposits[t.dataset.key]||[];
+      var svi2 = svl2.filter(function(x){return x.id===t.dataset.id;})[0];
+      if(svi2){
+        var gv = Math.round(parseNum(t.value));
+        if(String(t.value).trim()==='' || !(gv>=1)) delete svi2.gun; else svi2.gun = Math.min(gv, daysInMonthKey(t.dataset.key));
+        save(); renderAll();
+      }
       return;
     }
     if(action==='sv-rate'){
@@ -2528,7 +2624,10 @@ details.sv-sum[open] summary{color:var(--text);}
       var inp = document.getElementById('svNew'), amt = parseNum(inp?inp.value:'');
       if(!amt){ if(inp) inp.focus(); return; }
       var sk = t.dataset.key;
-      (STATE.savings.deposits[sk] = STATE.savings.deposits[sk]||[]).push({id:uid(), tutar:amt});
+      var dayEl = document.getElementById('svNewDay'), dayV = Math.round(parseNum(dayEl?dayEl.value:''));
+      if(!(dayV>=1)) dayV = (sk===nowKey()) ? new Date().getDate() : 1;
+      dayV = Math.min(dayV, daysInMonthKey(sk));
+      (STATE.savings.deposits[sk] = STATE.savings.deposits[sk]||[]).push({id:uid(), tutar:amt, gun:dayV});
       save(); renderAll(); return;
     }
     if(action==='sv-del'){
