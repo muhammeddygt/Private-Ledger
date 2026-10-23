@@ -518,21 +518,25 @@ details.sv-sum[open] summary{color:var(--text);}
       if(d.tur === 'kredi_karti'){
         var eskiBakiye = bal;                 // eksi ise: karta fazla yatırılmış tutar (alacak)
         var eklenen = additionsForDebt(STATE,d,key);
+        var eklenenManuel = Number((d.additions && d.additions[key])||0);
+        var eklenenAktar = eklenen - eklenenManuel;   // faturadan/hesap dışından karta aktarılan: seçilen hedef ayda borca girer
         var faizYuzdeVal = fieldMonthly(d,'faizYuzde',key);
         var asgariYuzdeVal = fieldMonthly(d,'asgariYuzde',key);
-        // Harcama kuralı: borç ödendikten sonra yapılan harcama bu ayın bakiyesine/ödemesine girmez,
-        // sonraki ayın başında borç olarak devreder (spendNextFrom öncesi aylar eski hesabı korur).
+        // Harcama kuralı: borç ödendikten sonra "Harcama" alanına yazılan tutar bu ayın bakiyesine/ödemesine girmez,
+        // sonraki ayın başında borç olarak devreder. Aktarılan fatura/giderler ise zaten seçilen hedef aya yazılır,
+        // onlar kaydırılmaz. (spendNextFrom öncesi aylar eski hesabı korur.)
         var sonrakiAy = absIndexFromKey(key) >= absIndexFromKey(STATE.spendNextFrom||EPOCH_KEY);
         if(sonrakiAy){
-          var basla = eskiBakiye + pend;      // geçen ayın harcaması bu ay borç olarak başlar
+          var basla0 = eskiBakiye + pend;     // geçen ayın harcaması bu ay borç olarak başlar
           pendIn[key] = pend;
-          var faizTutari = Math.max(0,basla)*(faizYuzdeVal/100);
+          var faizTutari = Math.max(0,basla0)*(faizYuzdeVal/100);
+          var basla = basla0 + eklenenAktar;
           sugg = Math.max(0,basla)*(asgariYuzdeVal/100) + faizTutari + carry;
           var due = hasOv ? Number(d.payments[key]) : sugg;
           payment = missed ? 0 : due;
           carryOut[key] = missed ? due : 0;
           bal = basla + faizTutari - payment;  // bu ayın harcaması hariç; sonraki aya devreder
-          pend = eklenen; pendOut[key] = eklenen;
+          pend = eklenenManuel; pendOut[key] = eklenenManuel;
         } else {
           pendIn[key] = 0; pendOut[key] = 0; pend = 0;
           bal = eskiBakiye + eklenen;           // yeni harcama önce alacaktan düşer
@@ -1629,11 +1633,12 @@ details.sv-sum[open] summary{color:var(--text);}
       body += '<div class="debt-card'+(isMissed?' missed':(cIn>0?' late':''))+'">'+
         '<div class="debt-top"><div class="debt-id">'+paidTickBtn('debts',d.id,key,d.paidMonths)+missedBtn('debts',d.id,key,d.missedMonths)+'<input class="debt-name-input" data-action="name" data-list="debts" data-id="'+d.id+'" value="'+esc(d.ad)+'"></div>'+
           '<div class="pay-box"><span class="mini-label">Ödenecek</span><input class="mini-input pay-big" data-action="pay" data-list="debts" data-id="'+d.id+'" data-key="'+key+'" value="'+editVal(payVal)+'"></div></div>'+
-        '<div class="debt-badge">'+turLabel(d.tur)+(transferredAmt?' · Aktarılan +'+fmtShort(transferredAmt):'')+((ser.pendIn&&ser.pendIn[key])?' · Geçen aydan harcama +'+fmtShort(ser.pendIn[key]):'')+'</div>'+
+        '<div class="debt-badge">'+turLabel(d.tur)+(transferredAmt?' · Aktarılan +'+fmtShort(transferredAmt):'')+((ser.pendIn&&ser.pendIn[key])?' · Geçen ay harcaması +'+fmtShort(ser.pendIn[key]):'')+'</div>'+
         '<div class="rem-row"><span class="rem-l">'+(isMissed?'Kalan borç (ödenmedi)':(bal<-0.005?'Fazla ödeme (sonraki aya düşer)':'Ödenince kalan borç'))+'</span>'+
           '<span style="display:flex; align-items:center; gap:5px;">'+(balOv?'<button class="xfer-btn undo" style="padding:3px 6px;" data-action="balance-reset" data-id="'+d.id+'" data-key="'+key+'" title="Hesaplanan değere dön">↺</button>':'')+
           '<input class="mini-input rem-in'+(balOv?' ov':'')+'" data-action="balance" data-list="debts" data-id="'+d.id+'" data-key="'+key+'" value="'+editVal(bal)+'"></span></div>'+
         '<div class="prog-track"><div class="prog-fill" style="width:'+pct0+'%"></div></div>'+
+        limitMonthHtml(d, key, ser, bal)+
         warn+
         '<div class="debt-foot">'+
           (rateFields ? '<span class="edit-pill" data-action="toggle-rate-pop" data-for="rp_'+d.id+'">✎</span>' : '')+
@@ -1649,12 +1654,18 @@ details.sv-sum[open] summary{color:var(--text);}
     var meta = DEBT_SEC_META[secId];
     return '<details class="acc" data-acc="'+secId+'"><summary><span class="acc-name"><span class="acc-ico">'+meta.ico+'</span>'+meta.name+'</span><span class="acc-right"><span class="acc-amt">'+fmtShort(totalPay)+'</span>'+secMoveHtml(secId)+'<span class="acc-chev">›</span></span></summary>'+
       '<div class="acc-body">'+
-        '<div class="year-note" style="margin-top:10px;">Bu ay ödenecek <b>'+fmtShort(totalPay)+'</b> · ödenince kalan <b>'+fmtShort(totalBal)+'</b>'+(tur0==='kredi_karti'?'<br>Bu ay yaptığın harcama ve karta aktarılanlar bu ayın borcunu ve ödemesini değiştirmez, sonraki ayın başında borç olarak gelir.':'')+'</div>'+
+        '<div class="year-note" style="margin-top:10px;">Bu ay ödenecek <b>'+fmtShort(totalPay)+'</b> · ödenince kalan <b>'+fmtShort(totalBal)+'</b>'+(tur0==='kredi_karti'?'<br>Bu ay "Harcama" alanına yazdığın tutar bu ayın borcunu ve ödemesini değiştirmez, sonraki ayın başında borç olarak gelir. Karta aktarılan faturalar ise seçtiğin hedef ayda borca girer.':'')+'</div>'+
         body+(firstShown?hiddenPanelHtml():'')+
         '<button class="add-row-btn" data-action="open-add-debt" data-tur="'+tur0+'">+ Borç Ekle</button><div id="addDebtSlot_'+secId+'"></div>'+
       '</div></details>';
   }
 
+  function limitMonthHtml(d, key, ser, bal){
+    if((d.tur!=='kredi_karti' && d.tur!=='kmh') || !(Number(d.limit)>0)) return '';
+    var pendO = (ser.pendOut && ser.pendOut[key]) || 0;
+    var lim = Number(d.limit), used = Math.max(0,bal) + pendO, over = used - lim, lp = Math.round(used/lim*100);
+    return '<div class="debt-sub" style="margin-top:6px; '+(over>0?'color:var(--red);':'')+'">limit '+fmtShort(lim)+' · '+(over>0 ? 'limit aşımı '+fmtShort(over)+' (%'+lp+')' : 'kalan limit '+fmtShort(lim-used)+' (%'+lp+' dolu)')+'<br><span style="color:var(--text-faint);">'+monthNameFromKey(key)+' ödemesinden sonra, bu ayın harcaması dahil</span></div>';
+  }
   function paidTickBtn(list,id,key,paidMonths){
     var on = !!(paidMonths&&paidMonths[key]);
     return '<button type="button" class="tick'+(on?' on':'')+'" style="border-radius:50%;" data-action="toggle-paid" data-list="'+list+'" data-id="'+id+'" data-key="'+key+'" title="Ödendi">'+(on?'✓':'')+'</button>';
