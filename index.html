@@ -340,6 +340,8 @@ details.sv-sum[open] summary{color:var(--text);}
     <div class="sheet-title">Ayarlar</div>
     <button class="sheet-btn" id="exportBtn">⇩ Yedek Al (.json)</button>
     <label class="sheet-btn" style="display:block; cursor:pointer;">⇧ Yedekten Geri Yükle<input type="file" accept="application/json,.json" id="importInput" style="display:none;"></label>
+    <button class="sheet-btn" id="updateBtn">⟳ Uygulamayı güncelle (önbelleği temizle)</button>
+    <div class="year-note" style="text-align:center; margin-top:6px;">Sürüm <b id="appVer"></b> · verilerin silinmez, yalnızca uygulama dosyaları yenilenir</div>
     <div class="section-title" style="margin-top:16px;">Tema</div>
     <div class="theme-row" id="themeRow"></div>
     <div class="section-title" style="margin-top:16px;">Vurgu Rengi</div>
@@ -2813,6 +2815,19 @@ details.sv-sum[open] summary{color:var(--text);}
   fitApp();
 
   /* ===================== BAŞLAT ===================== */
+  var APP_VERSION = 'v27';
+  (function(){
+    var v = document.getElementById('appVer'); if(v) v.textContent = APP_VERSION;
+    var ub = document.getElementById('updateBtn');
+    if(ub) ub.addEventListener('click', async function(){
+      ub.textContent = 'Güncelleniyor…';
+      try{
+        if('serviceWorker' in navigator){ var regs = await navigator.serviceWorker.getRegistrations(); for(var i=0;i<regs.length;i++) await regs[i].unregister(); }
+        if(window.caches){ var ks = await caches.keys(); for(var j=0;j<ks.length;j++) await caches.delete(ks[j]); }
+      }catch(e){}
+      location.reload();
+    });
+  })();
   if('serviceWorker' in navigator){
     window.addEventListener('load', function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); });
   }
