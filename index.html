@@ -253,8 +253,6 @@ details.acc-sub[open] summary{color:var(--acc);}
   #s-rapor .rp-note{font-size:8px; margin-top:3px; line-height:1.3;}
   #s-rapor .rp-sum{margin-top:6px; padding:7px 12px; border-radius:8px; break-inside:avoid;} #s-rapor .rp-sum .v{font-size:15px;}
   #s-rapor .rp-title{font-size:16px; text-align:left;} #s-rapor .rp-nav{margin-top:0;}
-  #s-rapor details.acc-sub > summary{display:none;}
-  #s-rapor details.acc-sub .rp-tbl{font-size:8.5px;} #s-rapor details.acc-sub .rp-tbl td{padding:.5px 0;} #s-rapor details.acc-sub .rp-tbl th{padding:1px 0;}
   .tabbar, .rp-acts, .rp-seg, .rp-nav button, .topbar, #sheetOverlay{display:none !important;}
   .screen{display:none !important; overflow:visible !important;}
   #s-rapor.screen{display:block !important; padding:0 !important;}
@@ -440,7 +438,7 @@ details.sv-sum[open] summary{color:var(--text);}
       salaryMonthly:{},
       debts:[], ekBorclular:[], expenses:[], faturalar:[],
       offBudgetExpenses:{}, recurringOb:[], sectionOrder:['expenses','faturalar','offbudget','kk','kmh','kredi','manuel','ek','savings'],
-      savings:{rate:3.1, rateByMonth:{}, deposits:{}},
+      savings:{rate:3.1, rateByMonth:{}, deposits:{}, fund:{code:'VFK', prices:{}, ts:0, src:'', off:false}},
       gold:{prices:{k22:{alis:0,satis:0}, k24:{alis:0,satis:0}, s1:{fiyat:0, ratio:0, est:false, src:''}, ts:null, src:''}, entries:{}},
       theme:{name:'siyah', accent:'#D4FF3F'}
     };
@@ -726,6 +724,9 @@ details.sv-sum[open] summary{color:var(--text);}
     out.sectionOrder = Array.isArray(out.sectionOrder) ? out.sectionOrder : ['expenses','faturalar','offbudget','kk','kmh','kredi','manuel','ek','savings'];
     var sv = (parsed&&parsed.savings)||{};
     out.savings = {rate:(typeof sv.rate==='number'&&sv.rate>=0)?sv.rate:3.1, rateByMonth:sv.rateByMonth||{}, deposits:sv.deposits||{}};
+    var fd = sv.fund||{}, fpr = {};
+    Object.keys(fd.prices||{}).forEach(function(dk){ var v = Number(fd.prices[dk]); if(/^\d{4}-\d{2}-\d{2}$/.test(dk) && v>0) fpr[dk] = v; });
+    out.savings.fund = {code:String(fd.code||'VFK').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,8)||'VFK', prices:fpr, ts:Number(fd.ts||0), src:String(fd.src||''), off:!!fd.off};
     var gd = (parsed&&parsed.gold)||{}, gp = gd.prices||{};
     function pr(o,a,b){ o=o||{}; var r={}; r[a]=Number(o[a]||0); if(b) r[b]=Number(o[b]||0); return r; }
     var s1p = pr(gp.s1,'fiyat'); s1p.ratio = Number((gp.s1||{}).ratio||0); s1p.est = !!(gp.s1||{}).est; s1p.src = String((gp.s1||{}).src||'');
@@ -1220,16 +1221,58 @@ details.sv-sum[open] summary{color:var(--text);}
   function daysInMonthKey(key){ return new Date(yearFromKey(key), Number(key.split('-')[1]), 0).getDate(); }
   /* Günlük kar payı: her gün, o günkü bakiye × aylık oran ÷ ayın gün sayısı.
      Yatırım günü girildiyse o günden itibaren (o gün dahil) işler; günü girilmemiş (eski) kayıtlar ertesi aydan işler. */
+  /* ---------- Fon fiyatı (TEFAS) ----------
+     Fiyatı olan günlerde bakiye fonun gerçek birim pay fiyatına göre hesaplanır: günlük kar = önceki gün bakiyesi × (fiyat / önceki fiyat − 1).
+     Fiyat iş günleri değişir; hafta sonu ve resmi tatilde son fiyat korunur, ertesi iş günü birikmiş getiri birden yansır.
+     Fiyatı olmayan günler (gelecek aylar vb.) eskisi gibi aylık orana göre hesaplanır. */
+  var _fundTL = null;
+  function isoDate(y,m,d){ return y+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0'); }
+  function isoToday(){ var n = new Date(); return isoDate(n.getFullYear(), n.getMonth()+1, n.getDate()); }
+  function isoAddDays(iso, n){ var a = iso.split('-'), d = new Date(Number(a[0]), Number(a[1])-1, Number(a[2])+n); return isoDate(d.getFullYear(), d.getMonth()+1, d.getDate()); }
+  function isoIsWeekend(iso){ var a = iso.split('-'), w = new Date(Number(a[0]), Number(a[1])-1, Number(a[2])).getDay(); return w===0 || w===6; }
+  function isoDMY(iso){ var a = iso.split('-'); return a[2]+'.'+a[1]+'.'+a[0]; }
+  function fundTL(){
+    var F = STATE && STATE.savings && STATE.savings.fund; if(!F || F.off) return null;
+    if(_fundTL && _fundTL.src===F.prices) return _fundTL.ok ? _fundTL : null;
+    var dates = Object.keys(F.prices).sort();
+    _fundTL = {src:F.prices, ok:dates.length>0, dates:dates, first:dates[0], last:dates[dates.length-1], px:F.prices};
+    return _fundTL.ok ? _fundTL : null;
+  }
+  function fundPrice(iso){
+    var T = fundTL(); if(!T || iso < T.first) return null;
+    if(iso <= T.last){
+      var lo = 0, hi = T.dates.length-1;
+      while(lo<hi){ var mid = (lo+hi+1)>>1; if(T.dates[mid] <= iso) lo = mid; else hi = mid-1; }
+      return T.px[T.dates[lo]];
+    }
+    // Son fiyattan sonraki günler (hafta sonu / bugünün fiyatı henüz açıklanmadı): fiyatlar güncelse son fiyat korunur
+    if(iso > isoToday() || T.last < lastPublishedDate()) return null;
+    return T.px[T.last];
+  }
   function savingsDaily(key, open){
     var dim = daysInMonthKey(key), r = savingsRate(key), deps = STATE.savings.deposits[key]||[];
-    var rows = [], cum = 0;
-    for(var d=1; d<=dim; d++){
-      var b = open;
-      deps.forEach(function(x){ if(x.gun && Math.min(x.gun,dim) <= d) b += Number(x.tutar||0); });
-      var base = Math.max(0,b), kar = base*r/100/dim; cum += kar;
-      rows.push({d:d, bal:base, kar:kar, cum:cum});
+    var y = yearFromKey(key), m = Number(key.split('-')[1]), rows = [], cum = 0, d;
+    var useFund = false;
+    if(fundTL()){ for(d=1; d<=dim; d++){ if(fundPrice(isoDate(y,m,d))!=null){ useFund = true; break; } } }
+    if(!useFund){
+      for(d=1; d<=dim; d++){
+        var b = open;
+        deps.forEach(function(x){ if(x.gun && Math.min(x.gun,dim) <= d) b += Number(x.tutar||0); });
+        var base = Math.max(0,b), kar = base*r/100/dim; cum += kar;
+        rows.push({d:d, bal:base, kar:kar, cum:cum});
+      }
+      return {dim:dim, rate:r, rows:rows, kar:cum, fund:false};
     }
-    return {dim:dim, rate:r, rows:rows, kar:cum};
+    var bal = Math.max(0,open), prevP = fundPrice(isoAddDays(isoDate(y,m,1),-1));
+    for(d=1; d<=dim; d++){
+      var p = fundPrice(isoDate(y,m,d)), dep = 0, k2;
+      deps.forEach(function(x){ if(x.gun && Math.min(x.gun,dim) === d) dep += Number(x.tutar||0); });
+      if(p!=null && prevP!=null) k2 = bal*(p/prevP-1);
+      else k2 = Math.max(0,bal+dep)*r/100/dim;
+      bal = Math.max(0, bal + k2 + dep); cum += k2; prevP = p;
+      rows.push({d:d, bal:bal, kar:k2, cum:cum, p:p});
+    }
+    return {dim:dim, rate:r, rows:rows, kar:cum, fund:true};
   }
   function savingsSeries(uptoKey){
     var start = savingsStartKey();
@@ -1430,6 +1473,124 @@ details.sv-sum[open] summary{color:var(--text);}
     }
     return '<details class="acc-sub sv-sum" data-acc="svsum"><summary><span>'+monthNameFromKey(key)+' birikimi · '+(cells.join(' · ')||'—')+'</span><span style="color:var(--amber); font-family:var(--font-num);">'+fmtShort(st.total)+' ›</span></summary>'+body+'</details>';
   }
+
+  /* ---------- Fon fiyatı çekme ---------- */
+  var _fundLog = [], _fundAuto = false;
+  function fundLog(x){ _fundLog.push(x); }
+  function fmtPx(v){ return Number(v).toLocaleString('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:6}); }
+  function lastPublishedDate(){     // yayınlanmış olması beklenen son iş günü (fon fiyatları akşam açıklanır)
+    var n = new Date(), iso = isoToday();
+    if(n.getHours() < 19 || isoIsWeekend(iso)) iso = isoAddDays(iso,-1);
+    while(isoIsWeekend(iso)) iso = isoAddDays(iso,-1);
+    return iso;
+  }
+  function fundStatusText(){
+    var F = STATE.savings.fund, T = fundTL();
+    if(F.off) return 'Kapalı: kar payı aylık orana göre hesaplanıyor';
+    if(!T) return 'Fiyat yok: kar payı aylık orana göre hesaplanıyor';
+    return 'Son fiyat '+fmtPx(F.prices[T.last])+' ('+isoDMY(T.last)+')'+(F.src?' · '+F.src:'');
+  }
+  function fundMerge(map, src){
+    var F = STATE.savings.fund, n = 0;
+    Object.keys(map).forEach(function(d){ var v = Number(map[d]); if(/^\d{4}-\d{2}-\d{2}$/.test(d) && v>0 && F.prices[d]!==v){ F.prices[d] = v; n++; } });
+    F.prices = Object.assign({}, F.prices);       // önbelleği geçersiz kıl
+    if(n>0){ F.ts = Date.now(); F.src = src; }
+    return n;
+  }
+  function parseTefasJson(txt, code){
+    try{
+      var j = JSON.parse(txt), arr = Array.isArray(j) ? j : (j.data||[]), out = {}, c = 0;
+      arr.forEach(function(x){
+        if(x.FONKODU && String(x.FONKODU).toUpperCase()!==code) return;
+        var pr = Number(x.FIYAT!=null ? x.FIYAT : x.Fiyat), t = String(x.TARIH!=null ? x.TARIH : x.Tarih), iso = null;
+        if(/^\d{10,}$/.test(t)){ var dt = new Date(Number(t)+3*3600*1000); iso = isoDate(dt.getUTCFullYear(), dt.getUTCMonth()+1, dt.getUTCDate()); }
+        else if(/^\d{2}\.\d{2}\.\d{4}/.test(t)){ var a = t.split('.'); iso = a[2].slice(0,4)+'-'+a[1]+'-'+a[0]; }
+        else if(/^\d{4}-\d{2}-\d{2}/.test(t)) iso = t.slice(0,10);
+        if(iso && pr>0){ out[iso] = pr; c++; }
+      });
+      return c ? out : null;
+    }catch(e){ return null; }
+  }
+  async function fetchTimeout(url, opt, ms){
+    var ctrl = (typeof AbortController!=='undefined') ? new AbortController() : null, tm = setTimeout(function(){ if(ctrl) ctrl.abort(); }, ms||12000);
+    try{ opt = opt||{}; if(ctrl) opt.signal = ctrl.signal; return await fetch(url, opt); } finally { clearTimeout(tm); }
+  }
+  async function tefasRange(code, fromIso, toIso){
+    var body = 'fontip=YAT&sfontur=&fonkod='+code+'&fongrup=&bastarih='+isoDMY(fromIso)+'&bittarih='+isoDMY(toIso)+'&fonturkod=&fonunvantip=&kurucukod=';
+    var hosts = ['https://www.tefas.gov.tr/api/DB/BindHistoryInfo','https://fundturkey.com.tr/api/DB/BindHistoryInfo'];
+    var vars = [[hosts[0],'TEFAS'],[hosts[1],'TEFAS (fundturkey)'],['https://corsproxy.io/?url='+encodeURIComponent(hosts[0]),'TEFAS (proxy)']];
+    for(var i=0;i<vars.length;i++){
+      try{
+        var r = await fetchTimeout(vars[i][0], {method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8'}, body:body, cache:'no-store'}, 12000);
+        if(!r.ok){ fundLog(vars[i][1]+': HTTP '+r.status); continue; }
+        var map = parseTefasJson(await r.text(), code);
+        if(map) return {map:map, src:vars[i][1]};
+        fundLog(vars[i][1]+': yanıt okunamadı');
+      }catch(e){ fundLog(vars[i][1]+': erişilemedi'); }
+    }
+    return null;
+  }
+  async function fundScrape(code){
+    var urls = [['https://ekofin.net/fonlar/detay/'+code+'/fiyat-endeks-degisimi','ekofin'],['https://marketvisuals.net/tefas-fon/'+code.toLowerCase()+'.html','marketvisuals']];
+    var T = fundTL(), last = T ? T.px[T.last] : 0;
+    for(var i=0;i<urls.length;i++){
+      var t = await getText(urls[i][0]); if(!t){ fundLog(urls[i][1]+': açılamadı'); continue; }
+      var txt = String(t).replace(/<script[\s\S]*?<\/script>/gi,' ').replace(/<style[\s\S]*?<\/style>/gi,' ').replace(/<[^>]+>/g,' ').replace(/&nbsp;/g,' ').replace(/\s+/g,' ');
+      var m = /(?:Son\s*)?(?:Fiyat|Birim\s*Pay\s*Fiyatı)[^0-9]{0,40}(\d{1,3}(?:\.\d{3})*,\d{3,6})/i.exec(txt);
+      if(!m){ fundLog(urls[i][1]+': fiyat bulunamadı'); continue; }
+      var v = parseNum(m[1]);
+      if(!(v>0) || (last>0 && Math.abs(v/last-1) > 0.06)){ fundLog(urls[i][1]+': fiyat mantıksız ('+m[1]+')'); continue; }
+      var dm = /Tarih[^0-9]{0,10}(\d{2})\.(\d{2})\.(\d{4})/i.exec(txt), iso = dm ? dm[3]+'-'+dm[2]+'-'+dm[1] : lastPublishedDate(), o = {}; o[iso] = v;
+      return {map:o, src:urls[i][1]+' (son fiyat)'};
+    }
+    return null;
+  }
+  async function fetchFundPrices(){
+    var F = STATE.savings.fund, code = F.code, total = 0, need = lastPublishedDate();
+    _fundLog = [];
+    var T = fundTL(), st = savingsStartKey();
+    var fromIso = T ? isoAddDays(T.last,-10) : (st ? isoAddDays(isoDate(yearFromKey(st), Number(st.split('-')[1]), 1), -10) : isoAddDays(isoToday(),-40)), toIso = isoToday();
+    function newest(){ var t = fundTL(); return t ? t.last : ''; }
+    // 1) Aynı siteden (GitHub'ın her gün güncellediği dosya)
+    try{
+      var r0 = await fetchTimeout('fund-prices.json?_='+Date.now(), {cache:'no-store'}, 8000);
+      if(r0.ok){
+        var j0 = await r0.json(), c0 = 0, m0 = {};
+        if(j0 && String(j0.code||'').toUpperCase()===code && j0.prices) Object.keys(j0.prices).forEach(function(d){ var v = Number(j0.prices[d]); if(v>0){ m0[d] = v; c0++; } });
+        if(c0){ total += fundMerge(m0, 'GitHub otomatik'); fundLog('fund-prices.json: '+c0+' fiyat'+(j0.updated?' · güncellendi '+String(j0.updated).slice(0,16).replace('T',' '):'')); }
+        else fundLog('fund-prices.json: henüz fiyat yok');
+      } else fundLog('fund-prices.json: HTTP '+r0.status);
+    }catch(e){ fundLog('fund-prices.json: erişilemedi'); }
+    // 2) TEFAS (doğrudan / proxy)
+    if(newest() < need){
+      for(var a = fromIso; a <= toIso; a = isoAddDays(a,80)){
+        var b = isoAddDays(a,79); if(b > toIso) b = toIso;
+        var res = await tefasRange(code, a, b);
+        if(!res) break;
+        total += fundMerge(res.map, res.src); fundLog(res.src+': '+Object.keys(res.map).length+' fiyat');
+      }
+    }
+    // 3) Son çare: fon sayfasından son fiyat
+    if(newest() < need){
+      var sc = await fundScrape(code);
+      if(sc){ total += fundMerge(sc.map, sc.src); fundLog(sc.src+': '+Object.keys(sc.map)[0]+' fiyatı alındı'); }
+    }
+    if(!total && !fundTL()) fundLog('Hiçbir kaynaktan fiyat alınamadı. Fiyatı elle girebilirsin.');
+    return {n:total, log:_fundLog.slice()};
+  }
+  function autoFund(){
+    var F = STATE.savings.fund; if(_fundAuto || !F || F.off || !savingsStartKey()) return;
+    var T = fundTL(); if(T && F.ts && Date.now()-F.ts < 3*3600*1000 && T.last >= lastPublishedDate()) return;
+    _fundAuto = true;
+    fetchFundPrices().then(function(r){ if(r.n>0){ save(); renderAll(); } }).catch(function(){});
+  }
+  function fundBlockHtml(){
+    var F = STATE.savings.fund, log = _fundLog.length ? '<div class="year-note" style="opacity:.75; margin-top:2px;">'+_fundLog.map(function(x){ return x.replace(/</g,'&lt;'); }).join('<br>')+'</div>' : '';
+    return '<div class="section-title" style="margin:14px 0 4px; font-size:10.5px;">Fon fiyatı · '+F.code+'</div>'+
+      '<div class="line-row" style="gap:6px;"><span class="n" id="fnStatus" style="font-size:10px; color:var(--text-faint);">'+fundStatusText()+'</span><button class="xfer-btn" data-action="fn-fetch">↻ Fiyatı çek</button></div>'+log+
+      '<div class="line-row" style="gap:6px;"><input class="amt" style="flex:1; text-align:left;" id="fnPx" inputmode="decimal" placeholder="Fiyatı elle gir (örn 5,8036)"><input class="mini-input" style="width:86px;" id="fnPxDate" value="'+isoDMY(lastPublishedDate())+'" title="Fiyatın tarihi gg.aa.yyyy"><button class="xfer-btn" data-action="fn-add">+ Fiyat</button></div>'+
+      '<div class="line-row" style="gap:6px;"><span class="n" style="font-size:10px; color:var(--text-faint);">Kar payı fonun günlük fiyatından hesaplanır. Fiyat hafta sonu değişmez, Pazartesi birikmiş getiri birden yansır.</span><button class="xfer-btn" data-action="fn-toggle">'+(F.off?'Fiyatı kullan':'Kapat')+'</button></div>';
+  }
   function renderSavingsAcc(key){
     var ser = savingsSeries(key), row = ser.rows[key];
     var r = savingsRate(key), ov = hasOwn(STATE.savings.rateByMonth||{}, key);
@@ -1447,6 +1608,7 @@ details.sv-sum[open] summary{color:var(--text);}
         '<div class="section-title" style="margin:6px 0 4px; font-size:10.5px;">TL Birikim · Kar Payı</div>'+
         '<div class="line-row"><span class="n" style="color:var(--text-dim);">Aylık kar payı %'+(ov?' <small style="color:var(--acc);">(bu ay değişti)</small>':'')+'</span>'+
           '<input class="amt" style="width:70px;" data-action="sv-rate" data-key="'+key+'" value="'+String(r).replace('.',',')+'"></div>'+
+        (fundTL() ? '<div class="year-note" style="margin-top:0;">Fon fiyatı olan günler fiyata göre hesaplanır; bu oran sadece fiyatı olmayan (gelecek) günler için.</div>' : '')+
         (rows || '<div class="empty-note">Bu ay yatırım yok</div>')+
         '<div class="line-row" style="gap:6px;"><input class="amt" style="flex:1; text-align:left;" id="svNew" inputmode="decimal" placeholder="Tutar (çekim için −)"><span style="display:flex; align-items:center; gap:4px; font-size:10px; color:var(--text-faint);">gün<input class="mini-input" style="width:40px;" id="svNewDay" inputmode="numeric" value="'+(key===nowKey()?new Date().getDate():1)+'" title="Yatırım günü (kar payı o günden işler)"></span><button class="xfer-btn" data-action="sv-add" data-key="'+key+'">+ Ekle</button></div>'+
         (function(){
@@ -1459,6 +1621,7 @@ details.sv-sum[open] summary{color:var(--text);}
         '<div class="year-note" style="margin-top:8px;">Bu ay kar payı <b>'+fmt(row?row.kar:0)+'</b> · toplam yatırılan <b>'+fmtShort(ser.dep)+'</b> · toplam kar payı <b>'+fmt(ser.kar)+'</b></div>'+
         '<div class="year-note">'+monthNameFromKey(nextKey)+' için beklenen kar payı ≈ <b>'+fmt(nextKar)+'</b> (%'+String(savingsRate(nextKey)).replace('.',',')+')</div>'+
         '<div class="year-note" style="opacity:.8;">Yatırdığın tutar bu ayın "Maaştan Kalan"ından düşer, çekim ise eklenir. Kar payı yatırım gününden (o gün dahil) günlük işler; günü yazılmamış eski kayıtlar ertesi aydan işler.</div>'+
+        fundBlockHtml()+
         renderGoldSection(key)+
       '</div></details>';
   }
@@ -2037,12 +2200,8 @@ details.sv-sum[open] summary{color:var(--text);}
       var dd = savingsDaily(key, row.open);
       h += '<div class="rp-r"><span>TL açılış bakiyesi</span><span>'+fmtShort(row.open)+'</span></div>'+
         '<div class="rp-r"><span>'+(row.dep<0?'Çekim':'Yatırım')+'</span><span>'+fmtShort(row.dep)+'</span></div>'+
-        '<div class="rp-r"><span>Kar payı <small>· %'+svRate2(row.rate)+' aylık, günlük işler</small></span><span>+'+fmtShort(row.kar)+'</span></div>'+
-        '<div class="rp-r"><span><b>TL kapanış bakiyesi</b></span><span><b>'+fmtShort(row.bal)+'</b></span></div>'+
-        '<details class="acc-sub" data-acc="rpdaily" style="margin-top:6px;"><summary><span>Günlük kar payı ('+dd.dim+' gün)</span><span class="edit-pill">›</span></summary>'+
-        '<table class="rp-tbl"><tr><th>Gün</th><th>Bakiye</th><th>Günlük</th><th>Toplam</th></tr>'+
-        dd.rows.map(function(r){ return '<tr><td>'+r.d+'</td><td>'+fmtShort(r.bal).replace(' TL','')+'</td><td>'+fmt(r.kar).replace(' TL','')+'</td><td>'+fmt(r.cum).replace(' TL','')+'</td></tr>'; }).join('')+
-        '</table></details>';
+        '<div class="rp-r"><span>Kar payı <small>· '+(dd.fund?'fon fiyatına göre':'%'+svRate2(row.rate)+' aylık, günlük işler')+'</small></span><span>+'+fmtShort(row.kar)+'</span></div>'+
+        '<div class="rp-r"><span><b>TL kapanış bakiyesi</b></span><span><b>'+fmtShort(row.bal)+'</b></span></div>';
     }
     if(anyGold){ h += '<div class="rp-h" style="padding-top:12px;"><span>Altın / sertifika</span><b>'+(gh.hasPrice?fmtShort(gh.value):'fiyat gir')+'</b></div>'+goldLinesHtml(gh)+'<div class="rp-note">Altın değeri bugünkü satış fiyatıyla gösterilir.</div>'; }
     return h+'</div>';
@@ -2068,10 +2227,116 @@ details.sv-sum[open] summary{color:var(--text);}
     if(anyGold){ h += '<div class="rp-h" style="padding-top:12px;"><span>Altın / sertifika ('+y+' sonu)</span><b>'+(gh.hasPrice?fmtShort(gh.value):'fiyat gir')+'</b></div>'+goldLinesHtml(gh); }
     return h+'</div>';
   }
+  /* ---- Rapor: kar (birikim kazancı) ---- */
+  var rpKarView = 'all';
+  var DOW_ABBR = ['Paz','Pzt','Sal','Çar','Per','Cum','Cmt'];
+  function pctTxt(v){ return (Math.round(v*100)/100).toLocaleString('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2})+'%'; }
+  function karToday(){            // bugüne kadar özet (yoksa null)
+    var nk = nowKey(), ser = savingsSeries(nk); if(ser.start===null) return null;
+    var row = ser.rows[nk], td = new Date().getDate();
+    var dd = savingsDaily(nk, row.open), dr = dd.rows[Math.min(td,dd.dim)-1];
+    var tot = savingsTotals(nk);
+    var depFuture = (STATE.savings.deposits[nk]||[]).reduce(function(a,x){ return a + ((x.gun && x.gun>td) ? Number(x.tutar||0) : 0); }, 0);
+    var dep = ser.dep - depFuture, kar = tot.kar;
+    var yr = yearFromKey(nk), yKar = dr.cum, ks = keysBetween(ser.start, nk);
+    ks.forEach(function(k){ if(k!==nk && yearFromKey(k)===yr) yKar += ser.rows[k].kar; });
+    var pk = addMonths(nk,-1), prev = ser.rows[pk] ? ser.rows[pk].kar : null;
+    var firstDay = 1; (STATE.savings.deposits[ser.start]||[]).forEach(function(x){ if(x.gun && (firstDay===1 || x.gun<firstDay)) firstDay = x.gun; });
+    var gh = tot.gold, goldDiff = null;
+    if(gh.hasPrice){ var hv = 0, hc = 0; GOLD_ORDER.forEach(function(k){ hv += gh.qty[k]*goldSellPrice(k); hc += gh.cost[k]; }); if(Math.abs(hc)>1e-9 || Math.abs(hv)>1e-9) goldDiff = hv - hc; }
+    return {nk:nk, td:td, tl:tot.tl, dep:dep, kar:kar, pct: dep>0 ? kar/dep*100 : 0, dayKar:dr.kar, monthKar:dr.cum, prevKar:prev, yearKar:yKar, year:yr, start:ser.start, startDay:firstDay, fund:dd.fund, goldDiff:goldDiff};
+  }
+  function karAllHtml(){
+    var k = karToday();
+    if(!k) return '<div class="rp-card"><div class="rp-r"><span>Henüz birikim kaydı yok.</span><span></span></div></div>';
+    var n = fmtShort, r = function(l,v,sm){ return '<div class="rp-r"><span>'+l+(sm?' <small>· '+sm+'</small>':'')+'</span><span>'+v+'</span></div>'; };
+    var h = '<div class="rp-card"><div class="rp-h"><span>Kazanç · bugüne kadar</span><b>+'+n(k.kar)+'</b></div>'+
+      r('Toplam yatırılan', n(k.dep), monthNameFromKey(k.start)+' '+yearFromKey(k.start)+' · '+k.startDay+'. gün')+
+      r('Toplam kar payı', '+'+n(k.kar))+
+      r('Getiri', pctTxt(k.pct), 'yatırılana göre')+
+      r('Bugünkü TL bakiye', n(k.tl))+'</div>'+
+      '<div class="rp-card"><div class="rp-h"><span>Dönemler</span><b></b></div>'+
+      r('Bugün', '+'+fmt(k.dayKar), k.dayKar<0.005 ? 'fiyat değişmedi' : '')+
+      r(monthNameFromKey(k.nk)+' (bugüne kadar)', '+'+n(k.monthKar))+
+      (k.prevKar!==null ? r(monthNameFromKey(addMonths(k.nk,-1)), '+'+n(k.prevKar)) : '')+
+      r(k.year+' (bugüne kadar)', '+'+n(k.yearKar))+'</div>';
+    if(k.goldDiff!==null) h += '<div class="rp-card"><div class="rp-r"><span>Altın / sertifika farkı <small>· değer − maliyet</small></span><span style="'+(k.goldDiff<0?'color:var(--red);':'')+'">'+(k.goldDiff>=0?'+':'')+n(k.goldDiff)+'</span></div></div>';
+    h += '<div class="rp-note">'+(k.fund ? 'Kar payı fonun günlük fiyatına göre hesaplanır; hafta sonu fiyat değişmez.' : 'Kar payı girdiğin aylık orana göre günlük hesaplanır.')+' Bakiye, yatırımların bugüne kadar işleyen karını içerir.</div>';
+    return h;
+  }
+  function karDayHtml(key){
+    var ser = savingsSeries(key), row = ser.rows[key];
+    if(!row) return '<div class="rp-card"><div class="rp-r"><span>Bu ay için birikim kaydı yok.</span><span></span></div></div>';
+    var dd = savingsDaily(key, row.open), nk = nowKey(), td = new Date().getDate(), fut = absIndexFromKey(key) > absIndexFromKey(nk);
+    var upto = fut ? 0 : (key===nk ? td : dd.dim), y = yearFromKey(key), m = Number(key.split('-')[1]);
+    var cumTo = upto>0 ? dd.rows[upto-1].cum : 0, anyP = dd.rows.some(function(r){ return r.p!=null; });
+    var h = '<div class="rp-card"><div class="rp-h"><span>'+monthNameFromKey(key)+' kazancı'+(key===nk?' · bugüne kadar':'')+'</span><b>'+(fut?'plan ':'')+'+'+fmtShort(fut?dd.kar:cumTo)+'</b></div>'+
+      '<table class="rp-tbl"><tr><th>Gün</th>'+(anyP?'<th>Fiyat</th>':'')+'<th>Kar</th><th>Toplam</th><th>Bakiye</th></tr>'+
+      dd.rows.map(function(r){
+        var plan = fut || (key===nk && r.d>td), dow = DOW_ABBR[new Date(y,m-1,r.d).getDay()];
+        return '<tr'+(plan?' class="plan"':'')+'><td>'+r.d+' '+dow+'</td>'+(anyP?'<td>'+(r.p!=null?Number(r.p).toLocaleString('tr-TR',{minimumFractionDigits:4,maximumFractionDigits:4}):'–')+'</td>':'')+
+          '<td>'+(r.kar<0.005&&r.kar>-0.005?'–':fmt(r.kar).replace(' TL',''))+'</td><td>'+fmt(r.cum).replace(' TL','')+'</td><td>'+fmtShort(r.bal).replace(' TL','')+'</td></tr>';
+      }).join('')+'</table>'+
+      '<div class="rp-note">'+(anyP?'Fiyat değişmeyen günler (hafta sonu, tatil) kar yazmaz; getiri ilk iş gününde toplu yansır. ':'')+'Soluk satırlar gelecek günler, tahmindir.</div></div>';
+    return h;
+  }
+  function karMonthsHtml(y){
+    var keys = rpYearMonths(y); if(!keys.length) return '<div class="rp-card"><div class="rp-r"><span>Bu yıl için veri yok.</span><span></span></div></div>';
+    var lastK = keys[keys.length-1], ser = savingsSeries(lastK), nk = nowKey(), td = new Date().getDate();
+    if(ser.start===null) return '<div class="rp-card"><div class="rp-r"><span>Henüz birikim kaydı yok.</span><span></span></div></div>';
+    var rowsK = keys.filter(function(k){ return absIndexFromKey(k) >= absIndexFromKey(ser.start); });
+    if(!rowsK.length) return '<div class="rp-card"><div class="rp-r"><span>Bu yıl birikim kaydı yok.</span><span></span></div></div>';
+    var sumDep = 0, sumKar = 0;
+    var body = rowsK.map(function(k){
+      var r = ser.rows[k], plan = absIndexFromKey(k) > absIndexFromKey(nk), kar = r.kar, dep = r.dep;
+      if(k===nk){ var dd = savingsDaily(k, r.open); kar = dd.rows[Math.min(td,dd.dim)-1].cum; dep = r.dep - (STATE.savings.deposits[k]||[]).reduce(function(a,x){ return a + ((x.gun && x.gun>td) ? Number(x.tutar||0) : 0); },0); }
+      if(!plan){ sumDep += dep; sumKar += kar; }
+      var base = r.open + dep;
+      return '<tr'+(plan?' class="plan"':'')+'><td>'+monthAbbrFromKey(k)+(k===nk?' *':'')+'</td><td>'+(dep?fmtShort(dep).replace(' TL',''):'–')+'</td><td>'+fmtShort(kar).replace(' TL','')+'</td><td>'+(base>0?pctTxt(kar/base*100):'–')+'</td></tr>';
+    }).join('');
+    return '<div class="rp-card"><div class="rp-h"><span>Aylık kazanç · '+y+'</span><b>+'+fmtShort(sumKar)+'</b></div>'+
+      '<table class="rp-tbl"><tr><th>Ay</th><th>Yatırım</th><th>Kar</th><th>Getiri</th></tr>'+body+
+      '<tr class="tot"><td>Toplam</td><td>'+fmtShort(sumDep).replace(' TL','')+'</td><td>'+fmtShort(sumKar).replace(' TL','')+'</td><td></td></tr></table>'+
+      '<div class="rp-note">Toplam bugüne kadar olanı gösterir. Getiri: ay karı ÷ (açılış bakiyesi + o ayın yatırımı). '+(rowsK.indexOf(nk)>-1?'* Bu ay bugüne kadar. ':'')+'Soluk satırlar gelecek aylar, tahmindir ve toplama dahil değildir.</div></div>';
+  }
+  function karYearsHtml(){
+    var nk = nowKey(), ser = savingsSeries(nk);
+    if(ser.start===null) return '<div class="rp-card"><div class="rp-r"><span>Henüz birikim kaydı yok.</span><span></span></div></div>';
+    var td = new Date().getDate(), tdTot = karToday(), rows = [], sumDep = 0, sumKar = 0;
+    for(var y = yearFromKey(ser.start); y <= yearFromKey(nk); y++){
+      var ks = keysBetween(ser.start, nk).filter(function(k){ return yearFromKey(k)===y; }); if(!ks.length) continue;
+      var dep = 0, kar = 0, bal = 0;
+      ks.forEach(function(k){ var r = ser.rows[k]; dep += r.dep; kar += r.kar; bal = r.bal; });
+      if(y===yearFromKey(nk)){ kar = tdTot.yearKar; dep -= (STATE.savings.deposits[nk]||[]).reduce(function(a,x){ return a + ((x.gun && x.gun>td) ? Number(x.tutar||0) : 0); },0); bal = tdTot.tl; }
+      sumDep += dep; sumKar += kar;
+      var open = ser.rows[ks[0]].open;
+      rows.push('<tr><td>'+y+(y===yearFromKey(nk)?' *':'')+'</td><td>'+(dep?fmtShort(dep).replace(' TL',''):'–')+'</td><td>'+fmtShort(kar).replace(' TL','')+'</td><td>'+fmtShort(bal).replace(' TL','')+'</td></tr>');
+    }
+    return '<div class="rp-card"><div class="rp-h"><span>Yıllık kazanç</span><b>+'+fmtShort(sumKar)+'</b></div>'+
+      '<table class="rp-tbl"><tr><th>Yıl</th><th>Yatırım</th><th>Kar</th><th>Bakiye</th></tr>'+rows.join('')+
+      '<tr class="tot"><td>Toplam</td><td>'+fmtShort(sumDep).replace(' TL','')+'</td><td>'+fmtShort(sumKar).replace(' TL','')+'</td><td>'+fmtShort(tdTot.tl).replace(' TL','')+'</td></tr></table>'+
+      '<div class="rp-note">* Bu yıl bugüne kadar. Bakiye yıl sonu (bu yıl için bugünkü) TL bakiyedir.</div></div>';
+  }
+  function rpKarSeg(){
+    var v = rpKarView, segs = [['all','Bugüne kadar'],['d','Günlük'],['m','Aylık'],['y','Yıllık']];
+    return '<div class="rp-seg" style="margin-top:8px;">'+segs.map(function(x){ return '<button class="'+(v===x[0]?'on':'')+'" data-action="rp-kv" data-v="'+x[0]+'">'+x[1]+'</button>'; }).join('')+'</div>';
+  }
+  function rpKarBody(){ var v = rpKarView; return v==='d' ? karDayHtml(rpKey) : v==='m' ? karMonthsHtml(rpYear) : v==='y' ? karYearsHtml() : karAllHtml(); }
   function rpText(){
     rpInit();
     var L = [], n = function(x){ return fmtShort(x); };
-    if(rpMode==='m'){
+    if(rpMode==='k'){
+      var kt = karToday();
+      L.push('Private Ledger · Birikim kazancı','');
+      if(!kt) L.push('Henüz birikim kaydı yok.');
+      else {
+        L.push('Toplam yatırılan: '+n(kt.dep),'Toplam kar payı: +'+n(kt.kar)+' ('+pctTxt(kt.pct)+')','Bugünkü TL bakiye: '+n(kt.tl),'',
+          'Bugün: +'+fmt(kt.dayKar),monthNameFromKey(kt.nk)+' (bugüne kadar): +'+n(kt.monthKar));
+        if(kt.prevKar!==null) L.push(monthNameFromKey(addMonths(kt.nk,-1))+': +'+n(kt.prevKar));
+        L.push(kt.year+' (bugüne kadar): +'+n(kt.yearKar));
+        if(kt.goldDiff!==null) L.push('Altın / sertifika farkı: '+(kt.goldDiff>=0?'+':'')+n(kt.goldDiff));
+      }
+    } else if(rpMode==='m'){
       var d = monthReportData(rpKey), t = d.t;
       L.push('Private Ledger · '+monthNameFromKey(rpKey)+' '+yearFromKey(rpKey)+' raporu','');
       L.push('Gelir: '+n(t.gelir));
@@ -2096,26 +2361,23 @@ details.sv-sum[open] summary{color:var(--text);}
   function renderRapor(){
     rpInit();
     var el = document.getElementById('s-rapor'); if(!el) return;
-    var title = rpMode==='m' ? monthNameFromKey(rpKey) : String(rpYear);
-    var sub = rpMode==='m' ? String(yearFromKey(rpKey)) : 'yıllık rapor';
+    var showNav = rpMode!=='k' || rpKarView==='d' || rpKarView==='m';
+    var title, sub;
+    if(rpMode==='m'){ title = monthNameFromKey(rpKey); sub = String(yearFromKey(rpKey)); }
+    else if(rpMode==='y'){ title = String(rpYear); sub = 'yıllık rapor'; }
+    else if(rpKarView==='d'){ title = monthNameFromKey(rpKey); sub = yearFromKey(rpKey)+' · günlük kazanç'; }
+    else if(rpKarView==='m'){ title = String(rpYear); sub = 'aylık kazanç'; }
+    else { title = 'Kazanç'; sub = rpKarView==='y' ? 'yıllık kazanç' : 'birikim · bugüne kadar'; }
+    var seg = [['m','Aylık'],['y','Yıllık'],['k','Kar']].map(function(x){ return '<button class="'+(rpMode===x[0]?'on':'')+'" data-action="rp-mode" data-m="'+x[0]+'">'+x[1]+'</button>'; }).join('');
     el.innerHTML = '<div class="month-title" style="font-size:20px;">Rapor</div>'+
-      '<div class="rp-seg"><button class="'+(rpMode==='m'?'on':'')+'" data-action="rp-mode" data-m="m">Aylık</button><button class="'+(rpMode==='y'?'on':'')+'" data-action="rp-mode" data-m="y">Yıllık</button></div>'+
-      '<div class="rp-nav"><button data-action="rp-prev">‹</button><div class="rp-title">'+title+'<small>'+sub+'</small></div><button data-action="rp-next">›</button></div>'+
-      (rpMode==='m' ? rpMonthHtml(rpKey) : rpYearHtml(rpYear))+
+      '<div class="rp-seg">'+seg+'</div>'+
+      (rpMode==='k' ? rpKarSeg() : '')+
+      (showNav ? '<div class="rp-nav"><button data-action="rp-prev">‹</button><div class="rp-title">'+title+'<small>'+sub+'</small></div><button data-action="rp-next">›</button></div>'
+               : '<div class="rp-nav" style="justify-content:center;"><div class="rp-title">'+title+'<small>'+sub+'</small></div></div>')+
+      (rpMode==='m' ? rpMonthHtml(rpKey) : rpMode==='y' ? rpYearHtml(rpYear) : rpKarBody())+
       '<div class="rp-acts"><button class="xfer-btn" data-action="rp-share">Paylaş / kopyala</button><button class="xfer-btn" data-action="rp-print">PDF / yazdır</button></div>'+
       (rpMsg?'<div class="rp-note" style="color:var(--acc);">'+rpMsg+'</div>':'');
   }
-  var _rpOpened = [];
-  function rpPrintOpen(on){
-    if(on){
-      _rpOpened = [];
-      document.querySelectorAll('#s-rapor details.acc-sub').forEach(function(d){ if(!d.open){ d.open = true; _rpOpened.push(d); } });
-    } else {
-      _rpOpened.forEach(function(d){ d.open = false; }); _rpOpened = [];
-    }
-  }
-  window.addEventListener('beforeprint', function(){ rpPrintOpen(true); });
-  window.addEventListener('afterprint', function(){ rpPrintOpen(false); });
   function rpShare(){
     var txt = rpText();
     var done = function(m){ rpMsg = m; renderRapor(); };
@@ -2602,6 +2864,18 @@ details.sv-sum[open] summary{color:var(--text);}
     }
     if(action==='qa-save'){ quickAddSave(t.dataset.kind, t.dataset.key); return; }
     if(action==='rep-apply' || action==='rep-stop'){ repeatAction(action, t.dataset.list, t.dataset.id, t.dataset.key); return; }
+    if(action==='fn-fetch'){
+      var fs = document.getElementById('fnStatus'); if(fs) fs.textContent = 'Fiyatlar çekiliyor…';
+      fetchFundPrices().then(function(r){ if(r.n>0) save(); renderAll(); });
+      return;
+    }
+    if(action==='fn-add'){
+      var fv = parseNum((document.getElementById('fnPx')||{}).value||''), fdt = String((document.getElementById('fnPxDate')||{}).value||'').trim(), fm = /^(\d{1,2})[.\/](\d{1,2})[.\/](\d{4})$/.exec(fdt);
+      if(!(fv>0) || !fm) return;
+      var fo = {}; fo[fm[3]+'-'+String(fm[2]).padStart(2,'0')+'-'+String(fm[1]).padStart(2,'0')] = fv;
+      fundMerge(fo, 'elle'); save(); renderAll(); return;
+    }
+    if(action==='fn-toggle'){ STATE.savings.fund.off = !STATE.savings.fund.off; STATE.savings.fund.prices = Object.assign({}, STATE.savings.fund.prices); save(); renderAll(); return; }
     if(action==='gd-fetch'){
       var st0 = document.getElementById('gdStatus'); if(st0) st0.textContent = 'Fiyatlar çekiliyor…';
       fetchGoldPrices().then(function(okk){
@@ -2686,13 +2960,14 @@ details.sv-sum[open] summary{color:var(--text);}
       if(slotEl) wireAddDebtForm(slotEl.id, scr.id==='s-ay' ? currentMonthKey : homeKey(), t.dataset.tur||'');
       return;
     }
-    if(action==='rp-mode'){ rpMode = t.dataset.m==='y' ? 'y' : 'm'; rpMsg=''; renderRapor(); return; }
+    if(action==='rp-mode'){ rpMode = t.dataset.m==='y' ? 'y' : t.dataset.m==='k' ? 'k' : 'm'; rpMsg=''; renderRapor(); return; }
+    if(action==='rp-kv'){ rpKarView = t.dataset.v; rpMsg=''; renderRapor(); return; }
     if(action==='rp-prev' || action==='rp-next'){ var dir = action==='rp-next' ? 1 : -1; rpMsg='';
-      if(rpMode==='m'){ var nk = addMonths(rpKey, dir); if(absIndexFromKey(nk) >= absIndexFromKey(EPOCH_KEY)){ rpKey = nk; rpYear = yearFromKey(rpKey); } }
+      if(rpMode==='m' || (rpMode==='k' && rpKarView==='d')){ var nk = addMonths(rpKey, dir); if(absIndexFromKey(nk) >= absIndexFromKey(EPOCH_KEY)){ rpKey = nk; rpYear = yearFromKey(rpKey); } }
       else { var ny = rpYear + dir; if(ny >= yearFromKey(EPOCH_KEY)) rpYear = ny; }
       renderRapor(); return; }
     if(action==='rp-share'){ rpShare(); return; }
-    if(action==='rp-print'){ rpPrintOpen(true); window.print(); return; }
+    if(action==='rp-print'){ window.print(); return; }
     if(action==='month-prev'){ currentMonthKey = addMonths(currentMonthKey,-1); currentPickerYear = yearFromKey(currentMonthKey); renderAll(); return; }
     if(action==='month-next'){ currentMonthKey = addMonths(currentMonthKey,1); currentPickerYear = yearFromKey(currentMonthKey); renderAll(); return; }
     if(action==='pick-month'){
@@ -2837,7 +3112,7 @@ details.sv-sum[open] summary{color:var(--text);}
   fitApp();
 
   /* ===================== BAŞLAT ===================== */
-  var APP_VERSION = 'v28';
+  var APP_VERSION = 'v29';
   (function(){
     var v = document.getElementById('appVer'); if(v) v.textContent = APP_VERSION;
     var ub = document.getElementById('updateBtn');
@@ -2860,6 +3135,7 @@ details.sv-sum[open] summary{color:var(--text);}
     currentPickerYear = yearFromKey(currentMonthKey);
     applyTheme();
     renderAll();
+    autoFund();
   });
 
 })();
