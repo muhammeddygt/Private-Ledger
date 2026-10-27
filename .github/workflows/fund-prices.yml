@@ -4,6 +4,7 @@ on:
     paths:
       - ".github/workflows/fund-prices.yml"
       - "scripts/fetch_fund.py"
+      - "scripts/fetch_katilim.py"
   schedule:
     - cron: "30 5 * * 1-5"
     - cron: "30 16 * * 1-5"
@@ -18,9 +19,12 @@ jobs:
       - run: python3 scripts/fetch_fund.py
         env:
           FUND: VFK
+      - name: Faizsiz sekmesi (katılım fonları)
+        run: python3 scripts/fetch_katilim.py
+        continue-on-error: true
       - name: Değiştiyse kaydet
         run: |
           git config user.name "fund-bot"
           git config user.email "fund-bot@users.noreply.github.com"
-          git add fund-prices.json fund-status.json
+          git add fund-prices.json fund-status.json katilim-funds.json
           git diff --cached --quiet || (git commit -m "Fon fiyatları güncellendi" && git pull --rebase -q && git push)

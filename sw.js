@@ -1,4 +1,4 @@
-var CACHE_NAME = 'private-ledger-v33';
+var CACHE_NAME = 'private-ledger-v34';
 var SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', function(e){
@@ -17,7 +17,7 @@ self.addEventListener('activate', function(e){
 self.addEventListener('fetch', function(e){
   var url = e.request.url;
   // Supabase ve diğer uzak API çağrılarına dokunma, direkt ağa bırak
-  if(url.indexOf('supabase.co') !== -1 || url.indexOf('malatyakuyumcular') !== -1 || url.indexOf('allorigins') !== -1 || url.indexOf('truncgil') !== -1 || url.indexOf('doviz.com') !== -1 || url.indexOf('tefas') !== -1 || url.indexOf('fundturkey') !== -1 || url.indexOf('corsproxy') !== -1 || url.indexOf('ekofin') !== -1 || url.indexOf('marketvisuals') !== -1 || url.indexOf('fund-prices.json') !== -1 || e.request.method !== 'GET'){ return; }
+  if(url.indexOf('supabase.co') !== -1 || url.indexOf('malatyakuyumcular') !== -1 || url.indexOf('allorigins') !== -1 || url.indexOf('truncgil') !== -1 || url.indexOf('doviz.com') !== -1 || url.indexOf('tefas') !== -1 || url.indexOf('fundturkey') !== -1 || url.indexOf('corsproxy') !== -1 || url.indexOf('ekofin') !== -1 || url.indexOf('marketvisuals') !== -1 || url.indexOf('fund-prices.json') !== -1 || url.indexOf('katilim-funds.json') !== -1 || e.request.method !== 'GET'){ return; }
   e.respondWith(
     caches.match(e.request).then(function(cached){
       var network = fetch(e.request).then(function(resp){

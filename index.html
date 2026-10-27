@@ -321,6 +321,26 @@ details.sv-sum[open] summary{color:var(--text);}
 .sum-tbl tr.cur td{color:var(--text); font-weight:600;}
 .sum-tbl td:last-child{color:var(--amber);}
 #gdKind{background:var(--bg); color:var(--text); border:1px solid var(--line); border-radius:7px; padding:6px 8px; font-size:11px; font-family:var(--font-ui);}
+/* ---- Faizsiz ---- */
+.fz-head{display:flex; align-items:center; justify-content:space-between; margin-top:4px;}
+.fz-stat{font-size:10px; color:var(--text-faint); margin-top:6px; line-height:1.5;}
+.fz-chips{display:flex; gap:6px; margin-top:14px; overflow-x:auto;}
+.fz-chip{flex:none; padding:7px 12px; border-radius:999px; border:1px solid var(--line); background:var(--surface); color:var(--text-dim); font-size:11px; cursor:pointer;}
+.fz-chip.on{background:var(--acc); border-color:var(--acc); color:var(--on-acc); font-weight:600;}
+.fz-card{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:13px; margin-top:9px;}
+.fz-top{display:flex; justify-content:space-between; align-items:flex-start; gap:8px;}
+.fz-nm{font-size:12.5px; font-weight:600; line-height:1.35;}
+.fz-sub{font-size:9.5px; color:var(--text-faint); margin-top:3px;}
+.fz-code{font-family:var(--font-num); font-size:9.5px; padding:1px 6px; border-radius:6px; border:1px solid var(--line); color:var(--text-dim); margin-right:5px;}
+.fz-badge{font-size:9px; font-weight:600; padding:3px 7px; border-radius:999px; white-space:nowrap; background:var(--acc-dim); color:var(--acc);}
+.fz-stats{display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-top:11px;}
+.fz-stats div{font-size:9.5px; color:var(--text-faint);}
+.fz-stats b{display:block; font-size:12.5px; margin-top:2px; font-weight:500; font-family:var(--font-num); color:var(--text);}
+.fz-stats b.up{color:var(--acc);} .fz-stats b.dn{color:var(--red);}
+.fz-hold{display:flex; justify-content:space-between; align-items:center; gap:8px; margin-top:11px; padding-top:10px; border-top:1px solid var(--line); font-size:11px; color:var(--text-dim);}
+.fz-hold input{width:84px; text-align:right; background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:5px 7px; font-family:var(--font-num); font-size:11.5px; color:var(--text);}
+.fz-hold b{font-family:var(--font-num); color:var(--text); font-weight:500;}
+.fz-note{font-size:10px; color:var(--text-faint); margin-top:14px; line-height:1.55;}
 </style>
 </head>
 <body>
@@ -334,12 +354,14 @@ details.sv-sum[open] summary{color:var(--text);}
   <div class="screen" id="s-ay"></div>
   <div class="screen" id="s-borclar"></div>
   <div class="screen" id="s-rapor"></div>
+  <div class="screen" id="s-faizsiz"></div>
 
   <div class="tabbar">
     <button class="tab active" data-s="s-ozet"><span class="ic">◎</span>Özet</button>
     <button class="tab" data-s="s-ay"><span class="ic">▤</span>Aylar</button>
     <button class="tab" data-s="s-borclar"><span class="ic">≡</span>Borçlar</button>
     <button class="tab" data-s="s-rapor"><span class="ic">▦</span>Rapor</button>
+    <button class="tab" data-s="s-faizsiz"><span class="ic">☾</span>Faizsiz</button>
   </div>
 </div>
 
@@ -440,6 +462,7 @@ details.sv-sum[open] summary{color:var(--text);}
       offBudgetExpenses:{}, recurringOb:[], sectionOrder:['expenses','faturalar','offbudget','kk','kmh','kredi','manuel','ek','savings'],
       savings:{rate:3.1, rateByMonth:{}, deposits:{}, fund:{code:'VFK', prices:{}, ts:0, src:'', off:false, lag:0, lagSet:false}},
       gold:{prices:{k22:{alis:0,satis:0}, k24:{alis:0,satis:0}, s1:{fiyat:0, ratio:0, est:false, src:''}, ts:null, src:''}, entries:{}},
+      faizsiz:{holdings:{}},
       theme:{name:'siyah', accent:'#D4FF3F'}
     };
   }
@@ -738,6 +761,9 @@ details.sv-sum[open] summary{color:var(--text);}
       out.savings.deposits[mk] = (out.savings.deposits[mk]||[]).map(function(x){ var o = {id:x.id||uid(), tutar:Number(x.tutar||0)}; var g = Math.round(Number(x.gun)); if(g>=1 && g<=31) o.gun = g; var ad = Number(x.adet); if(isFinite(ad) && ad!==0){ o.adet = ad; var fx = Number(x.fiyat); if(fx>0) o.fiyat = fx; } return o; });
     });
     refreshAdet(out.savings);
+    var fzh = {}, fzIn = (parsed&&parsed.faizsiz&&parsed.faizsiz.holdings)||{};
+    Object.keys(fzIn).forEach(function(c){ var v = Number(fzIn[c]); if(/^[A-Z0-9]{2,8}$/.test(c) && isFinite(v) && v>0) fzh[c] = v; });
+    out.faizsiz = {holdings:fzh};
     out.theme = Object.assign({name:'siyah', accent:'#D4FF3F'}, (parsed&&parsed.theme)||{});
     if(!THEMES[out.theme.name]) out.theme.name = 'siyah';
     return out;
@@ -2440,7 +2466,120 @@ details.sv-sum[open] summary{color:var(--text);}
     done(okc ? 'Rapor panoya kopyalandı.' : 'Kopyalanamadı.');
   }
 
-  function renderAll(){ renderOzet(); renderAylar(); renderBorclar(); renderRapor(); }
+  /* ===================== FAİZSİZ (katılım fonları) =====================
+     Liste katilim-funds.json'dan gelir (GitHub Actions, scripts/fetch_katilim.py): yalnızca TEFAS unvanında "Katılım" geçen
+     TL kira sertifikası / para piyasası fonları. Doğrulanmayan fon dosyaya hiç yazılmaz, burada da (onay!==true) gösterilmez.
+     Fiyatlar STATE'e yazılmaz (bulutu şişirmesin); yalnızca elimdeki adet STATE.faizsiz.holdings'te tutulur. */
+  var FZ_CACHE_KEY = 'pl_faizsiz_v1';
+  var fzData = null, fzFilter = 'all', fzBusy = false, fzMsg = '', fzAutoDone = false;
+  try{ var _fzc = localStorage.getItem(FZ_CACHE_KEY); if(_fzc){ var _fzp = JSON.parse(_fzc); if(_fzp && _fzp.funds) fzData = _fzp; } }catch(e){}
+  function fzSave(){ try{ localStorage.setItem(FZ_CACHE_KEY, JSON.stringify(fzData)); }catch(e){} }
+  function fzFunds(){
+    if(!fzData || !fzData.funds) return [];
+    return Object.keys(fzData.funds).map(function(c){ var f = fzData.funds[c]; return {code:c, f:f, st:fzStats(f)}; })
+      .filter(function(x){ return x.f && x.f.prices && Object.keys(x.f.prices).length && (x.f.dogrulama==='tefas' || x.f.dogrulama==='liste'); });
+  }
+  function fzStats(f){
+    var ds = Object.keys(f.prices||{}).sort(); if(!ds.length) return null;
+    var last = ds[ds.length-1], pl = f.prices[last], prev = ds.length>1 ? ds[ds.length-2] : null, base = null, tgt = isoAddDays(last,-30);
+    for(var i=0;i<ds.length;i++){ if(ds[i] <= tgt) base = ds[i]; else break; }
+    return {last:last, pl:pl, prev:prev, pp:prev ? f.prices[prev] : null, base:base, pb:base ? f.prices[base] : null,
+            d1: prev ? pl/f.prices[prev]-1 : null, m1: base ? pl/f.prices[base]-1 : null};
+  }
+  function fzUnits(code){
+    if(code===(STATE.savings.fund.code||'VFK')){ var u = fundUnits(); if(u>0) return {n:u, auto:true}; }
+    var h = Number((STATE.faizsiz.holdings||{})[code]||0); return {n:h>0?h:0, auto:false};
+  }
+  function fzPct(v){ if(v===null||v===undefined||!isFinite(v)) return '—'; return (v>=0?'+':'−')+'%'+Math.abs(v*100).toLocaleString('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+  function fzCls(v){ return (v===null||v===undefined||!isFinite(v)||v===0) ? '' : (v>0?'up':'dn'); }
+  function fzPx(v){ return Number(v).toLocaleString('tr-TR',{minimumFractionDigits:4,maximumFractionDigits:6}); }
+  function fzNewest(){ var m = ''; fzFunds().forEach(function(x){ if(x.st && x.st.last > m) m = x.st.last; }); return m; }
+  function renderFaizsiz(){
+    var el = document.getElementById('s-faizsiz'); if(!el) return;
+    var all = fzFunds(), list = all.filter(function(x){ return fzFilter==='all' || x.f.tur===fzFilter; });
+    list.sort(function(a,b){ var am = a.st && a.st.m1!==null ? a.st.m1 : -9, bm = b.st && b.st.m1!==null ? b.st.m1 : -9; return bm-am; });
+    var tot = 0, dDay = 0, dMon = 0, held = 0, sumD = 0, nD = 0, sumM = 0, nM = 0;
+    all.forEach(function(x){
+      if(!x.st) return;
+      if(x.st.d1!==null){ sumD += x.st.d1; nD++; } if(x.st.m1!==null){ sumM += x.st.m1; nM++; }
+      var u = fzUnits(x.code).n; if(!(u>0)) return;
+      held++; tot += u*x.st.pl;
+      if(x.st.pp) dDay += u*(x.st.pl-x.st.pp);
+      if(x.st.pb) dMon += u*(x.st.pl-x.st.pb);
+    });
+    var sg = function(v){ return (v>=0?'+':'−')+fmt(Math.abs(v)); };
+    var hero;
+    if(held){
+      hero = '<div class="hero-card"><div class="hero-label">Faizsiz yatırım toplamı</div><div class="hero-num">'+fmt(tot)+'</div>'+
+        '<div class="stat-row c2"><div class="stat-mini"><div class="l">Son gün</div><div class="v" style="color:'+(dDay>=0?'var(--acc)':'var(--red)')+'">'+sg(dDay)+'</div></div>'+
+        '<div class="stat-mini"><div class="l">Son 30 gün<small>bugünkü adetle</small></div><div class="v" style="color:'+(dMon>=0?'var(--acc)':'var(--red)')+'">'+sg(dMon)+'</div></div></div></div>';
+    } else {
+      hero = '<div class="hero-card"><div class="hero-label">Onaylı katılım fonu</div><div class="hero-num">'+all.length+' fon</div>'+
+        '<div class="stat-row c2"><div class="stat-mini"><div class="l">Ort. günlük</div><div class="v">'+fzPct(nD?sumD/nD:null)+'</div></div>'+
+        '<div class="stat-mini"><div class="l">Ort. 30 gün</div><div class="v">'+fzPct(nM?sumM/nM:null)+'</div></div></div>'+
+        '<div class="fz-stat">Elindeki pay adedini fon kartlarına yazarsan toplam değer burada görünür.</div></div>';
+    }
+    var chips = [['all','Tümü'],['kira','Kira sertifikası'],['pp','Para piyasası']].map(function(c){ return '<button class="fz-chip'+(fzFilter===c[0]?' on':'')+'" data-action="fz-filter" data-f="'+c[0]+'">'+c[1]+'</button>'; }).join('');
+    var cards = list.map(function(x){
+      var f = x.f, s = x.st, u = fzUnits(x.code), tur = f.tur==='kira' ? 'Kira sertifikası' : 'Para piyasası';
+      var badge = f.dogrulama==='tefas' ? '✓ Katılım fonu · TEFAS' : '✓ Katılım fonu · liste';
+      var hold = u.auto
+        ? '<span>Birikim sekmesinden: <b>'+Number(u.n).toLocaleString('tr-TR',{maximumFractionDigits:3})+' pay</b></span><span>Değer: <b>'+fmt(u.n*s.pl)+'</b></span>'
+        : '<span>Elimdeki pay: <input inputmode="decimal" class="fz-adet" data-code="'+esc(x.code)+'" value="'+(u.n>0?esc(String(u.n).replace('.',',')):'')+'" placeholder="0"></span><span>Değer: <b>'+(u.n>0?fmt(u.n*s.pl):'—')+'</b></span>';
+      return '<div class="fz-card"><div class="fz-top"><div><div class="fz-nm">'+esc(f.unvan||x.code)+'</div>'+
+        '<div class="fz-sub"><span class="fz-code">'+esc(x.code)+'</span>'+tur+' · '+esc(f.kurucu||'')+'</div></div><span class="fz-badge">'+badge+'</span></div>'+
+        '<div class="fz-stats"><div>Fiyat<b>'+fzPx(s.pl)+'</b></div><div>Günlük<b class="'+fzCls(s.d1)+'">'+fzPct(s.d1)+'</b></div><div>30 gün<b class="'+fzCls(s.m1)+'">'+fzPct(s.m1)+'</b></div></div>'+
+        '<div class="fz-hold">'+hold+'</div><div class="fz-sub" style="margin-top:6px;">Fiyat tarihi '+isoDMY(s.last)+'</div></div>';
+    }).join('');
+    if(!all.length) cards = '<div class="empty-note">'+(fzBusy ? 'Fonlar yükleniyor…' : 'Doğrulanmış fon verisi henüz yok. “↻ Yenile”ye basarak çek.')+'</div>';
+    else if(!list.length) cards = '<div class="empty-note">Bu türde fon yok.</div>';
+    var upd = fzData && fzData.updated ? String(fzData.updated).slice(0,16).replace('T',' ')+' UTC' : '—';
+    var rej = fzData && fzData.rejected && fzData.rejected.length ? '<br><b>'+fzData.rejected.length+' fon</b> TEFAS unvanında “Katılım” bulunmadığı veya istenmeyen türde olduğu için listeden çıkarıldı.' : '';
+    el.innerHTML = '<div class="fz-head"><div class="month-title" style="font-size:20px;">Faizsiz</div><button class="xfer-btn" data-action="fz-refresh"'+(fzBusy?' disabled':'')+'>'+(fzBusy?'Çekiliyor…':'↻ Yenile')+'</button></div>'+
+      '<div class="fz-stat">'+(fzMsg ? esc(fzMsg)+' · ' : '')+'Veri güncellendi: '+upd+'</div>'+
+      hero+'<div class="fz-chips">'+chips+'</div>'+cards+
+      '<div class="fz-note">Bu listede yalnızca TL cinsi kira sertifikası ve para piyasası fonları var; unvanında “Katılım” geçmeyen, hisse, altın, döviz ve serbest fonlar alınmaz. Katılım fonları SPK düzenlemesi gereği faizli araçlara yatırım yapamaz ve katılım danışma kurulu denetimindedir. Fiyatlar TEFAS’tan alınır; günlük/30 gün getiri buradaki fiyat geçmişinden hesaplanır. Kesin hüküm için fonun izahnamesine ve KAP’a bak.'+rej+'</div>';
+  }
+  async function fzLive(){      // TEFAS doğrudan/proxy: yalnızca json'daki doğrulanmış fonlar için, eksik günleri tamamlar
+    var codes = fzFunds().map(function(x){ return x.code; }), saved = _fundLog, got = 0, need = lastPublishedDate();
+    _fundLog = [];
+    for(var i=0;i<codes.length;i+=4){
+      await Promise.all(codes.slice(i,i+4).map(async function(c){
+        var f = fzData.funds[c], ds = Object.keys(f.prices).sort(), from = ds.length ? isoAddDays(ds[ds.length-1],-5) : isoAddDays(isoToday(),-40);
+        if(ds.length && ds[ds.length-1] >= need) return;
+        var res = await tefasRange(c, from, isoToday());
+        if(res){ Object.keys(res.map).forEach(function(d){ if(f.prices[d]!==res.map[d]){ f.prices[d] = res.map[d]; got++; } }); }
+      }));
+    }
+    _fundLog = saved;
+    return got;
+  }
+  async function fzRefresh(silent){
+    if(fzBusy) return;
+    fzBusy = true; fzMsg = 'Çekiliyor'; renderFaizsiz();
+    try{
+      var r = await fetchTimeout('katilim-funds.json?_='+Date.now(), {cache:'no-store'}, 10000);
+      if(r.ok){ var j = await r.json(); if(j && j.funds){ fzData = j; fzMsg = 'Listeden alındı'; } else fzMsg = 'Dosya boş'; }
+      else fzMsg = 'Dosya alınamadı (HTTP '+r.status+')';
+    }catch(e){ fzMsg = 'Dosyaya ulaşılamadı'; }
+    renderFaizsiz();
+    if(fzData && fzFunds().length && fzNewest() < lastPublishedDate()){
+      fzMsg = 'TEFAS’tan güncelleniyor'; renderFaizsiz();
+      try{ var n = await fzLive(); fzMsg = n ? 'TEFAS’tan '+n+' yeni fiyat' : 'Fiyatlar güncel ya da TEFAS’a ulaşılamadı'; }catch(e){ fzMsg = 'TEFAS’a ulaşılamadı'; }
+    }
+    if(fzData) fzSave();
+    fzBusy = false; renderFaizsiz();
+  }
+  function fzAuto(){ if(fzAutoDone) return; fzAutoDone = true; fzRefresh(true); }
+  document.getElementById('s-faizsiz').addEventListener('change', function(e){
+    var inp = e.target.closest('.fz-adet'); if(!inp) return;
+    var v = parseNum(inp.value), code = inp.dataset.code; if(!/^[A-Z0-9]{2,8}$/.test(code||'')) return;
+    if(!STATE.faizsiz) STATE.faizsiz = {holdings:{}};
+    if(v>0) STATE.faizsiz.holdings[code] = v; else delete STATE.faizsiz.holdings[code];
+    save(); renderFaizsiz();
+  });
+
+  function renderAll(){ renderOzet(); renderAylar(); renderBorclar(); renderRapor(); renderFaizsiz(); }
 
   /* ===================== GERİ AL ===================== */
   var lastDeleted = null;
@@ -2923,6 +3062,8 @@ details.sv-sum[open] summary{color:var(--text);}
     }
     if(action==='qa-save'){ quickAddSave(t.dataset.kind, t.dataset.key); return; }
     if(action==='rep-apply' || action==='rep-stop'){ repeatAction(action, t.dataset.list, t.dataset.id, t.dataset.key); return; }
+    if(action==='fz-filter'){ fzFilter = t.dataset.f || 'all'; renderFaizsiz(); return; }
+    if(action==='fz-refresh'){ fzRefresh(false); return; }
     if(action==='fn-fetch'){
       var fs = document.getElementById('fnStatus'); if(fs) fs.textContent = 'Fiyatlar çekiliyor…';
       fetchFundPrices().then(function(r){ if(r.n>0) save(); renderAll(); });
@@ -3087,6 +3228,7 @@ details.sv-sum[open] summary{color:var(--text);}
       btn.classList.add('active');
       currentTab = btn.dataset.s;
       document.querySelectorAll('.screen').forEach(function(s){ s.classList.toggle('active', s.id===currentTab); });
+      if(currentTab==='s-faizsiz') fzAuto();
     });
   });
 
@@ -3186,7 +3328,7 @@ details.sv-sum[open] summary{color:var(--text);}
   fitApp();
 
   /* ===================== BAŞLAT ===================== */
-  var APP_VERSION = 'v33';
+  var APP_VERSION = 'v34';
   (function(){
     var v = document.getElementById('appVer'); if(v) v.textContent = APP_VERSION;
     var ub = document.getElementById('updateBtn');
