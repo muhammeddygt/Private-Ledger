@@ -5,7 +5,7 @@ Güvenlik kuralı: bir fon listede ancak TEFAS'taki resmî unvanında "KATILIM" 
 (SPK düzenlemesine göre unvanında "Katılım" geçen fonlar katılım finans ilkelerine uymak ve danışma
 kurulu denetiminde olmak zorundadır). Unvanında bu ibare olmayan fon "rejected" listesine alınır, uygulamada görünmez.
 TEFAS yanıtında unvan alanı hiç yoksa fon, aşağıdaki aday listesindeki unvanla "liste" doğrulamasıyla işaretlenir."""
-import json, sys, datetime as dt, urllib.request
+import json, sys, time, datetime as dt, urllib.request
 
 OUT = "katilim-funds.json"
 KEEP_DAYS = 75          # saklanan fiyat geçmişi (günlük/aylık getiri için en az ~35 gün gerekir)
@@ -64,14 +64,20 @@ def tefas(code, a, b):
                        "sfonTurKod": None, "fonTurAciklama": None, "kurucuKod": None,
                        "basTarih": a.strftime("%Y%m%d"), "bitTarih": b.strftime("%Y%m%d"), "basSira": 1, "bitSira": 100000,
                        "dil": "TR", "sFonTurKod": "", "fonKod": "", "fonGrup": "", "fonUnvanTip": ""}).encode()
-    try:
-        req = urllib.request.Request(HOST, data=body, headers=HEAD, method="POST")
-        with urllib.request.urlopen(req, timeout=40) as r:
-            raw = r.read().decode("utf-8", "replace")
-        data = json.loads(raw)
-        rows = (data.get("resultList") or []) if isinstance(data, dict) else data
-    except Exception as e:
-        log(f"{code}: TEFAS {type(e).__name__} {getattr(e, 'code', '')} {str(e)[:80]}")
+    rows = None
+    for attempt in range(5):            # TEFAS hız sınırı (429) / zaman aşımı: bekleyip yeniden dene
+        time.sleep(1.5 if attempt == 0 else 6 * attempt)
+        try:
+            req = urllib.request.Request(HOST, data=body, headers=HEAD, method="POST")
+            with urllib.request.urlopen(req, timeout=40) as r:
+                raw = r.read().decode("utf-8", "replace")
+            data = json.loads(raw)
+            rows = (data.get("resultList") or []) if isinstance(data, dict) else data
+            break
+        except Exception as e:
+            if attempt == 4:
+                log(f"{code}: TEFAS {type(e).__name__} {getattr(e, 'code', '')} {str(e)[:80]}")
+    if rows is None:
         return {}, ""
     prices, unvan = {}, ""
     for x in rows:
@@ -102,7 +108,8 @@ def main():
         prev = old.get(code, {}).get("prices", {})
         prices = dict(prev)
         start = today - dt.timedelta(days=KEEP_DAYS)
-        if prices:  # sadece eksik kısmı çek (son tarihten 10 gün geriden)
+        # Geçmiş yeterliyse sadece eksik kısmı çek (son tarihten 10 gün geriden); kısaysa (30 günlük getiri için) baştan çek
+        if prices and dt.date.fromisoformat(min(prices)) <= today - dt.timedelta(days=60):
             start = max(start, dt.date.fromisoformat(max(prices)) - dt.timedelta(days=10))
         unvan = ""
         a = start
