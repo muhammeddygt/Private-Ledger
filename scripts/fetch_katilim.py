@@ -4,7 +4,8 @@
 Güvenlik kuralı: bir fon listede ancak TEFAS'taki resmî unvanında "KATILIM" ibaresi geçiyorsa gösterilir
 (SPK düzenlemesine göre unvanında "Katılım" geçen fonlar katılım finans ilkelerine uymak ve danışma
 kurulu denetiminde olmak zorundadır). Unvanında bu ibare olmayan fon "rejected" listesine alınır, uygulamada görünmez.
-TEFAS yanıtında unvan alanı hiç yoksa fon, aşağıdaki aday listesindeki unvanla "liste" doğrulamasıyla işaretlenir."""
+TEFAS yanıtında unvan alanı hiç yoksa fon, aşağıdaki aday listesindeki unvanla "liste" doğrulamasıyla işaretlenir.
+Türler: kira, pp (para piyasası), hisse, altin, doviz, diger (karma/dengeli/teknoloji). Hisse/altın/döviz/karma dalgalıdır (uygulamada uyarı gösterilir)."""
 import json, sys, time, datetime as dt, urllib.request
 
 OUT = "katilim-funds.json"
@@ -14,9 +15,9 @@ HOST = "https://www.tefas.gov.tr/api/funds/fonGnlBlgSiraliGetir"
 HEAD = {"User-Agent": UA, "Content-Type": "application/json", "Accept": "*/*",
         "Origin": "https://www.tefas.gov.tr", "Referer": "https://www.tefas.gov.tr/tr/fon-verileri"}
 
-# Aday listesi: yalnızca TL cinsi kira sertifikası ve para piyasası katılım fonları (hisse/altın/döviz/serbest yok).
-# kod: (tür, kurucu, beklenen unvan)
+# Aday listesi: kod: (tür, kurucu, beklenen unvan). Unvanda "Katılım" yoksa script fonu reddeder.
 CANDIDATES = {
+    # --- Kira sertifikası (TL) ---
     "VFK": ("kira", "Ziraat Portföy", "ZİRAAT PORTFÖY İKİNCİ KISA VADELİ KİRA SERTİFİKALARI KATILIM (TL) FONU"),
     "ZPG": ("kira", "Ziraat Portföy", "ZİRAAT PORTFÖY KİRA SERTİFİKALARI (SUKUK) KATILIM FONU"),
     "VKK": ("kira", "Vakıf Katılım Portföy", "VAKIF KATILIM PORTFÖY KİRA SERTİFİKALARI KATILIM FONU"),
@@ -25,13 +26,42 @@ CANDIDATES = {
     "KTV": ("kira", "Kuveyt Türk Portföy", "KUVEYT TÜRK PORTFÖY KISA VADELİ KİRA SERTİFİKALARI KATILIM (TL) FONU"),
     "RBT": ("kira", "Albaraka Portföy", "ALBARAKA PORTFÖY KİRA SERTİFİKALARI KATILIM FONU"),
     "RBV": ("kira", "Albaraka Portföy", "ALBARAKA PORTFÖY KISA VADELİ KİRA SERTİFİKALARI KATILIM (TL) FONU"),
+    # --- Para piyasası katılım (TL) ---
     "ZPO": ("pp", "Ziraat Portföy", "ZİRAAT PORTFÖY PARA PİYASASI KATILIM FONU"),
     "VPA": ("pp", "Vakıf Katılım Portföy", "VAKIF KATILIM PORTFÖY PARA PİYASASI KATILIM FONU"),
     "KLU": ("pp", "Kuveyt Türk Portföy", "KUVEYT TÜRK PORTFÖY PARA PİYASASI KATILIM (TL) FONU"),
     "PPG": ("pp", "Albaraka Portföy", "ALBARAKA PORTFÖY PARA PİYASASI KATILIM FONU"),
+    # --- Katılım hisse senedi fonları ---
+    "ZPE": ("hisse", "Ziraat Portföy", "ZİRAAT PORTFÖY KATILIM HİSSE SENEDİ FONU (HİSSE SENEDİ YOĞUN FON)"),
+    "VHS": ("hisse", "Vakıf Katılım Portföy", "VAKIF KATILIM PORTFÖY KATILIM HİSSE SENEDİ FONU (HİSSE SENEDİ YOĞUN FON)"),
+    "KPC": ("hisse", "Kuveyt Türk Portföy", "KUVEYT TÜRK PORTFÖY KATILIM HİSSE SENEDİ (TL) FONU (HİSSE SENEDİ YOĞUN FON)"),
+    "RBH": ("hisse", "Albaraka Portföy", "ALBARAKA PORTFÖY KATILIM HİSSE SENEDİ FONU (HİSSE SENEDİ YOĞUN FON)"),
+    "TIL": ("hisse", "İş Portföy", "İŞ PORTFÖY KATILIM HİSSE SENEDİ (TL) FONU (HİSSE SENEDİ YOĞUN FON)"),
+    "KH1": ("hisse", "AK Portföy", "AK PORTFÖY KATILIM HİSSE SENEDİ FONU (HİSSE SENEDİ YOĞUN FON)"),
+    "GKV": ("hisse", "Garanti Portföy", "GARANTİ PORTFÖY KATILIM HİSSE SENEDİ (TL) FONU (HİSSE SENEDİ YOĞUN FON)"),
+    "YHK": ("hisse", "Yapı Kredi Portföy", "YAPI KREDİ PORTFÖY KATILIM HİSSE SENEDİ FONU (HİSSE SENEDİ YOĞUN FON)"),
+    # --- Altın katılım fonları ---
+    "TCA": ("altin", "Ziraat Portföy", "ZİRAAT PORTFÖY ALTIN KATILIM FONU"),
+    "VLT": ("altin", "Vakıf Katılım Portföy", "VAKIF KATILIM PORTFÖY ALTIN KATILIM FONU"),
+    "KZL": ("altin", "Kuveyt Türk Portföy", "KUVEYT TÜRK PORTFÖY ALTIN KATILIM FONU"),
+    "LKF": ("altin", "İş Portföy", "İŞ PORTFÖY ALTIN KATILIM FONU"),
+    "GOL": ("altin", "Garanti Portföy", "GARANTİ PORTFÖY ALTIN KATILIM FONU"),
+    "KCR": ("altin", "AK Portföy", "AK PORTFÖY KÜLÇE ALTIN KATILIM FONU"),
+    # --- Döviz katılım fonları ---
+    "ZPF": ("doviz", "Ziraat Portföy", "ZİRAAT PORTFÖY KATILIM FONU (DÖVİZ)"),
+    "ZP6": ("doviz", "Ziraat Portföy", "ZİRAAT PORTFÖY SEDEF KATILIM SERBEST (DÖVİZ-AMERİKAN DOLARI) FON"),
+    "ZP9": ("doviz", "Ziraat Portföy", "ZİRAAT PORTFÖY AKİK KATILIM SERBEST (DÖVİZ-AVRO) FON"),
+    "KDL": ("doviz", "Kuveyt Türk Portföy", "KUVEYT TÜRK PORTFÖY BEŞİNCİ KATILIM SERBEST (DÖVİZ) FON"),
+    "KTT": ("doviz", "Kuveyt Türk Portföy", "KUVEYT TÜRK PORTFÖY DÖRDÜNCÜ KATILIM SERBEST (DÖVİZ) FON"),
+    "CKS": ("doviz", "İş Portföy", "İŞ PORTFÖY BİRİNCİ KATILIM SERBEST (DÖVİZ) FON"),
+    # --- Karma / dengeli / teknoloji katılım fonları ---
+    "ZBI": ("diger", "Ziraat Portföy", "ZİRAAT PORTFÖY TEMKİNLİ KATILIM FONU"),
+    "ZCK": ("diger", "Ziraat Portföy", "ZİRAAT PORTFÖY AGRESİF KATILIM FONU"),
+    "KDE": ("diger", "Kuveyt Türk Portföy", "KUVEYT TÜRK PORTFÖY DENGELİ KATILIM FONU"),
+    "KCV": ("diger", "Kuveyt Türk Portföy", "KUVEYT TÜRK PORTFÖY ÇOKLU VARLIK KATILIM FONU"),
+    "GPF": ("diger", "Garanti Portföy", "GARANTİ PORTFÖY ÇOKLU VARLIK KATILIM FONU"),
+    "KTJ": ("diger", "Kuveyt Türk Portföy", "KUVEYT TÜRK PORTFÖY TEKNOLOJİ KATILIM FONU"),
 }
-# Bunlar unvanda geçerse (katılım olsa bile) listeye alınmaz: kullanıcı altın/döviz/hisse istemiyor.
-BLOCK_WORDS = ["ALTIN", "DÖVİZ", "DOVIZ", "HİSSE", "HISSE", "SERBEST", "KAR PAYI", "KIYMETLİ", "KIYMETLI", "EUROBOND", "BORÇLANMA"]
 LOG = []
 
 
@@ -66,7 +96,7 @@ def tefas(code, a, b):
                        "dil": "TR", "sFonTurKod": "", "fonKod": "", "fonGrup": "", "fonUnvanTip": ""}).encode()
     rows = None
     for attempt in range(5):            # TEFAS hız sınırı (429) / zaman aşımı: bekleyip yeniden dene
-        time.sleep(1.5 if attempt == 0 else 6 * attempt)
+        time.sleep(2.5 if attempt == 0 else 8 * attempt)
         try:
             req = urllib.request.Request(HOST, data=body, headers=HEAD, method="POST")
             with urllib.request.urlopen(req, timeout=40) as r:
@@ -124,11 +154,6 @@ def main():
             if "KATILIM" not in norm(unvan):
                 rejected.append({"kod": code, "unvan": unvan, "neden": "TEFAS unvanında 'Katılım' yok"})
                 log(f"{code}: REDDEDİLDİ, unvan '{unvan}'")
-                continue
-            blocked = [w for w in BLOCK_WORDS if norm(w) in norm(unvan)]
-            if blocked:
-                rejected.append({"kod": code, "unvan": unvan, "neden": "istenmeyen tür: " + ", ".join(blocked)})
-                log(f"{code}: REDDEDİLDİ, tür {blocked}")
                 continue
             dogrulama = "tefas"
         else:

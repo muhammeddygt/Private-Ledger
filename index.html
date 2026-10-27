@@ -340,6 +340,7 @@ details.sv-sum[open] summary{color:var(--text);}
 .fz-hold{display:flex; justify-content:space-between; align-items:center; gap:8px; margin-top:11px; padding-top:10px; border-top:1px solid var(--line); font-size:11px; color:var(--text-dim);}
 .fz-hold input{width:84px; text-align:right; background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:5px 7px; font-family:var(--font-num); font-size:11.5px; color:var(--text);}
 .fz-hold b{font-family:var(--font-num); color:var(--text); font-weight:500;}
+.fz-warn{margin-top:8px; font-size:9.5px; line-height:1.45; color:var(--amber); background:rgba(232,200,75,.1); border-radius:8px; padding:6px 8px;}
 .fz-note{font-size:10px; color:var(--text-faint); margin-top:14px; line-height:1.55;}
 </style>
 </head>
@@ -2493,6 +2494,8 @@ details.sv-sum[open] summary{color:var(--text);}
   function fzPct(v){ if(v===null||v===undefined||!isFinite(v)) return '—'; return (v>=0?'+':'−')+'%'+Math.abs(v*100).toLocaleString('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
   function fzCls(v){ return (v===null||v===undefined||!isFinite(v)||v===0) ? '' : (v>0?'up':'dn'); }
   function fzPx(v){ return Number(v).toLocaleString('tr-TR',{minimumFractionDigits:4,maximumFractionDigits:6}); }
+  var FZ_TUR = {kira:'Kira sertifikası', pp:'Para piyasası', hisse:'Hisse', altin:'Altın', doviz:'Döviz', diger:'Karma / diğer'};
+  var FZ_RISKY = {hisse:1, altin:1, doviz:1, diger:1};     // değeri dalgalanan türler: kartta uyarı çıkar
   function fzNewest(){ var m = ''; fzFunds().forEach(function(x){ if(x.st && x.st.last > m) m = x.st.last; }); return m; }
   function renderFaizsiz(){
     var el = document.getElementById('s-faizsiz'); if(!el) return;
@@ -2508,20 +2511,24 @@ details.sv-sum[open] summary{color:var(--text);}
       if(x.st.pb) dMon += u*(x.st.pl-x.st.pb);
     });
     var sg = function(v){ return (v>=0?'+':'−')+fmt(Math.abs(v)); };
+    var avgD = 0, avgM = 0, aD = 0, aM = 0;
+    list.forEach(function(x){ if(!x.st) return; if(x.st.d1!==null){ avgD += x.st.d1; aD++; } if(x.st.m1!==null){ avgM += x.st.m1; aM++; } });
     var hero;
     if(held){
       hero = '<div class="hero-card"><div class="hero-label">Faizsiz yatırım toplamı</div><div class="hero-num">'+fmt(tot)+'</div>'+
         '<div class="stat-row c2"><div class="stat-mini"><div class="l">Son gün</div><div class="v" style="color:'+(dDay>=0?'var(--acc)':'var(--red)')+'">'+sg(dDay)+'</div></div>'+
         '<div class="stat-mini"><div class="l">Son 30 gün<small>bugünkü adetle</small></div><div class="v" style="color:'+(dMon>=0?'var(--acc)':'var(--red)')+'">'+sg(dMon)+'</div></div></div></div>';
     } else {
+      var fl = fzFilter==='all' ? 'tüm fonlar' : (FZ_TUR[fzFilter]||'').toLowerCase();
       hero = '<div class="hero-card"><div class="hero-label">Onaylı katılım fonu</div><div class="hero-num">'+all.length+' fon</div>'+
-        '<div class="stat-row c2"><div class="stat-mini"><div class="l">Ort. günlük</div><div class="v">'+fzPct(nD?sumD/nD:null)+'</div></div>'+
-        '<div class="stat-mini"><div class="l">Ort. 30 gün</div><div class="v">'+fzPct(nM?sumM/nM:null)+'</div></div></div>'+
+        '<div class="stat-row c2"><div class="stat-mini"><div class="l">Ort. günlük<small>'+fl+'</small></div><div class="v">'+fzPct(aD?avgD/aD:null)+'</div></div>'+
+        '<div class="stat-mini"><div class="l">Ort. 30 gün<small>'+fl+'</small></div><div class="v">'+fzPct(aM?avgM/aM:null)+'</div></div></div>'+
         '<div class="fz-stat">Elindeki pay adedini fon kartlarına yazarsan toplam değer burada görünür.</div></div>';
     }
-    var chips = [['all','Tümü'],['kira','Kira sertifikası'],['pp','Para piyasası']].map(function(c){ return '<button class="fz-chip'+(fzFilter===c[0]?' on':'')+'" data-action="fz-filter" data-f="'+c[0]+'">'+c[1]+'</button>'; }).join('');
+    var chips = [['all','Tümü'],['kira','Kira sertifikası'],['pp','Para piyasası'],['hisse','Hisse'],['altin','Altın'],['doviz','Döviz'],['diger','Karma']].filter(function(c){ return c[0]==='all' || all.some(function(x){ return x.f.tur===c[0]; }); })
+      .map(function(c){ return '<button class="fz-chip'+(fzFilter===c[0]?' on':'')+'" data-action="fz-filter" data-f="'+c[0]+'">'+c[1]+'</button>'; }).join('');
     var cards = list.map(function(x){
-      var f = x.f, s = x.st, u = fzUnits(x.code), tur = f.tur==='kira' ? 'Kira sertifikası' : 'Para piyasası';
+      var f = x.f, s = x.st, u = fzUnits(x.code), tur = FZ_TUR[f.tur] || 'Katılım fonu';
       var badge = f.dogrulama==='tefas' ? '✓ Katılım fonu · TEFAS' : '✓ Katılım fonu · liste';
       var hold = u.auto
         ? '<span>Birikim sekmesinden: <b>'+Number(u.n).toLocaleString('tr-TR',{maximumFractionDigits:3})+' pay</b></span><span>Değer: <b>'+fmt(u.n*s.pl)+'</b></span>'
@@ -2529,7 +2536,9 @@ details.sv-sum[open] summary{color:var(--text);}
       return '<div class="fz-card"><div class="fz-top"><div><div class="fz-nm">'+esc(f.unvan||x.code)+'</div>'+
         '<div class="fz-sub"><span class="fz-code">'+esc(x.code)+'</span>'+tur+' · '+esc(f.kurucu||'')+'</div></div><span class="fz-badge">'+badge+'</span></div>'+
         '<div class="fz-stats"><div>Fiyat<b>'+fzPx(s.pl)+'</b></div><div>Günlük<b class="'+fzCls(s.d1)+'">'+fzPct(s.d1)+'</b></div><div>30 gün<b class="'+fzCls(s.m1)+'">'+fzPct(s.m1)+'</b></div></div>'+
-        '<div class="fz-hold">'+hold+'</div><div class="fz-sub" style="margin-top:6px;">Fiyat tarihi '+isoDMY(s.last)+'</div></div>';
+        '<div class="fz-hold">'+hold+'</div>'+
+        (FZ_RISKY[f.tur] ? '<div class="fz-warn">⚠ Dalgalı: değeri kısa sürede düşebilir. Kira sertifikası / para piyasası gibi sabit getirili değil.</div>' : '')+
+        '<div class="fz-sub" style="margin-top:6px;">Fiyat tarihi '+isoDMY(s.last)+'</div></div>';
     }).join('');
     if(!all.length) cards = '<div class="empty-note">'+(fzBusy ? 'Fonlar yükleniyor…' : 'Doğrulanmış fon verisi henüz yok. “↻ Yenile”ye basarak çek.')+'</div>';
     else if(!list.length) cards = '<div class="empty-note">Bu türde fon yok.</div>';
@@ -2538,7 +2547,7 @@ details.sv-sum[open] summary{color:var(--text);}
     el.innerHTML = '<div class="fz-head"><div class="month-title" style="font-size:20px;">Faizsiz</div><button class="xfer-btn" data-action="fz-refresh"'+(fzBusy?' disabled':'')+'>'+(fzBusy?'Çekiliyor…':'↻ Yenile')+'</button></div>'+
       '<div class="fz-stat">'+(fzMsg ? esc(fzMsg)+' · ' : '')+'Veri güncellendi: '+upd+'</div>'+
       hero+'<div class="fz-chips">'+chips+'</div>'+cards+
-      '<div class="fz-note">Bu listede yalnızca TL cinsi kira sertifikası ve para piyasası fonları var; unvanında “Katılım” geçmeyen, hisse, altın, döviz ve serbest fonlar alınmaz. Katılım fonları SPK düzenlemesi gereği faizli araçlara yatırım yapamaz ve katılım danışma kurulu denetimindedir. Fiyatlar TEFAS’tan alınır; günlük/30 gün getiri buradaki fiyat geçmişinden hesaplanır. Kesin hüküm için fonun izahnamesine ve KAP’a bak.'+rej+'</div>';
+      '<div class="fz-note">Bu listede yalnızca unvanında “Katılım” geçen fonlar var; geçmeyen fon TEFAS kontrolünde elenir. Katılım fonları SPK düzenlemesi gereği faizli araçlara yatırım yapamaz ve katılım danışma kurulu denetimindedir. Kira sertifikası ve para piyasası fonlarının değeri az oynar; hisse, altın, döviz ve karma fonlar dalgalıdır ve zarar edebilirsin. Fiyatlar TEFAS’tan alınır; günlük/30 gün getiri buradaki fiyat geçmişinden hesaplanır. Kesin hüküm için fonun izahnamesine ve KAP’a bak.'+rej+'</div>';
   }
   async function fzLive(){      // TEFAS doğrudan/proxy: yalnızca json'daki doğrulanmış fonlar için, eksik günleri tamamlar
     var codes = fzFunds().map(function(x){ return x.code; }), saved = _fundLog, got = 0, need = lastPublishedDate();
@@ -3328,7 +3337,7 @@ details.sv-sum[open] summary{color:var(--text);}
   fitApp();
 
   /* ===================== BAŞLAT ===================== */
-  var APP_VERSION = 'v34';
+  var APP_VERSION = 'v35';
   (function(){
     var v = document.getElementById('appVer'); if(v) v.textContent = APP_VERSION;
     var ub = document.getElementById('updateBtn');

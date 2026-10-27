@@ -1,4 +1,4 @@
-var CACHE_NAME = 'private-ledger-v34';
+var CACHE_NAME = 'private-ledger-v35';
 var SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', function(e){
