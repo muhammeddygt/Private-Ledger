@@ -438,7 +438,7 @@ details.sv-sum[open] summary{color:var(--text);}
       salaryMonthly:{},
       debts:[], ekBorclular:[], expenses:[], faturalar:[],
       offBudgetExpenses:{}, recurringOb:[], sectionOrder:['expenses','faturalar','offbudget','kk','kmh','kredi','manuel','ek','savings'],
-      savings:{rate:3.1, rateByMonth:{}, deposits:{}, fund:{code:'VFK', prices:{}, ts:0, src:'', off:false, lag:1}},
+      savings:{rate:3.1, rateByMonth:{}, deposits:{}, fund:{code:'VFK', prices:{}, ts:0, src:'', off:false, lag:0, lagSet:false}},
       gold:{prices:{k22:{alis:0,satis:0}, k24:{alis:0,satis:0}, s1:{fiyat:0, ratio:0, est:false, src:''}, ts:null, src:''}, entries:{}},
       theme:{name:'siyah', accent:'#D4FF3F'}
     };
@@ -726,7 +726,7 @@ details.sv-sum[open] summary{color:var(--text);}
     out.savings = {rate:(typeof sv.rate==='number'&&sv.rate>=0)?sv.rate:3.1, rateByMonth:sv.rateByMonth||{}, deposits:sv.deposits||{}};
     var fd = sv.fund||{}, fpr = {};
     Object.keys(fd.prices||{}).forEach(function(dk){ var v = Number(fd.prices[dk]); if(/^\d{4}-\d{2}-\d{2}$/.test(dk) && v>0) fpr[dk] = v; });
-    out.savings.fund = {code:String(fd.code||'VFK').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,8)||'VFK', prices:fpr, ts:Number(fd.ts||0), src:String(fd.src||''), off:!!fd.off, lag:(fd.lag===0?0:1)};
+    out.savings.fund = {code:String(fd.code||'VFK').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,8)||'VFK', prices:fpr, ts:Number(fd.ts||0), src:String(fd.src||''), off:!!fd.off, lag:((fd.lagSet===true && fd.lag===1)?1:0), lagSet:(fd.lagSet===true)};
     var gd = (parsed&&parsed.gold)||{}, gp = gd.prices||{};
     function pr(o,a,b){ o=o||{}; var r={}; r[a]=Number(o[a]||0); if(b) r[b]=Number(o[b]||0); return r; }
     var s1p = pr(gp.s1,'fiyat'); s1p.ratio = Number((gp.s1||{}).ratio||0); s1p.est = !!(gp.s1||{}).est; s1p.src = String((gp.s1||{}).src||'');
@@ -1261,9 +1261,10 @@ details.sv-sum[open] summary{color:var(--text);}
   }
   function fundTL(){
     var F = STATE && STATE.savings && STATE.savings.fund; if(!F || F.off) return null;
-    if(_fundTL && _fundTL.src===F.prices) return _fundTL.ok ? _fundTL : null;
-    var dates = Object.keys(F.prices).sort();
-    _fundTL = {src:F.prices, ok:dates.length>0, dates:dates, first:dates[0], last:dates[dates.length-1], px:F.prices};
+    var lpd = lastPublishedDate();
+    if(_fundTL && _fundTL.src===F.prices && _fundTL.lpd===lpd) return _fundTL.ok ? _fundTL : null;
+    var dates = Object.keys(F.prices).filter(function(d){ return d <= lpd; }).sort();
+    _fundTL = {src:F.prices, lpd:lpd, ok:dates.length>0, dates:dates, first:dates[0], last:dates[dates.length-1], px:F.prices};
     return _fundTL.ok ? _fundTL : null;
   }
   function fundPrice(iso){
@@ -1297,6 +1298,7 @@ details.sv-sum[open] summary{color:var(--text);}
       var gap = 0;
       deps.forEach(function(x){ if(x.gun && Math.min(x.gun,dim) === d){ dep += Number(x.tutar||0); if(x.adet && p!=null) gap += x.adet*p - Number(x.tutar||0); } });
       if(p!=null && prevP!=null) k2 = bal*(p/prevP-1) + gap;
+      else if(p!=null) k2 = gap;                       // ilk fiyat günü: öncesi bilinmiyor, büyüme yok
       else k2 = Math.max(0,bal+dep)*r/100/dim;
       bal = Math.max(0, bal + k2 + dep); cum += k2; prevP = p;
       rows.push({d:d, bal:bal, kar:k2, cum:cum, p:p});
@@ -1507,9 +1509,9 @@ details.sv-sum[open] summary{color:var(--text);}
   var _fundLog = [], _fundAuto = false;
   function fundLog(x){ _fundLog.push(x); }
   function fmtPx(v){ return Number(v).toLocaleString('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:6}); }
-  function lastPublishedDate(){     // yayınlanmış olması beklenen son iş günü (fon fiyatları akşam açıklanır)
+  function lastPublishedDate(){     // değerlemede esas alınan son iş günü (bugünün fiyatı akşam 19:00'dan sonra)
     var n = new Date(), iso = isoToday();
-    if(n.getHours() < 19 || isoIsWeekend(iso)) iso = isoAddDays(iso,-1);
+    if(n.getHours() < 19) iso = isoAddDays(iso,-1);      // bugünün fiyatı akşama kadar "güncel" sayılmaz (fon uygulamalarıyla aynı görünsün)
     while(isoIsWeekend(iso)) iso = isoAddDays(iso,-1);
     return iso;
   }
@@ -1529,10 +1531,11 @@ details.sv-sum[open] summary{color:var(--text);}
   }
   function parseTefasJson(txt, code){
     try{
-      var j = JSON.parse(txt), arr = Array.isArray(j) ? j : (j.data||[]), out = {}, c = 0;
+      var j = JSON.parse(txt), arr = Array.isArray(j) ? j : (j.resultList||j.data||[]), out = {}, c = 0;
       arr.forEach(function(x){
-        if(x.FONKODU && String(x.FONKODU).toUpperCase()!==code) return;
-        var pr = Number(x.FIYAT!=null ? x.FIYAT : x.Fiyat), t = String(x.TARIH!=null ? x.TARIH : x.Tarih), iso = null;
+        var fk = x.fonKodu||x.FONKODU; if(fk && String(fk).toUpperCase()!==code) return;
+        var pr = Number(x.fiyat!=null ? x.fiyat : (x.FIYAT!=null ? x.FIYAT : x.Fiyat)), t = String(x.tarih!=null ? x.tarih : (x.TARIH!=null ? x.TARIH : x.Tarih)), iso = null;
+        if(/^\d{8}$/.test(t)) t = t.slice(0,4)+'-'+t.slice(4,6)+'-'+t.slice(6,8);
         if(/^\d{10,}$/.test(t)){ var dt = new Date(Number(t)+3*3600*1000); iso = isoDate(dt.getUTCFullYear(), dt.getUTCMonth()+1, dt.getUTCDate()); }
         else if(/^\d{2}\.\d{2}\.\d{4}/.test(t)){ var a = t.split('.'); iso = a[2].slice(0,4)+'-'+a[1]+'-'+a[0]; }
         else if(/^\d{4}-\d{2}-\d{2}/.test(t)) iso = t.slice(0,10);
@@ -1546,12 +1549,13 @@ details.sv-sum[open] summary{color:var(--text);}
     try{ opt = opt||{}; if(ctrl) opt.signal = ctrl.signal; return await fetch(url, opt); } finally { clearTimeout(tm); }
   }
   async function tefasRange(code, fromIso, toIso){
-    var body = 'fontip=YAT&sfontur=&fonkod='+code+'&fongrup=&bastarih='+isoDMY(fromIso)+'&bittarih='+isoDMY(toIso)+'&fonturkod=&fonunvantip=&kurucukod=';
-    var hosts = ['https://www.tefas.gov.tr/api/DB/BindHistoryInfo','https://fundturkey.com.tr/api/DB/BindHistoryInfo'];
-    var vars = [[hosts[0],'TEFAS'],[hosts[1],'TEFAS (fundturkey)'],['https://corsproxy.io/?url='+encodeURIComponent(hosts[0]),'TEFAS (proxy)']];
+    var body = JSON.stringify({fonTipi:'YAT', fonKodu:code, aramaMetni:null, fonTurKod:null, fonGrubu:null, sfonTurKod:null, fonTurAciklama:null, kurucuKod:null,
+      basTarih:fromIso.replace(/-/g,''), bitTarih:toIso.replace(/-/g,''), basSira:1, bitSira:100000, dil:'TR', sFonTurKod:'', fonKod:'', fonGrup:'', fonUnvanTip:''});
+    var host = 'https://www.tefas.gov.tr/api/funds/fonGnlBlgSiraliGetir';
+    var vars = [[host,'TEFAS'],['https://corsproxy.io/?url='+encodeURIComponent(host),'TEFAS (proxy)']];
     for(var i=0;i<vars.length;i++){
       try{
-        var r = await fetchTimeout(vars[i][0], {method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8'}, body:body, cache:'no-store'}, 12000);
+        var r = await fetchTimeout(vars[i][0], {method:'POST', headers:{'Content-Type':'application/json'}, body:body, cache:'no-store'}, 12000);
         if(!r.ok){ fundLog(vars[i][1]+': HTTP '+r.status); continue; }
         var map = parseTefasJson(await r.text(), code);
         if(map) return {map:map, src:vars[i][1]};
@@ -1594,8 +1598,8 @@ details.sv-sum[open] summary{color:var(--text);}
     }catch(e){ fundLog('fund-prices.json: erişilemedi'); }
     // 2) TEFAS (doğrudan / proxy)
     if(newest() < need){
-      for(var a = fromIso; a <= toIso; a = isoAddDays(a,80)){
-        var b = isoAddDays(a,79); if(b > toIso) b = toIso;
+      for(var a = fromIso; a <= toIso; a = isoAddDays(a,28)){
+        var b = isoAddDays(a,27); if(b > toIso) b = toIso;
         var res = await tefasRange(code, a, b);
         if(!res) break;
         total += fundMerge(res.map, res.src); fundLog(res.src+': '+Object.keys(res.map).length+' fiyat');
@@ -1628,7 +1632,7 @@ details.sv-sum[open] summary{color:var(--text);}
       '<div class="line-row" style="gap:6px; margin-top:6px;"><button class="xfer-btn" style="flex:1;" data-action="sv-add-adet" data-key="'+key+'">＋ Alım ekle</button><button class="xfer-btn" style="flex:1;" data-action="sv-sell-adet" data-key="'+key+'">− Satış ekle</button></div>'+
       '<div class="line-row" style="gap:6px;"><span class="n" style="font-size:10px; color:var(--text-faint);">Elimdeki adet ≈ <b>'+Number(fundUnits()).toLocaleString('tr-TR',{maximumFractionDigits:3})+'</b></span><button class="xfer-btn" data-action="sv-sell-all" data-key="'+key+'">Tümünü boz</button></div>'+
       '<div class="line-row" style="gap:6px;"><input class="amt" style="flex:1; text-align:left;" id="fnPx" inputmode="decimal" placeholder="Fiyatı elle gir (örn 5,8036)"><input class="mini-input" style="width:86px;" id="fnPxDate" value="'+isoDMY(lastPublishedDate())+'" title="Fiyatın tarihi gg.aa.yyyy"><button class="xfer-btn" data-action="fn-add">+ Fiyat</button></div>'+
-      '<div class="line-row" style="gap:6px;"><span class="n" style="font-size:10px; color:var(--text-faint);">Adetle girilen alım/satım fiyatı: <b>'+(F.lag?'bir önceki iş günü fiyatı':'aynı gün fiyatı')+'</b> (fiyat yazarsan o kullanılır)</span><button class="xfer-btn" data-action="fn-lag">Değiştir</button></div>'+
+      '<div class="line-row" style="gap:6px;"><span class="n" style="font-size:10px; color:var(--text-faint);">Adetle girilen alım/satım fiyatı: <b>'+(F.lag?'bir önceki iş günü fiyatı':'işlem günü fiyatı (TEFAS\'taki o günün fiyatı)')+'</b> (fiyat yazarsan o kullanılır)</span><button class="xfer-btn" data-action="fn-lag">Değiştir</button></div>'+
       '<div class="line-row" style="gap:6px;"><span class="n" style="font-size:10px; color:var(--text-faint);">Kar payı fonun günlük fiyatından hesaplanır. Fiyat hafta sonu değişmez, Pazartesi birikmiş getiri birden yansır.</span><button class="xfer-btn" data-action="fn-toggle">'+(F.off?'Fiyatı kullan':'Kapat')+'</button></div>';
   }
   function renderSavingsAcc(key){
@@ -2930,7 +2934,7 @@ details.sv-sum[open] summary{color:var(--text);}
       var fo = {}; fo[fm[3]+'-'+String(fm[2]).padStart(2,'0')+'-'+String(fm[1]).padStart(2,'0')] = fv;
       fundMerge(fo, 'elle'); save(); renderAll(); return;
     }
-    if(action==='fn-lag'){ STATE.savings.fund.lag = STATE.savings.fund.lag ? 0 : 1; refreshAdet(STATE.savings); save(); renderAll(); return; }
+    if(action==='fn-lag'){ STATE.savings.fund.lag = STATE.savings.fund.lag ? 0 : 1; STATE.savings.fund.lagSet = true; refreshAdet(STATE.savings); save(); renderAll(); return; }
     if(action==='fn-toggle'){ STATE.savings.fund.off = !STATE.savings.fund.off; STATE.savings.fund.prices = Object.assign({}, STATE.savings.fund.prices); save(); renderAll(); return; }
     if(action==='gd-fetch'){
       var st0 = document.getElementById('gdStatus'); if(st0) st0.textContent = 'Fiyatlar çekiliyor…';
@@ -3182,7 +3186,7 @@ details.sv-sum[open] summary{color:var(--text);}
   fitApp();
 
   /* ===================== BAŞLAT ===================== */
-  var APP_VERSION = 'v32';
+  var APP_VERSION = 'v33';
   (function(){
     var v = document.getElementById('appVer'); if(v) v.textContent = APP_VERSION;
     var ub = document.getElementById('updateBtn');
