@@ -1,0 +1,12 @@
+{
+ "code": "VFK",
+ "source": "fon sayfası",
+ "count": 1,
+ "last": "2026-10-26",
+ "log": [
+  "www.tefas.gov.tr: HTTPError 404 HTTP Error 404: Not Found",
+  "fundturkey.com.tr: HTTPError 404 HTTP Error 404: Not Found",
+  "marketvisuals: 2026-10-26 5.819",
+  "ekofin: fiyat bulunamadı"
+ ]
+}
