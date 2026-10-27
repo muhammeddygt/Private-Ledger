@@ -1,5 +1,9 @@
 name: Fon fiyatlarını güncelle
 on:
+  push:
+    paths:
+      - ".github/workflows/fund-prices.yml"
+      - "scripts/fetch_fund.py"
   schedule:
     - cron: "30 15 * * 1-5"
     - cron: "30 18 * * 1-5"

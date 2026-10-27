@@ -1567,6 +1567,7 @@ details.sv-sum[open] summary{color:var(--text);}
       var t = await getText(urls[i][0]); if(!t){ fundLog(urls[i][1]+': açılamadı'); continue; }
       var txt = String(t).replace(/<script[\s\S]*?<\/script>/gi,' ').replace(/<style[\s\S]*?<\/style>/gi,' ').replace(/<[^>]+>/g,' ').replace(/&nbsp;/g,' ').replace(/\s+/g,' ');
       var m = /(?:Son\s*)?(?:Fiyat|Birim\s*Pay\s*Fiyatı)[^0-9]{0,40}(\d{1,3}(?:\.\d{3})*,\d{3,6})/i.exec(txt);
+      if(!m){ var ci = txt.indexOf(code); if(ci>-1) m = /(\d{1,3},\d{4,6})/.exec(txt.slice(ci, ci+600)); }
       if(!m){ fundLog(urls[i][1]+': fiyat bulunamadı'); continue; }
       var v = parseNum(m[1]);
       if(!(v>0) || (last>0 && Math.abs(v/last-1) > 0.06)){ fundLog(urls[i][1]+': fiyat mantıksız ('+m[1]+')'); continue; }
@@ -1614,10 +1615,18 @@ details.sv-sum[open] summary{color:var(--text);}
     _fundAuto = true;
     fetchFundPrices().then(function(r){ if(r.n>0){ save(); renderAll(); } }).catch(function(){});
   }
-  function fundBlockHtml(){
+  function fundBlockHtml(key){
     var F = STATE.savings.fund, log = _fundLog.length ? '<div class="year-note" style="opacity:.75; margin-top:2px;">'+_fundLog.map(function(x){ return x.replace(/</g,'&lt;'); }).join('<br>')+'</div>' : '';
     return '<div class="section-title" style="margin:14px 0 4px; font-size:10.5px;">Fon fiyatı · '+F.code+'</div>'+
       '<div class="line-row" style="gap:6px;"><span class="n" id="fnStatus" style="font-size:10px; color:var(--text-faint);">'+fundStatusText()+'</span><button class="xfer-btn" data-action="fn-fetch">↻ Fiyatı çek</button></div>'+log+
+      '<div class="section-title" style="margin:14px 0 4px; font-size:10.5px;">Fon alım / satım · adet ile</div>'+
+      '<div style="display:flex; gap:6px; align-items:flex-end;">'+
+        '<label style="flex:1.2; font-size:9.5px; color:var(--text-faint);">Adet<input class="amt" style="width:100%; text-align:left; margin-top:2px;" id="svAdet" inputmode="decimal" placeholder="örn 870"></label>'+
+        '<label style="flex:1.3; font-size:9.5px; color:var(--text-faint);">Fiyat <span style="opacity:.7;">(boşsa oto)</span><input class="amt" style="width:100%; text-align:left; margin-top:2px;" id="svAdetPx" inputmode="decimal" placeholder="örn 5,761481"></label>'+
+        '<label style="flex:.6; font-size:9.5px; color:var(--text-faint);">Gün<input class="mini-input" style="width:100%; margin-top:2px;" id="svAdetDay" inputmode="numeric" value="'+(key===nowKey()?new Date().getDate():1)+'"></label>'+
+      '</div>'+
+      '<div class="line-row" style="gap:6px; margin-top:6px;"><button class="xfer-btn" style="flex:1;" data-action="sv-add-adet" data-key="'+key+'">＋ Alım ekle</button><button class="xfer-btn" style="flex:1;" data-action="sv-sell-adet" data-key="'+key+'">− Satış ekle</button></div>'+
+      '<div class="line-row" style="gap:6px;"><span class="n" style="font-size:10px; color:var(--text-faint);">Elimdeki adet ≈ <b>'+Number(fundUnits()).toLocaleString('tr-TR',{maximumFractionDigits:3})+'</b></span><button class="xfer-btn" data-action="sv-sell-all" data-key="'+key+'">Tümünü boz</button></div>'+
       '<div class="line-row" style="gap:6px;"><input class="amt" style="flex:1; text-align:left;" id="fnPx" inputmode="decimal" placeholder="Fiyatı elle gir (örn 5,8036)"><input class="mini-input" style="width:86px;" id="fnPxDate" value="'+isoDMY(lastPublishedDate())+'" title="Fiyatın tarihi gg.aa.yyyy"><button class="xfer-btn" data-action="fn-add">+ Fiyat</button></div>'+
       '<div class="line-row" style="gap:6px;"><span class="n" style="font-size:10px; color:var(--text-faint);">Adetle girilen alım/satım fiyatı: <b>'+(F.lag?'bir önceki iş günü fiyatı':'aynı gün fiyatı')+'</b> (fiyat yazarsan o kullanılır)</span><button class="xfer-btn" data-action="fn-lag">Değiştir</button></div>'+
       '<div class="line-row" style="gap:6px;"><span class="n" style="font-size:10px; color:var(--text-faint);">Kar payı fonun günlük fiyatından hesaplanır. Fiyat hafta sonu değişmez, Pazartesi birikmiş getiri birden yansır.</span><button class="xfer-btn" data-action="fn-toggle">'+(F.off?'Fiyatı kullan':'Kapat')+'</button></div>';
@@ -1643,8 +1652,6 @@ details.sv-sum[open] summary{color:var(--text);}
         (fundTL() ? '<div class="year-note" style="margin-top:0;">Fon fiyatı olan günler fiyata göre hesaplanır; bu oran sadece fiyatı olmayan (gelecek) günler için.</div>' : '')+
         (rows || '<div class="empty-note">Bu ay yatırım yok</div>')+
         '<div class="line-row" style="gap:6px;"><input class="amt" style="flex:1; text-align:left;" id="svNew" inputmode="decimal" placeholder="Tutar (çekim için −)"><span style="display:flex; align-items:center; gap:4px; font-size:10px; color:var(--text-faint);">gün<input class="mini-input" style="width:40px;" id="svNewDay" inputmode="numeric" value="'+(key===nowKey()?new Date().getDate():1)+'" title="Yatırım günü (kar payı o günden işler)"></span><button class="xfer-btn" data-action="sv-add" data-key="'+key+'">+ Ekle</button></div>'+
-        (fundTL() ? '<div class="line-row" style="gap:6px; flex-wrap:wrap;"><input class="amt" style="flex:1; min-width:110px; text-align:left;" id="svAdet" inputmode="decimal" placeholder="Adet (satış için −)"><input class="mini-input" style="width:84px;" id="svAdetPx" inputmode="decimal" placeholder="fiyat (ops.)" title="İşlem fiyatı. Boş bırakırsan otomatik"><span style="display:flex; align-items:center; gap:4px; font-size:10px; color:var(--text-faint);">gün<input class="mini-input" style="width:40px;" id="svAdetDay" inputmode="numeric" value="'+(key===nowKey()?new Date().getDate():1)+'"></span><button class="xfer-btn" data-action="sv-add-adet" data-key="'+key+'">+ Adet</button></div>'+
-          '<div class="line-row" style="gap:6px;"><span class="n" style="font-size:10px; color:var(--text-faint);">Elimdeki adet ≈ <b>'+Number(fundUnits()).toLocaleString('tr-TR',{maximumFractionDigits:3})+'</b> · TL tutarı o günkü fon fiyatıyla hesaplanır</span><button class="xfer-btn" data-action="sv-sell-all" data-key="'+key+'">Tümünü boz</button></div>' : '')+
         (function(){
           if(!row) return '';
           var dd = savingsDaily(key, row.open), td = (key===nowKey()) ? new Date().getDate() : null, h = '';
@@ -1655,7 +1662,7 @@ details.sv-sum[open] summary{color:var(--text);}
         '<div class="year-note" style="margin-top:8px;">Bu ay kar payı <b>'+fmt(row?row.kar:0)+'</b> · toplam yatırılan <b>'+fmtShort(ser.dep)+'</b> · toplam kar payı <b>'+fmt(ser.kar)+'</b></div>'+
         '<div class="year-note">'+monthNameFromKey(nextKey)+' için beklenen kar payı ≈ <b>'+fmt(nextKar)+'</b> (%'+String(savingsRate(nextKey)).replace('.',',')+')</div>'+
         '<div class="year-note" style="opacity:.8;">Yatırdığın tutar bu ayın "Maaştan Kalan"ından düşer, çekim ise eklenir. Kar payı yatırım gününden (o gün dahil) günlük işler; günü yazılmamış eski kayıtlar ertesi aydan işler.</div>'+
-        fundBlockHtml()+
+        fundBlockHtml(key)+
         renderGoldSection(key)+
       '</div></details>';
   }
@@ -2977,18 +2984,17 @@ details.sv-sum[open] summary{color:var(--text);}
       (STATE.savings.deposits[sk] = STATE.savings.deposits[sk]||[]).push({id:uid(), tutar:amt, gun:dayV});
       save(); renderAll(); return;
     }
-    if(action==='sv-add-adet' || action==='sv-sell-all'){
-      var ak = t.dataset.key, adetV, dV;
-      if(action==='sv-sell-all'){ adetV = -Math.round(fundUnits()*1e6)/1e6; dV = (ak===nowKey()) ? new Date().getDate() : 1; }
-      else {
-        var ai = document.getElementById('svAdet'), di = document.getElementById('svAdetDay');
-        adetV = parseNum(ai?ai.value:''); dV = Math.round(parseNum(di?di.value:''));
-        if(!(dV>=1)) dV = (ak===nowKey()) ? new Date().getDate() : 1;
-      }
-      if(!adetV || !isFinite(adetV)){ var ai2 = document.getElementById('svAdet'); if(ai2) ai2.focus(); return; }
+    if(action==='sv-add-adet' || action==='sv-sell-adet' || action==='sv-sell-all'){
+      var ak = t.dataset.key, adetV, dV, pxv = 0, fst = document.getElementById('fnStatus');
+      var ai = document.getElementById('svAdet'), di = document.getElementById('svAdetDay'), pxi = document.getElementById('svAdetPx');
+      dV = Math.round(parseNum(di?di.value:'')); if(!(dV>=1)) dV = (ak===nowKey()) ? new Date().getDate() : 1;
       dV = Math.min(dV, daysInMonthKey(ak));
+      if(action==='sv-sell-all'){ adetV = -Math.round(fundUnits()*1e6)/1e6; }
+      else { var av = Math.abs(parseNum(ai?ai.value:'')); adetV = action==='sv-sell-adet' ? -av : av; pxv = parseNum(pxi?pxi.value:''); }
+      if(!adetV || !isFinite(adetV)){ if(ai) ai.focus(); if(fst) fst.textContent = 'Önce adedi yaz'; return; }
       var ent = {id:uid(), tutar:0, gun:dV, adet:adetV};
-      if(action==='sv-add-adet'){ var pxi = document.getElementById('svAdetPx'), pxv = parseNum(pxi?pxi.value:''); if(pxv>0) ent.fiyat = pxv; }
+      if(pxv>0) ent.fiyat = pxv;
+      else if(!(fundPxAt(STATE.savings.fund.prices, depIso(ak,ent))>0)){ if(fst) fst.textContent = 'Fon fiyatı yok: fiyat kutusuna işlem fiyatını yaz ya da önce fiyat gir'; return; }
       (STATE.savings.deposits[ak] = STATE.savings.deposits[ak]||[]).push(ent);
       refreshAdet(STATE.savings); save(); renderAll(); return;
     }
@@ -3176,7 +3182,7 @@ details.sv-sum[open] summary{color:var(--text);}
   fitApp();
 
   /* ===================== BAŞLAT ===================== */
-  var APP_VERSION = 'v31';
+  var APP_VERSION = 'v32';
   (function(){
     var v = document.getElementById('appVer'); if(v) v.textContent = APP_VERSION;
     var ub = document.getElementById('updateBtn');

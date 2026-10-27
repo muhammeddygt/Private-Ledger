@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """TEFAS'tan fon birim pay fiyatlarını çekip fund-prices.json dosyasına yazar.
-GitHub Actions her iş günü akşamı çalıştırır; uygulama bu dosyayı kendi sitesinden okur."""
+GitHub Actions her iş günü akşamı (ve bu dosya değişince) çalıştırır; uygulama bu dosyayı kendi sitesinden okur."""
 import json, os, sys, urllib.request, urllib.parse, datetime as dt
 
 CODE = os.environ.get("FUND", "VFK").upper()
