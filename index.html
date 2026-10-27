@@ -2547,7 +2547,7 @@ details.sv-sum[open] summary{color:var(--text);}
     el.innerHTML = '<div class="fz-head"><div class="month-title" style="font-size:20px;">Faizsiz</div><button class="xfer-btn" data-action="fz-refresh"'+(fzBusy?' disabled':'')+'>'+(fzBusy?'Çekiliyor…':'↻ Yenile')+'</button></div>'+
       '<div class="fz-stat">'+(fzMsg ? esc(fzMsg)+' · ' : '')+'Veri güncellendi: '+upd+'</div>'+
       hero+'<div class="fz-chips">'+chips+'</div>'+cards+
-      '<div class="fz-note">Bu listede yalnızca unvanında “Katılım” geçen fonlar var; geçmeyen fon TEFAS kontrolünde elenir. Katılım fonları SPK düzenlemesi gereği faizli araçlara yatırım yapamaz ve katılım danışma kurulu denetimindedir. Kira sertifikası ve para piyasası fonlarının değeri az oynar; hisse, altın, döviz ve karma fonlar dalgalıdır ve zarar edebilirsin. Fiyatlar TEFAS’tan alınır; günlük/30 gün getiri buradaki fiyat geçmişinden hesaplanır. Kesin hüküm için fonun izahnamesine ve KAP’a bak.'+rej+'</div>';
+      '<div class="fz-note">Bu listede yalnızca unvanında “Katılım” geçen fonlar var; geçmeyen fon TEFAS kontrolünde elenir. Katılım fonları SPK düzenlemesi gereği faizli araçlara yatırım yapamaz ve katılım danışma kurulu denetimindedir. Kira sertifikası fonlarının en az %80’i kira sertifikasıdır, kalanı katılma hesabı gibi araçlara ayrılabilir; değerleri az oynar. Hisse, altın, döviz ve karma fonlar dalgalıdır ve zarar edebilirsin. Para piyasası katılım fonları bilerek listede yok: portföyleri ağırlıkla satım vaadiyle alım (repo yerine kullanılan taahhütlü işlem) ile tutuluyor ve bu araç bazı görüşlerce şüpheli sayılıyor. Fiyatlar TEFAS’tan alınır; günlük/30 gün getiri buradaki fiyat geçmişinden hesaplanır. Kesin hüküm için fonun izahnamesine ve KAP’a bak.'+rej+'</div>';
   }
   async function fzLive(){      // TEFAS doğrudan/proxy: yalnızca json'daki doğrulanmış fonlar için, eksik günleri tamamlar
     var codes = fzFunds().map(function(x){ return x.code; }), saved = _fundLog, got = 0, need = lastPublishedDate();
@@ -3337,7 +3337,7 @@ details.sv-sum[open] summary{color:var(--text);}
   fitApp();
 
   /* ===================== BAŞLAT ===================== */
-  var APP_VERSION = 'v35';
+  var APP_VERSION = 'v36';
   (function(){
     var v = document.getElementById('appVer'); if(v) v.textContent = APP_VERSION;
     var ub = document.getElementById('updateBtn');

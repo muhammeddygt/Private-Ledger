@@ -5,7 +5,7 @@ Güvenlik kuralı: bir fon listede ancak TEFAS'taki resmî unvanında "KATILIM" 
 (SPK düzenlemesine göre unvanında "Katılım" geçen fonlar katılım finans ilkelerine uymak ve danışma
 kurulu denetiminde olmak zorundadır). Unvanında bu ibare olmayan fon "rejected" listesine alınır, uygulamada görünmez.
 TEFAS yanıtında unvan alanı hiç yoksa fon, aşağıdaki aday listesindeki unvanla "liste" doğrulamasıyla işaretlenir.
-Türler: kira, pp (para piyasası), hisse, altin, doviz, diger (karma/dengeli/teknoloji). Hisse/altın/döviz/karma dalgalıdır (uygulamada uyarı gösterilir)."""
+Türler: kira, hisse, altin, doviz, diger (karma/dengeli/teknoloji). Hisse/altın/döviz/karma dalgalıdır (uygulamada uyarı gösterilir)."""
 import json, sys, time, datetime as dt, urllib.request
 
 OUT = "katilim-funds.json"
@@ -26,11 +26,7 @@ CANDIDATES = {
     "KTV": ("kira", "Kuveyt Türk Portföy", "KUVEYT TÜRK PORTFÖY KISA VADELİ KİRA SERTİFİKALARI KATILIM (TL) FONU"),
     "RBT": ("kira", "Albaraka Portföy", "ALBARAKA PORTFÖY KİRA SERTİFİKALARI KATILIM FONU"),
     "RBV": ("kira", "Albaraka Portföy", "ALBARAKA PORTFÖY KISA VADELİ KİRA SERTİFİKALARI KATILIM (TL) FONU"),
-    # --- Para piyasası katılım (TL) ---
-    "ZPO": ("pp", "Ziraat Portföy", "ZİRAAT PORTFÖY PARA PİYASASI KATILIM FONU"),
-    "VPA": ("pp", "Vakıf Katılım Portföy", "VAKIF KATILIM PORTFÖY PARA PİYASASI KATILIM FONU"),
-    "KLU": ("pp", "Kuveyt Türk Portföy", "KUVEYT TÜRK PORTFÖY PARA PİYASASI KATILIM (TL) FONU"),
-    "PPG": ("pp", "Albaraka Portföy", "ALBARAKA PORTFÖY PARA PİYASASI KATILIM FONU"),
+    # Para piyasası fonları (ZPO, VPA, KLU, PPG) bilerek yok: portföyleri ağırlıkla satım vaadiyle alım (taahhütlü işlem) ile tutuluyor.
     # --- Katılım hisse senedi fonları ---
     "ZPE": ("hisse", "Ziraat Portföy", "ZİRAAT PORTFÖY KATILIM HİSSE SENEDİ FONU (HİSSE SENEDİ YOĞUN FON)"),
     "VHS": ("hisse", "Vakıf Katılım Portföy", "VAKIF KATILIM PORTFÖY KATILIM HİSSE SENEDİ FONU (HİSSE SENEDİ YOĞUN FON)"),
