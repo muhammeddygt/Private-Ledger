@@ -735,8 +735,9 @@ details.sv-sum[open] summary{color:var(--text);}
       out.gold.entries[mk] = (out.gold.entries[mk]||[]).filter(function(x){return GOLD_KINDS[x.kind];}).map(function(x){ return {id:x.id||uid(), kind:x.kind, qty:Number(x.qty||0), price:Number(x.price||0)}; });
     });
     Object.keys(out.savings.deposits).forEach(function(mk){
-      out.savings.deposits[mk] = (out.savings.deposits[mk]||[]).map(function(x){ var o = {id:x.id||uid(), tutar:Number(x.tutar||0)}; var g = Math.round(Number(x.gun)); if(g>=1 && g<=31) o.gun = g; return o; });
+      out.savings.deposits[mk] = (out.savings.deposits[mk]||[]).map(function(x){ var o = {id:x.id||uid(), tutar:Number(x.tutar||0)}; var g = Math.round(Number(x.gun)); if(g>=1 && g<=31) o.gun = g; var ad = Number(x.adet); if(isFinite(ad) && ad!==0) o.adet = ad; return o; });
     });
+    refreshAdet(out.savings);
     out.theme = Object.assign({name:'siyah', accent:'#D4FF3F'}, (parsed&&parsed.theme)||{});
     if(!THEMES[out.theme.name]) out.theme.name = 'siyah';
     return out;
@@ -1231,6 +1232,33 @@ details.sv-sum[open] summary{color:var(--text);}
   function isoAddDays(iso, n){ var a = iso.split('-'), d = new Date(Number(a[0]), Number(a[1])-1, Number(a[2])+n); return isoDate(d.getFullYear(), d.getMonth()+1, d.getDate()); }
   function isoIsWeekend(iso){ var a = iso.split('-'), w = new Date(Number(a[0]), Number(a[1])-1, Number(a[2])).getDay(); return w===0 || w===6; }
   function isoDMY(iso){ var a = iso.split('-'); return a[2]+'.'+a[1]+'.'+a[0]; }
+  function fundPxAt(prices, iso){      // iso günü veya öncesindeki son fiyat (yoksa ilk fiyat)
+    var ds = Object.keys(prices||{}).sort(); if(!ds.length) return 0;
+    var best = ds[0]; for(var i=0;i<ds.length;i++){ if(ds[i] <= iso) best = ds[i]; else break; }
+    return prices[best];
+  }
+  function depIso(mk, x){ return isoDate(yearFromKey(mk), Number(mk.split('-')[1]), Math.min(x.gun||1, daysInMonthKey(mk))); }
+  function refreshAdet(sv){            // adetle girilen kayıtların TL tutarı = adet × o günkü fiyat
+    if(!sv || !sv.fund) return;
+    Object.keys(sv.deposits||{}).forEach(function(mk){
+      (sv.deposits[mk]||[]).forEach(function(x){
+        if(!x.adet) return;
+        var p = fundPxAt(sv.fund.prices, depIso(mk,x));
+        if(p>0) x.tutar = Math.round(x.adet*p*100)/100;
+      });
+    });
+  }
+  function fundUnits(){                // bugüne kadar elimdeki fon payı adedi (yatırımlar fiyata bölünerek)
+    var sv = STATE.savings, tot = 0, td = isoToday();
+    Object.keys(sv.deposits||{}).forEach(function(mk){
+      (sv.deposits[mk]||[]).forEach(function(x){
+        var iso = depIso(mk,x); if(iso > td) return;
+        if(x.adet) tot += x.adet;
+        else { var p = fundPxAt(sv.fund.prices, iso); if(p>0) tot += Number(x.tutar||0)/p; }
+      });
+    });
+    return tot;
+  }
   function fundTL(){
     var F = STATE && STATE.savings && STATE.savings.fund; if(!F || F.off) return null;
     if(_fundTL && _fundTL.src===F.prices) return _fundTL.ok ? _fundTL : null;
@@ -1494,6 +1522,7 @@ details.sv-sum[open] summary{color:var(--text);}
     var F = STATE.savings.fund, n = 0;
     Object.keys(map).forEach(function(d){ var v = Number(map[d]); if(/^\d{4}-\d{2}-\d{2}$/.test(d) && v>0 && F.prices[d]!==v){ F.prices[d] = v; n++; } });
     F.prices = Object.assign({}, F.prices);       // önbelleği geçersiz kıl
+    refreshAdet(STATE.savings);
     if(n>0){ F.ts = Date.now(); F.src = src; }
     return n;
   }
@@ -1596,7 +1625,7 @@ details.sv-sum[open] summary{color:var(--text);}
     var r = savingsRate(key), ov = hasOwn(STATE.savings.rateByMonth||{}, key);
     var deps = STATE.savings.deposits[key]||[];
     var rows = deps.map(function(x){
-      return '<div class="line-row"><span class="n" style="color:var(--text-dim);">'+(x.tutar<0?'Çekim':'Yatırım')+'</span>'+
+      return '<div class="line-row"><span class="n" style="color:var(--text-dim);">'+(x.tutar<0?'Çekim':'Yatırım')+(x.adet?' <small style="color:var(--text-faint);">'+Number(x.adet).toLocaleString('tr-TR',{maximumFractionDigits:4})+' adet</small>':'')+'</span>'+
         '<span style="display:flex; align-items:center; gap:4px; font-size:10px; color:var(--text-faint);">gün<input class="mini-input" style="width:40px;'+(x.gun?'':' border-color:var(--amber);')+'" inputmode="numeric" data-action="sv-day" data-id="'+x.id+'" data-key="'+key+'" value="'+(x.gun||'')+'" placeholder="?" title="'+(x.gun?'Yatırım günü':'Gün girilmedi: kar payı ertesi aydan başlar. Günü yaz.')+'"></span>'+
         '<input class="amt" data-action="sv-amt" data-id="'+x.id+'" data-key="'+key+'" value="'+editVal(x.tutar)+'">'+
         '<span class="del-x" data-action="sv-del" data-id="'+x.id+'" data-key="'+key+'">✕</span></div>';
@@ -1611,6 +1640,8 @@ details.sv-sum[open] summary{color:var(--text);}
         (fundTL() ? '<div class="year-note" style="margin-top:0;">Fon fiyatı olan günler fiyata göre hesaplanır; bu oran sadece fiyatı olmayan (gelecek) günler için.</div>' : '')+
         (rows || '<div class="empty-note">Bu ay yatırım yok</div>')+
         '<div class="line-row" style="gap:6px;"><input class="amt" style="flex:1; text-align:left;" id="svNew" inputmode="decimal" placeholder="Tutar (çekim için −)"><span style="display:flex; align-items:center; gap:4px; font-size:10px; color:var(--text-faint);">gün<input class="mini-input" style="width:40px;" id="svNewDay" inputmode="numeric" value="'+(key===nowKey()?new Date().getDate():1)+'" title="Yatırım günü (kar payı o günden işler)"></span><button class="xfer-btn" data-action="sv-add" data-key="'+key+'">+ Ekle</button></div>'+
+        (fundTL() ? '<div class="line-row" style="gap:6px;"><input class="amt" style="flex:1; text-align:left;" id="svAdet" inputmode="decimal" placeholder="Adet (satış/bozdurma için −)"><span style="display:flex; align-items:center; gap:4px; font-size:10px; color:var(--text-faint);">gün<input class="mini-input" style="width:40px;" id="svAdetDay" inputmode="numeric" value="'+(key===nowKey()?new Date().getDate():1)+'"></span><button class="xfer-btn" data-action="sv-add-adet" data-key="'+key+'">+ Adet</button></div>'+
+          '<div class="line-row" style="gap:6px;"><span class="n" style="font-size:10px; color:var(--text-faint);">Elimdeki adet ≈ <b>'+Number(fundUnits()).toLocaleString('tr-TR',{maximumFractionDigits:3})+'</b> · TL tutarı o günkü fon fiyatıyla hesaplanır</span><button class="xfer-btn" data-action="sv-sell-all" data-key="'+key+'">Tümünü boz</button></div>' : '')+
         (function(){
           if(!row) return '';
           var dd = savingsDaily(key, row.open), td = (key===nowKey()) ? new Date().getDate() : null, h = '';
@@ -2237,21 +2268,26 @@ details.sv-sum[open] summary{color:var(--text);}
     var dd = savingsDaily(nk, row.open), dr = dd.rows[Math.min(td,dd.dim)-1];
     var tot = savingsTotals(nk);
     var depFuture = (STATE.savings.deposits[nk]||[]).reduce(function(a,x){ return a + ((x.gun && x.gun>td) ? Number(x.tutar||0) : 0); }, 0);
-    var dep = ser.dep - depFuture, kar = tot.kar;
+    var dep = ser.dep - depFuture, kar = tot.kar, gross = 0, wd = 0;
+    Object.keys(STATE.savings.deposits).forEach(function(mk){
+      if(absIndexFromKey(mk) > absIndexFromKey(nk)) return;
+      (STATE.savings.deposits[mk]||[]).forEach(function(x){ if(mk===nk && x.gun && x.gun>td) return; var v = Number(x.tutar||0); if(v>=0) gross += v; else wd += -v; });
+    });
     var yr = yearFromKey(nk), yKar = dr.cum, ks = keysBetween(ser.start, nk);
     ks.forEach(function(k){ if(k!==nk && yearFromKey(k)===yr) yKar += ser.rows[k].kar; });
     var pk = addMonths(nk,-1), prev = ser.rows[pk] ? ser.rows[pk].kar : null;
     var firstDay = 1; (STATE.savings.deposits[ser.start]||[]).forEach(function(x){ if(x.gun && (firstDay===1 || x.gun<firstDay)) firstDay = x.gun; });
     var gh = tot.gold, goldDiff = null;
     if(gh.hasPrice){ var hv = 0, hc = 0; GOLD_ORDER.forEach(function(k){ hv += gh.qty[k]*goldSellPrice(k); hc += gh.cost[k]; }); if(Math.abs(hc)>1e-9 || Math.abs(hv)>1e-9) goldDiff = hv - hc; }
-    return {nk:nk, td:td, tl:tot.tl, dep:dep, kar:kar, pct: dep>0 ? kar/dep*100 : 0, dayKar:dr.kar, monthKar:dr.cum, prevKar:prev, yearKar:yKar, year:yr, start:ser.start, startDay:firstDay, fund:dd.fund, goldDiff:goldDiff};
+    return {nk:nk, td:td, tl:tot.tl, dep:dep, gross:gross, wd:wd, kar:kar, pct: gross>0 ? kar/gross*100 : 0, dayKar:dr.kar, monthKar:dr.cum, prevKar:prev, yearKar:yKar, year:yr, start:ser.start, startDay:firstDay, fund:dd.fund, goldDiff:goldDiff};
   }
   function karAllHtml(){
     var k = karToday();
     if(!k) return '<div class="rp-card"><div class="rp-r"><span>Henüz birikim kaydı yok.</span><span></span></div></div>';
     var n = fmtShort, r = function(l,v,sm){ return '<div class="rp-r"><span>'+l+(sm?' <small>· '+sm+'</small>':'')+'</span><span>'+v+'</span></div>'; };
     var h = '<div class="rp-card"><div class="rp-h"><span>Kazanç · bugüne kadar</span><b>+'+n(k.kar)+'</b></div>'+
-      r('Toplam yatırılan', n(k.dep), monthNameFromKey(k.start)+' '+yearFromKey(k.start)+' · '+k.startDay+'. gün')+
+      r('Toplam yatırılan', n(k.gross), monthNameFromKey(k.start)+' '+yearFromKey(k.start)+' · '+k.startDay+'. gün')+
+      (k.wd>0.005 ? r('Toplam çekilen / bozdurulan', n(k.wd)) : '')+
       r('Toplam kar payı', '+'+n(k.kar))+
       r('Getiri', pctTxt(k.pct), 'yatırılana göre')+
       r('Bugünkü TL bakiye', n(k.tl))+'</div>'+
@@ -2330,7 +2366,7 @@ details.sv-sum[open] summary{color:var(--text);}
       L.push('Private Ledger · Birikim kazancı','');
       if(!kt) L.push('Henüz birikim kaydı yok.');
       else {
-        L.push('Toplam yatırılan: '+n(kt.dep),'Toplam kar payı: +'+n(kt.kar)+' ('+pctTxt(kt.pct)+')','Bugünkü TL bakiye: '+n(kt.tl),'',
+        L.push('Toplam yatırılan: '+n(kt.gross)+(kt.wd>0.005?' · çekilen: '+n(kt.wd):''),'Toplam kar payı: +'+n(kt.kar)+' ('+pctTxt(kt.pct)+')','Bugünkü TL bakiye: '+n(kt.tl),'',
           'Bugün: +'+fmt(kt.dayKar),monthNameFromKey(kt.nk)+' (bugüne kadar): +'+n(kt.monthKar));
         if(kt.prevKar!==null) L.push(monthNameFromKey(addMonths(kt.nk,-1))+': +'+n(kt.prevKar));
         L.push(kt.year+' (bugüne kadar): +'+n(kt.yearKar));
@@ -2596,7 +2632,7 @@ details.sv-sum[open] summary{color:var(--text);}
       if(String(t.value).trim()===''){ renderAll(); return; }
       var svl = STATE.savings.deposits[t.dataset.key]||[];
       var svi = svl.filter(function(x){return x.id===t.dataset.id;})[0];
-      if(svi){ svi.tutar = parseNum(t.value); save(); renderAll(); }
+      if(svi){ svi.tutar = parseNum(t.value); delete svi.adet; save(); renderAll(); }
       return;
     }
     if(action==='sv-day'){
@@ -2605,7 +2641,7 @@ details.sv-sum[open] summary{color:var(--text);}
       if(svi2){
         var gv = Math.round(parseNum(t.value));
         if(String(t.value).trim()==='' || !(gv>=1)) delete svi2.gun; else svi2.gun = Math.min(gv, daysInMonthKey(t.dataset.key));
-        save(); renderAll();
+        refreshAdet(STATE.savings); save(); renderAll();
       }
       return;
     }
@@ -2928,6 +2964,20 @@ details.sv-sum[open] summary{color:var(--text);}
       (STATE.savings.deposits[sk] = STATE.savings.deposits[sk]||[]).push({id:uid(), tutar:amt, gun:dayV});
       save(); renderAll(); return;
     }
+    if(action==='sv-add-adet' || action==='sv-sell-all'){
+      var ak = t.dataset.key, adetV, dV;
+      if(action==='sv-sell-all'){ adetV = -Math.round(fundUnits()*1e6)/1e6; dV = (ak===nowKey()) ? new Date().getDate() : 1; }
+      else {
+        var ai = document.getElementById('svAdet'), di = document.getElementById('svAdetDay');
+        adetV = parseNum(ai?ai.value:''); dV = Math.round(parseNum(di?di.value:''));
+        if(!(dV>=1)) dV = (ak===nowKey()) ? new Date().getDate() : 1;
+      }
+      if(!adetV || !isFinite(adetV)){ var ai2 = document.getElementById('svAdet'); if(ai2) ai2.focus(); return; }
+      dV = Math.min(dV, daysInMonthKey(ak));
+      var ent = {id:uid(), tutar:0, gun:dV, adet:adetV};
+      (STATE.savings.deposits[ak] = STATE.savings.deposits[ak]||[]).push(ent);
+      refreshAdet(STATE.savings); save(); renderAll(); return;
+    }
     if(action==='sv-del'){
       var sdl = STATE.savings.deposits[t.dataset.key]||[];
       var sdi = sdl.findIndex(function(x){return x.id===t.dataset.id;});
@@ -3112,7 +3162,7 @@ details.sv-sum[open] summary{color:var(--text);}
   fitApp();
 
   /* ===================== BAŞLAT ===================== */
-  var APP_VERSION = 'v29';
+  var APP_VERSION = 'v30';
   (function(){
     var v = document.getElementById('appVer'); if(v) v.textContent = APP_VERSION;
     var ub = document.getElementById('updateBtn');
