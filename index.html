@@ -564,8 +564,8 @@ details.sv-sum[open] summary{color:var(--text);}
         if(sonrakiAy){
           var basla0 = eskiBakiye + pend;     // geçen ayın harcaması bu ay borç olarak başlar
           pendIn[key] = pend;
-          var faizTutari = Math.max(0,basla0)*(faizYuzdeVal/100);
-          var basla = basla0 + eklenenAktar;
+          var faizTutari = Math.max(0,eskiBakiye)*(faizYuzdeVal/100);   // faiz yalnızca önceki ay sonu kalan borca işler; yeni harcama/aktarım faize girmez
+          var basla = basla0 + eklenenAktar;                              // asgari ise yeni harcama ve aktarımı da kapsar
           sugg = Math.max(0,basla)*(asgariYuzdeVal/100) + faizTutari + carry;
           var due = hasOv ? Number(d.payments[key]) : sugg;
           payment = missed ? 0 : due;
@@ -3339,7 +3339,7 @@ details.sv-sum[open] summary{color:var(--text);}
   fitApp();
 
   /* ===================== BAŞLAT ===================== */
-  var APP_VERSION = 'v37';
+  var APP_VERSION = 'v38';
   (function(){
     var v = document.getElementById('appVer'); if(v) v.textContent = APP_VERSION;
     var ub = document.getElementById('updateBtn');
