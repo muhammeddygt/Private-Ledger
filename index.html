@@ -1944,9 +1944,11 @@ details.sv-sum[open] summary{color:var(--text);}
     var odendi = !!(d.paidMonths && d.paidMonths[key]);
     var odeme = (ser.paid && ser.paid[key]) || 0;
     // Ödeme yapıldıysa (yeşil tik) limit ödeme kadar boşalır; yapılmadıysa borç ödeme öncesi haliyle sayılır.
-    var used = Math.max(0,bal) + pendO + (odendi ? 0 : odeme);
+    // Bu ay karta aktarılan faturalar / hesap dışı giderler borca sonraki ay yazılsa da limiti hemen kullanır.
+    var nextK = addMonths(key,1), trNext = transferredBillsForCard(STATE, d.id, nextK) + transferredOffBudgetForCard(STATE, d.id, nextK);
+    var used = Math.max(0,bal) + pendO + trNext + (odendi ? 0 : odeme);
     var lim = Number(d.limit), left = lim - used;
-    return '<div class="debt-sub" style="margin-top:6px; '+(left<0?'color:var(--red);':'')+'">'+(left<0 ? 'limit aşımı '+fmtShort(-left) : 'kalan limit '+fmtShort(left))+' <span style="color:var(--text-faint);">/ limit '+fmtShort(lim)+'</span><br><span style="color:var(--text-faint);">'+(odendi?'ödeme yapıldı, bu ayın harcaması dahil':'ödeme henüz işaretlenmedi, borç ödeme öncesi')+'</span></div>';
+    return '<div class="debt-sub" style="margin-top:6px; '+(left<0?'color:var(--red);':'')+'">'+(left<0 ? 'limit aşımı '+fmtShort(-left) : 'kalan limit '+fmtShort(left))+' <span style="color:var(--text-faint);">/ limit '+fmtShort(lim)+'</span><br><span style="color:var(--text-faint);">'+(odendi?'ödeme yapıldı, bu ayın harcaması'+(trNext>0?' ve karta aktarılan '+fmtShort(trNext):'')+' dahil':'ödeme henüz işaretlenmedi, borç ödeme öncesi'+(trNext>0?' (karta aktarılan '+fmtShort(trNext)+' dahil)':''))+'</span></div>';
   }
   function paidTickBtn(list,id,key,paidMonths){
     var on = !!(paidMonths&&paidMonths[key]);
@@ -3337,7 +3339,7 @@ details.sv-sum[open] summary{color:var(--text);}
   fitApp();
 
   /* ===================== BAŞLAT ===================== */
-  var APP_VERSION = 'v36';
+  var APP_VERSION = 'v37';
   (function(){
     var v = document.getElementById('appVer'); if(v) v.textContent = APP_VERSION;
     var ub = document.getElementById('updateBtn');
