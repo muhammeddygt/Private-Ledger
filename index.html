@@ -1946,9 +1946,11 @@ details.sv-sum[open] summary{color:var(--text);}
     // Ödeme yapıldıysa (yeşil tik) limit ödeme kadar boşalır; yapılmadıysa borç ödeme öncesi haliyle sayılır.
     // Bu ay karta aktarılan faturalar / hesap dışı giderler borca sonraki ay yazılsa da limiti hemen kullanır.
     var nextK = addMonths(key,1), trNext = transferredBillsForCard(STATE, d.id, nextK) + transferredOffBudgetForCard(STATE, d.id, nextK);
-    var used = Math.max(0,bal) + pendO + trNext + (odendi ? 0 : odeme);
+    // Sıra: önce ödeme, sonra harcama/aktarım. Ödeme işaretlenmediyse yalnızca ödeme öncesi borç sayılır (harcama ve aktarım ödemeden sonra gelir);
+    // yeşil tik atılınca limit boşalır, harcama ve aktarımlar tekrar doldurur.
+    var used = odendi ? (Math.max(0,bal) + pendO + trNext) : (Math.max(0,bal) + odeme);
     var lim = Number(d.limit), left = lim - used;
-    return '<div class="debt-sub" style="margin-top:6px; '+(left<0?'color:var(--red);':'')+'">'+(left<0 ? 'limit aşımı '+fmtShort(-left) : 'kalan limit '+fmtShort(left))+' <span style="color:var(--text-faint);">/ limit '+fmtShort(lim)+'</span><br><span style="color:var(--text-faint);">'+(odendi?'ödeme yapıldı, bu ayın harcaması'+(trNext>0?' ve karta aktarılan '+fmtShort(trNext):'')+' dahil':'ödeme henüz işaretlenmedi, borç ödeme öncesi'+(trNext>0?' (karta aktarılan '+fmtShort(trNext)+' dahil)':''))+'</span></div>';
+    return '<div class="debt-sub" style="margin-top:6px; '+(left<0?'color:var(--red);':'')+'">'+(left<0 ? 'limit aşımı '+fmtShort(-left) : 'kalan limit '+fmtShort(left))+' <span style="color:var(--text-faint);">/ limit '+fmtShort(lim)+'</span><br><span style="color:var(--text-faint);">'+(odendi?'ödeme yapıldı, bu ayın harcaması'+(trNext>0?' ve karta aktarılan '+fmtShort(trNext):'')+' dahil':'ödeme henüz işaretlenmedi: ödeme öncesi borç'+((pendO>0||trNext>0)?' (harcama ve aktarım ödeme sonrası eklenir)':''))+'</span></div>';
   }
   function paidTickBtn(list,id,key,paidMonths){
     var on = !!(paidMonths&&paidMonths[key]);
@@ -3339,7 +3341,7 @@ details.sv-sum[open] summary{color:var(--text);}
   fitApp();
 
   /* ===================== BAŞLAT ===================== */
-  var APP_VERSION = 'v38';
+  var APP_VERSION = 'v39';
   (function(){
     var v = document.getElementById('appVer'); if(v) v.textContent = APP_VERSION;
     var ub = document.getElementById('updateBtn');
