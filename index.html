@@ -595,7 +595,8 @@ details.sv-sum[open] summary{color:var(--text);}
       } else if(d.tur === 'kredi'){
         bal += additionsForDebt(STATE,d,key);
         var taksitVal = fieldMonthly(d,'taksit',key);
-        var sugg0 = Math.min(taksitVal, bal);
+        var deferred = !!(d.deferMonths && d.deferMonths[key]);   // ertelenen ay: taksit yok, kredi bir ay kayar
+        var sugg0 = deferred ? 0 : Math.min(taksitVal, bal);
         var afterPre = Math.max(0, sugg0 - prepaid);          // peşin ödenen taksitler düşüldükten sonra
         var newPrepaid = Math.max(0, prepaid - sugg0);
         sugg = Math.min(bal, afterPre + carry);
@@ -671,7 +672,7 @@ details.sv-sum[open] summary{color:var(--text);}
   }
   function monthFullyClosed(STATE, key){
     var debtsOk = sortedVisible(STATE.debts).every(function(d){
-      return absIndexFromKey(key) < absIndexFromKey(d.startMonthKey) || !!(d.paidMonths && d.paidMonths[key]) || !!(d.missedMonths && d.missedMonths[key]);
+      return absIndexFromKey(key) < absIndexFromKey(d.startMonthKey) || !!(d.paidMonths && d.paidMonths[key]) || !!(d.missedMonths && d.missedMonths[key]) || !!(d.deferMonths && d.deferMonths[key]);
     });
     if(!debtsOk) return false;
     var ekOk = sortedVisible(STATE.ekBorclular).every(function(d){
@@ -710,7 +711,7 @@ details.sv-sum[open] summary{color:var(--text);}
     out.debts = (Array.isArray(out.debts)?out.debts:[]).map(function(d,idx){
       return Object.assign({}, d, {
         payments:d.payments||{}, balanceOverrides:d.balanceOverrides||{}, additions:d.additions||{},
-        paidMonths:d.paidMonths||{}, missedMonths:d.missedMonths||{}, hidden:!!d.hidden,
+        paidMonths:d.paidMonths||{}, missedMonths:d.missedMonths||{}, deferMonths:d.deferMonths||{}, hidden:!!d.hidden,
         sortOrder:(typeof d.sortOrder==='number')?d.sortOrder:idx,
         startMonthKey:d.startMonthKey||EPOCH_KEY
       });
@@ -1078,7 +1079,7 @@ details.sv-sum[open] summary{color:var(--text);}
       if(absIndexFromKey(hk) < absIndexFromKey(d.startMonthKey)) return;
       var ser = calcDebtSeries(STATE,d,hk);
       var payVal = (d.payments&&hasOwn(d.payments,hk)) ? d.payments[hk] : ser.suggested[hk];
-      items.push({list:'debts', id:d.id, nm:d.ad, cat:'Krediler & Kartlar', amt:payVal, done:!!((d.paidMonths&&d.paidMonths[hk])||(d.missedMonths&&d.missedMonths[hk]))});
+      items.push({list:'debts', id:d.id, nm:d.ad, cat:'Krediler & Kartlar', amt:payVal, done:!!((d.paidMonths&&d.paidMonths[hk])||(d.missedMonths&&d.missedMonths[hk])||(d.deferMonths&&d.deferMonths[hk]))});
     });
     sortedVisible(STATE.ekBorclular).forEach(function(d){
       if(absIndexFromKey(hk) < absIndexFromKey(d.startMonthKey)) return;
@@ -1907,6 +1908,8 @@ details.sv-sum[open] summary{color:var(--text);}
       }
       var warn = '';
       if(isMissed) warn += '<div class="warn-row">⚠ Bu ay ödenmedi — '+fmtShort(cOut)+' '+monthNameFromKey(addMonths(key,1))+' ayına ertelendi</div>';
+      var isDefer = !!(d.deferMonths && d.deferMonths[key]);
+      if(isDefer) warn += '<div class="warn-row">⏸ Bu ay ertelendi — taksit alınmadı, kredi bir ay kaydı</div>';
       if(cIn>0) warn += '<div class="warn-row late">⏳ Geçen aydan geciken '+fmtShort(cIn)+' ödeme tutarına dahil</div>';
       body += '<div class="debt-card'+(isMissed?' missed':(cIn>0?' late':''))+'">'+
         '<div class="debt-top"><div class="debt-id">'+paidTickBtn('debts',d.id,key,d.paidMonths)+missedBtn('debts',d.id,key,d.missedMonths)+'<input class="debt-name-input" data-action="name" data-list="debts" data-id="'+d.id+'" value="'+esc(d.ad)+'"></div>'+
@@ -1921,6 +1924,7 @@ details.sv-sum[open] summary{color:var(--text);}
         '<div class="debt-foot">'+
           (rateFields ? '<span class="edit-pill" data-action="toggle-rate-pop" data-for="rp_'+d.id+'">✎</span>' : '')+
           (d.tur==='kredi_karti' ? '<span class="mini-label">Harcama</span><input class="mini-input" data-action="cc-spend" data-id="'+d.id+'" data-key="'+key+'" value="'+editVal(manualSpend)+'">' : '')+
+          (d.tur==='kredi' ? '<button type="button" class="xfer-btn'+(isDefer?' undo':'')+'" style="padding:3px 8px;" data-action="toggle-defer" data-id="'+d.id+'" data-key="'+key+'" title="Bu ayın taksitini ertele: ödeme yok, kredi bir ay uzar">'+(isDefer?'▶ Ertelemeyi kaldır':'⏸ Ertele')+'</button>' : '')+
           '<span style="flex:1"></span>'+
           '<span class="move-btns h">'+moveBtnsInner('debts',d.id)+'</span>'+
           '<span class="hide-x" data-action="hide-item" data-list="debts" data-id="'+d.id+'">🙈</span>'+
@@ -3029,6 +3033,21 @@ details.sv-sum[open] summary{color:var(--text);}
       if(obi3 && obi3.cardTransfer){ obi3.tutar = Number(obi3.cardTransfer.amount||0); obi3.cardTransfer=null; save(); renderAll(); }
       return;
     }
+    if(action==='toggle-defer'){
+      var itemD = STATE.debts.filter(function(x){return x.id===t.dataset.id;})[0];
+      if(itemD){
+        itemD.deferMonths = itemD.deferMonths||{};
+        if(itemD.deferMonths[t.dataset.key]) delete itemD.deferMonths[t.dataset.key];
+        else {
+          itemD.deferMonths[t.dataset.key]=true;
+          if(itemD.paidMonths) delete itemD.paidMonths[t.dataset.key];
+          if(itemD.missedMonths) delete itemD.missedMonths[t.dataset.key];
+          if(itemD.payments) delete itemD.payments[t.dataset.key];
+        }
+        save(); renderAll();
+      }
+      return;
+    }
     if(action==='toggle-missed'){
       var itemM = findList(t.dataset.list).filter(function(x){return x.id===t.dataset.id;})[0];
       if(itemM){
@@ -3341,7 +3360,7 @@ details.sv-sum[open] summary{color:var(--text);}
   fitApp();
 
   /* ===================== BAŞLAT ===================== */
-  var APP_VERSION = 'v39';
+  var APP_VERSION = 'v40';
   (function(){
     var v = document.getElementById('appVer'); if(v) v.textContent = APP_VERSION;
     var ub = document.getElementById('updateBtn');
