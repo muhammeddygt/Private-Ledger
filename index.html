@@ -597,14 +597,11 @@ details.sv-sum[open] summary{color:var(--text);}
         var taksitVal = fieldMonthly(d,'taksit',key);
         var deferred = !!(d.deferMonths && d.deferMonths[key]);   // ertelenen ay: taksit yok, kredi bir ay kayar
         var sugg0 = deferred ? 0 : Math.min(taksitVal, bal);
-        var afterPre = Math.max(0, sugg0 - prepaid);          // peşin ödenen taksitler düşüldükten sonra
-        var newPrepaid = Math.max(0, prepaid - sugg0);
-        sugg = Math.min(bal, afterPre + carry);
+        // Fazla ödeme sonraki taksiti sıfırlamaz: taksit tutarı aynı kalır, borç düştüğü için kredi daha erken biter.
+        sugg = Math.min(bal, sugg0 + carry);
         var dueC = hasOv ? Number(d.payments[key]) : sugg;
         payment = missed ? 0 : dueC;
         carryOut[key] = missed ? dueC : 0;
-        // taksitten fazla ödenen kısım, sonraki ayların taksitlerini karşılar
-        prepaid = newPrepaid + (missed ? 0 : Math.max(0, payment - sugg));
         bal = Math.max(0, bal-payment);
       } else {
         bal += additionsForDebt(STATE,d,key);
@@ -3360,7 +3357,7 @@ details.sv-sum[open] summary{color:var(--text);}
   fitApp();
 
   /* ===================== BAŞLAT ===================== */
-  var APP_VERSION = 'v40';
+  var APP_VERSION = 'v41';
   (function(){
     var v = document.getElementById('appVer'); if(v) v.textContent = APP_VERSION;
     var ub = document.getElementById('updateBtn');
