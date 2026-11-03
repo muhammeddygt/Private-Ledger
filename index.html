@@ -1971,6 +1971,9 @@ details.sv-sum[open] summary{color:var(--text);}
   function eqAllBtn(list,key){
     return '<button type="button" class="add-row-btn" style="margin-top:6px;" data-action="rep-apply-all" data-list="'+list+'" data-key="'+key+'" title="Bu aydaki tutarlar sonraki tüm aylara geçer">↻ Tümünü sonraki aylara eşitle</button>';
   }
+  function eqRowHtml(list,id,key){
+    return '<div class="xfer-row"><button class="xfer-btn" data-action="rep-apply" data-list="'+list+'" data-id="'+id+'" data-key="'+key+'" title="Bu aydaki tutar sonraki tüm aylara geçer">↻ Bu tutarı sonraki aylara eşitle</button></div>';
+  }
   function repeatRowHtml(list,id,key){
     return '<div class="xfer-row"><span class="rep-tag">↻ her ay tekrar</span>'+
       '<button class="xfer-btn" data-action="rep-apply" data-list="'+list+'" data-id="'+id+'" data-key="'+key+'">Bu tutarı sonrakilere uygula</button>'+
@@ -2017,7 +2020,7 @@ details.sv-sum[open] summary{color:var(--text);}
         var opts = creditCards.map(function(c){return '<option value="'+c.id+'">'+esc(c.ad)+'</option>';}).join('');
         rows += '<div class="xfer-row"><select id="fc_'+f.id+'"><option value="">Kart seç</option>'+opts+'</select><button class="xfer-btn" data-action="transfer-bill" data-id="'+f.id+'" data-key="'+key+'">Karta aktar</button></div>';
       }
-      if(f.repeat) rows += repeatRowHtml('faturalar',f.id,key);
+      rows += f.repeat ? repeatRowHtml('faturalar',f.id,key) : eqRowHtml('faturalar',f.id,key);
     });
     return '<details class="acc" data-acc="faturalar"><summary><span class="acc-name"><span class="acc-ico">🧾</span>Faturalar</span><span class="acc-right"><span class="acc-amt">'+fmtShort(total)+'</span>'+secMoveHtml('faturalar')+'<span class="acc-chev">›</span></span></summary>'+
       '<div class="acc-body">'+rows+'<button class="add-row-btn" data-action="qa-open" data-kind="bill" data-key="'+key+'">+ Fatura Ekle</button>'+eqAllBtn('faturalar',key)+'<div id="qa-slot-bill"></div></div></details>';
@@ -2034,7 +2037,7 @@ details.sv-sum[open] summary{color:var(--text);}
       rows += '<div class="line-row">'+moveBtnsHtml('expenses',e.id)+'<span class="n">'+paidTickBtn('expenses',e.id,key,e.paidMonths)+'<input class="name-edit" data-action="name" data-list="expenses" data-id="'+e.id+'" value="'+esc(e.ad)+'"></span>'+
         '<input class="amt" data-action="exp-amt" data-id="'+e.id+'" data-key="'+key+'" value="'+editVal(amt)+'">'+
         '<span class="del-x" data-action="del" data-list="expenses" data-id="'+e.id+'">✕</span></div>';
-      if(e.repeat) rows += repeatRowHtml('expenses',e.id,key);
+      rows += e.repeat ? repeatRowHtml('expenses',e.id,key) : eqRowHtml('expenses',e.id,key);
     });
     return '<details class="acc" data-acc="expenses"><summary><span class="acc-name"><span class="acc-ico">🏠</span>Kira &amp; Sabit Giderler</span><span class="acc-right"><span class="acc-amt">'+fmtShort(total)+'</span>'+secMoveHtml('expenses')+'<span class="acc-chev">›</span></span></summary>'+
       '<div class="acc-body">'+(rows||'<div class="empty-note">Kalem yok</div>')+'<button class="add-row-btn" data-action="qa-open" data-kind="expense" data-key="'+key+'">+ Gider Ekle</button>'+eqAllBtn('expenses',key)+'<div id="qa-slot-expense"></div></div></details>';
@@ -3377,7 +3380,7 @@ details.sv-sum[open] summary{color:var(--text);}
   fitApp();
 
   /* ===================== BAŞLAT ===================== */
-  var APP_VERSION = 'v42';
+  var APP_VERSION = 'v43';
   (function(){
     var v = document.getElementById('appVer'); if(v) v.textContent = APP_VERSION;
     var ub = document.getElementById('updateBtn');
