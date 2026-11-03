@@ -493,7 +493,10 @@ details.sv-sum[open] summary{color:var(--text);}
     else STATE.salaryDefaultByMonth[key][field] = value;
   }
 
+  // "Bu aydan gizle": kalem endMonthKey ve sonraki aylarda görünmez/sayılmaz, önceki aylar aynen kalır
+  function itemOffIn(f, key){ return !!(f.endMonthKey && absIndexFromKey(key) >= absIndexFromKey(f.endMonthKey)); }
   function billAmountForMonth(f, key){
+    if(itemOffIn(f,key)) return 0;
     if(f.monthlyAmounts && hasOwn(f.monthlyAmounts,key)) return Number(f.monthlyAmounts[key]||0);
     if(f.repeat && absIndexFromKey(key) >= absIndexFromKey(f.startMonthKey||EPOCH_KEY)) return Number(f.repeatAmount||0);
     return 0;
@@ -677,11 +680,11 @@ details.sv-sum[open] summary{color:var(--text);}
     });
     if(!ekOk) return false;
     var expOk = STATE.expenses.every(function(e){
-      return absIndexFromKey(key) < absIndexFromKey(e.startMonthKey||EPOCH_KEY) || !!(e.paidMonths && e.paidMonths[key]);
+      return absIndexFromKey(key) < absIndexFromKey(e.startMonthKey||EPOCH_KEY) || itemOffIn(e,key) || !!(e.paidMonths && e.paidMonths[key]);
     });
     if(!expOk) return false;
     var faturaOk = STATE.faturalar.every(function(f){
-      if(absIndexFromKey(key) < absIndexFromKey(f.startMonthKey||EPOCH_KEY)) return true;
+      if(absIndexFromKey(key) < absIndexFromKey(f.startMonthKey||EPOCH_KEY) || itemOffIn(f,key)) return true;
       var tr = (f.cardTransfers||{})[key];
       return !!tr || !!(f.paidMonths && f.paidMonths[key]);
     });
@@ -1031,7 +1034,7 @@ details.sv-sum[open] summary{color:var(--text);}
     // Genel toplam borç: kalan borç + bu ayın henüz ödenmemiş fatura ve hesap dışı kalemleri (kira hariç)
     var pendingExtra = 0;
     STATE.faturalar.forEach(function(f){
-      if(absIndexFromKey(hk) < absIndexFromKey(f.startMonthKey||EPOCH_KEY)) return;
+      if(absIndexFromKey(hk) < absIndexFromKey(f.startMonthKey||EPOCH_KEY) || itemOffIn(f,hk)) return;
       if((f.cardTransfers||{})[hk]) return;
       if(f.paidMonths && f.paidMonths[hk]) return;
       pendingExtra += billAmountForMonth(f,hk);
@@ -1085,11 +1088,11 @@ details.sv-sum[open] summary{color:var(--text);}
       items.push({list:'ekBorclular', id:d.id, nm:d.ad, cat:'Ek Borçlular', amt:payVal, done:!!((d.paidMonths&&d.paidMonths[hk])||(d.missedMonths&&d.missedMonths[hk]))});
     });
     STATE.expenses.forEach(function(e){
-      if(absIndexFromKey(hk) < absIndexFromKey(e.startMonthKey||EPOCH_KEY)) return;
+      if(absIndexFromKey(hk) < absIndexFromKey(e.startMonthKey||EPOCH_KEY) || itemOffIn(e,hk)) return;
       items.push({list:'expenses', id:e.id, nm:e.ad, cat:'Kira & Giderler', amt:billAmountForMonth(e,hk), done:!!(e.paidMonths&&e.paidMonths[hk])});
     });
     STATE.faturalar.forEach(function(f){
-      if(absIndexFromKey(hk) < absIndexFromKey(f.startMonthKey||EPOCH_KEY)) return;
+      if(absIndexFromKey(hk) < absIndexFromKey(f.startMonthKey||EPOCH_KEY) || itemOffIn(f,hk)) return;
       if((f.cardTransfers||{})[hk]) return;
       items.push({list:'faturalar', id:f.id, nm:f.ad, cat:'Faturalar', amt:billAmountForMonth(f,hk), done:!!(f.paidMonths&&f.paidMonths[hk])});
     });
@@ -1783,12 +1786,12 @@ details.sv-sum[open] summary{color:var(--text);}
       debtDue += calcEkSeries(STATE,d,key).paid[key]||0;
     });
     var faturaTotal = STATE.faturalar.reduce(function(s,f){
-      if(absIndexFromKey(key) < absIndexFromKey(f.startMonthKey||EPOCH_KEY)) return s;
+      if(absIndexFromKey(key) < absIndexFromKey(f.startMonthKey||EPOCH_KEY) || itemOffIn(f,key)) return s;
       var tr=(f.cardTransfers||{})[key]; if(tr) return s;
       return s+billAmountForMonth(f,key);
     },0);
     var expTotal = STATE.expenses.reduce(function(s,e){
-      if(absIndexFromKey(key) < absIndexFromKey(e.startMonthKey||EPOCH_KEY)) return s;
+      if(absIndexFromKey(key) < absIndexFromKey(e.startMonthKey||EPOCH_KEY) || itemOffIn(e,key)) return s;
       return s+billAmountForMonth(e,key);
     },0);
     var offTotal = (STATE.offBudgetExpenses[key]||[]).reduce(function(s,i){return s+(i.cardTransfer?0:Number(i.tutar||0));},0);
@@ -1968,6 +1971,10 @@ details.sv-sum[open] summary{color:var(--text);}
     var on = !!(missedMonths&&missedMonths[key]);
     return '<button type="button" class="tick miss'+(on?' on':'')+'" data-action="toggle-missed" data-list="'+list+'" data-id="'+id+'" data-key="'+key+'" title="Ödenemedi">'+(on?'✕':'')+'</button>';
   }
+  function offPanelHtml(list,items,key){
+    if(!items.length) return '';
+    return '<div class="year-note" style="margin-top:10px;">Bu aydan itibaren gizlenen: '+items.map(function(f){return esc(f.ad)+' ('+monthNameFromKey(f.endMonthKey)+' ayından) <span data-action="unend-item" data-list="'+list+'" data-id="'+f.id+'" style="text-decoration:underline; cursor:pointer;">Geri getir</span>';}).join(' · ')+'</div>';
+  }
   function eqAllBtn(list,key){
     return '<button type="button" class="add-row-btn" style="margin-top:6px;" data-action="rep-apply-all" data-list="'+list+'" data-key="'+key+'" title="Bu aydaki tutarlar sonraki tüm aylara geçer">↻ Tümünü sonraki aylara eşitle</button>';
   }
@@ -2001,18 +2008,19 @@ details.sv-sum[open] summary{color:var(--text);}
 
   function renderFaturalarAcc(key){
     var creditCards = sortedVisible(STATE.debts).filter(function(d){return d.tur==='kredi_karti';});
-    var total = 0, rows = '';
+    var total = 0, rows = '', offItems = [];
     sortedBySortOrder(STATE.faturalar).forEach(function(f){
       if(absIndexFromKey(key) < absIndexFromKey(f.startMonthKey||EPOCH_KEY)){
         rows += '<div class="line-row" style="opacity:.4;"><span class="n">'+esc(f.ad)+'</span><span style="font-size:10px;">henüz başlamadı</span></div>';
         return;
       }
+      if(itemOffIn(f,key)){ offItems.push(f); return; }
       var tr = (f.cardTransfers||{})[key];
       var amt = billAmountForMonth(f,key);
       if(!tr) total += amt;
       rows += '<div class="line-row">'+moveBtnsHtml('faturalar',f.id)+'<span class="n">'+(tr?'':paidTickBtn('faturalar',f.id,key,f.paidMonths))+'<input class="name-edit" data-action="name" data-list="faturalar" data-id="'+f.id+'" value="'+esc(f.ad)+'"></span>'+
         (tr ? '<input class="amt" data-action="bill-transfer-amt" data-id="'+f.id+'" data-key="'+key+'" value="'+editVal(tr.amount)+'">' : '<input class="amt" data-action="bill-amt" data-id="'+f.id+'" data-key="'+key+'" value="'+editVal(amt)+'">')+
-        '<span class="del-x" data-action="del" data-list="faturalar" data-id="'+f.id+'">✕</span></div>';
+        '<span class="hide-x" data-action="end-item" data-list="faturalar" data-id="'+f.id+'" data-key="'+key+'" title="Bu aydan itibaren gizle (önceki aylar kalır)">🙈</span><span class="del-x" data-action="del" data-list="faturalar" data-id="'+f.id+'">✕</span></div>';
       if(tr){
         var card = STATE.debts.filter(function(c){return c.id===tr.cardId;})[0];
         rows += '<div class="xfer-row"><span style="color:var(--text-faint);">→ '+esc(card?card.ad:'silinmiş kart')+' ('+monthNameFromKey(tr.targetMonth)+')</span><button class="xfer-btn undo" data-action="undo-bill-transfer" data-id="'+f.id+'" data-key="'+key+'">Geri al</button></div>';
@@ -2023,24 +2031,25 @@ details.sv-sum[open] summary{color:var(--text);}
       rows += f.repeat ? repeatRowHtml('faturalar',f.id,key) : eqRowHtml('faturalar',f.id,key);
     });
     return '<details class="acc" data-acc="faturalar"><summary><span class="acc-name"><span class="acc-ico">🧾</span>Faturalar</span><span class="acc-right"><span class="acc-amt">'+fmtShort(total)+'</span>'+secMoveHtml('faturalar')+'<span class="acc-chev">›</span></span></summary>'+
-      '<div class="acc-body">'+rows+'<button class="add-row-btn" data-action="qa-open" data-kind="bill" data-key="'+key+'">+ Fatura Ekle</button>'+eqAllBtn('faturalar',key)+'<div id="qa-slot-bill"></div></div></details>';
+      '<div class="acc-body">'+rows+'<button class="add-row-btn" data-action="qa-open" data-kind="bill" data-key="'+key+'">+ Fatura Ekle</button>'+eqAllBtn('faturalar',key)+offPanelHtml('faturalar',offItems,key)+'<div id="qa-slot-bill"></div></div></details>';
   }
 
   function renderGiderlerAcc(key){
-    var total = 0, rows = '';
+    var total = 0, rows = '', offItems = [];
     sortedBySortOrder(STATE.expenses).forEach(function(e){
       if(absIndexFromKey(key) < absIndexFromKey(e.startMonthKey||EPOCH_KEY)){
         rows += '<div class="line-row" style="opacity:.4;"><span class="n">'+esc(e.ad)+'</span><span style="font-size:10px;">henüz başlamadı</span></div>';
         return;
       }
+      if(itemOffIn(e,key)){ offItems.push(e); return; }
       var amt = billAmountForMonth(e,key); total += amt;
       rows += '<div class="line-row">'+moveBtnsHtml('expenses',e.id)+'<span class="n">'+paidTickBtn('expenses',e.id,key,e.paidMonths)+'<input class="name-edit" data-action="name" data-list="expenses" data-id="'+e.id+'" value="'+esc(e.ad)+'"></span>'+
         '<input class="amt" data-action="exp-amt" data-id="'+e.id+'" data-key="'+key+'" value="'+editVal(amt)+'">'+
-        '<span class="del-x" data-action="del" data-list="expenses" data-id="'+e.id+'">✕</span></div>';
+        '<span class="hide-x" data-action="end-item" data-list="expenses" data-id="'+e.id+'" data-key="'+key+'" title="Bu aydan itibaren gizle (önceki aylar kalır)">🙈</span><span class="del-x" data-action="del" data-list="expenses" data-id="'+e.id+'">✕</span></div>';
       rows += e.repeat ? repeatRowHtml('expenses',e.id,key) : eqRowHtml('expenses',e.id,key);
     });
     return '<details class="acc" data-acc="expenses"><summary><span class="acc-name"><span class="acc-ico">🏠</span>Kira &amp; Sabit Giderler</span><span class="acc-right"><span class="acc-amt">'+fmtShort(total)+'</span>'+secMoveHtml('expenses')+'<span class="acc-chev">›</span></span></summary>'+
-      '<div class="acc-body">'+(rows||'<div class="empty-note">Kalem yok</div>')+'<button class="add-row-btn" data-action="qa-open" data-kind="expense" data-key="'+key+'">+ Gider Ekle</button>'+eqAllBtn('expenses',key)+'<div id="qa-slot-expense"></div></div></details>';
+      '<div class="acc-body">'+(rows||'<div class="empty-note">Kalem yok</div>')+'<button class="add-row-btn" data-action="qa-open" data-kind="expense" data-key="'+key+'">+ Gider Ekle</button>'+eqAllBtn('expenses',key)+offPanelHtml('expenses',offItems,key)+'<div id="qa-slot-expense"></div></div></details>';
   }
 
   function renderEkBorclularAcc(key){
@@ -2946,7 +2955,7 @@ details.sv-sum[open] summary{color:var(--text);}
   function repeatAllAction(listName, key){
     var n = 0;
     findList(listName).forEach(function(it){
-      if(absIndexFromKey(key) < absIndexFromKey(it.startMonthKey||EPOCH_KEY)) return;
+      if(absIndexFromKey(key) < absIndexFromKey(it.startMonthKey||EPOCH_KEY) || itemOffIn(it,key)) return;
       applyRepeatItem(it, 'rep-apply', key); n++;
     });
     if(n){ save(); renderAll(); }
@@ -2994,6 +3003,16 @@ details.sv-sum[open] summary{color:var(--text);}
       var listH = findList(t.dataset.list);
       var itemH = listH.filter(function(x){return x.id===t.dataset.id;})[0];
       if(itemH){ itemH.hidden = true; save(); renderAll(); }
+      return;
+    }
+    if(action==='end-item'){
+      var itemE = findList(t.dataset.list).filter(function(x){return x.id===t.dataset.id;})[0];
+      if(itemE){ itemE.endMonthKey = t.dataset.key; save(); renderAll(); }
+      return;
+    }
+    if(action==='unend-item'){
+      var itemU = findList(t.dataset.list).filter(function(x){return x.id===t.dataset.id;})[0];
+      if(itemU){ delete itemU.endMonthKey; save(); renderAll(); }
       return;
     }
     if(action==='show-item'){
@@ -3380,7 +3399,7 @@ details.sv-sum[open] summary{color:var(--text);}
   fitApp();
 
   /* ===================== BAŞLAT ===================== */
-  var APP_VERSION = 'v43';
+  var APP_VERSION = 'v44';
   (function(){
     var v = document.getElementById('appVer'); if(v) v.textContent = APP_VERSION;
     var ub = document.getElementById('updateBtn');
