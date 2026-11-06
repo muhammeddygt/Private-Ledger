@@ -1,5 +1,5 @@
 {
-"updated": "2026-11-05T22:17:29Z",
+"updated": "2026-11-06T15:31:59Z",
 "funds": {
 "VFK": {
 "unvan": "ZİRAAT PORTFÖY İKİNCİ KISA VADELİ KİRA SERTİFİKALARI KATILIM (TL) FONU",
@@ -59,7 +59,8 @@
 "2026-11-02": 5.85731,
 "2026-11-03": 5.862376,
 "2026-11-04": 5.869723,
-"2026-11-05": 5.874785
+"2026-11-05": 5.874785,
+"2026-11-06": 5.880141
 }
 },
 "ZPG": {
@@ -120,7 +121,8 @@
 "2026-11-02": 11.431093,
 "2026-11-03": 11.439563,
 "2026-11-04": 11.450815,
-"2026-11-05": 11.460356
+"2026-11-05": 11.460356,
+"2026-11-06": 11.470641
 }
 },
 "VKK": {
@@ -181,7 +183,8 @@
 "2026-11-02": 1.163278,
 "2026-11-03": 1.164517,
 "2026-11-04": 1.165625,
-"2026-11-05": 1.166735
+"2026-11-05": 1.166735,
+"2026-11-06": 1.167882
 }
 },
 "VKV": {
@@ -303,7 +306,8 @@
 "2026-11-02": 8.377211,
 "2026-11-03": 8.353816,
 "2026-11-04": 8.361885,
-"2026-11-05": 8.369238
+"2026-11-05": 8.369238,
+"2026-11-06": 8.375676
 }
 },
 "KTV": {
@@ -2077,5 +2081,36 @@
 }
 },
 "rejected": [],
-"log": []
+"log": [
+"VKV: TEFAS RemoteDisconnected  Remote end closed connection without response",
+"KTV: TEFAS URLError  <urlopen error timed out>",
+"RBT: TEFAS URLError  <urlopen error timed out>",
+"RBV: TEFAS URLError  <urlopen error timed out>",
+"ZPE: TEFAS URLError  <urlopen error timed out>",
+"VHS: TEFAS URLError  <urlopen error timed out>",
+"KPC: TEFAS URLError  <urlopen error timed out>",
+"RBH: TEFAS URLError  <urlopen error timed out>",
+"TIL: TEFAS URLError  <urlopen error timed out>",
+"KH1: TEFAS URLError  <urlopen error timed out>",
+"GKV: TEFAS URLError  <urlopen error timed out>",
+"YHK: TEFAS URLError  <urlopen error timed out>",
+"TCA: TEFAS URLError  <urlopen error timed out>",
+"VLT: TEFAS URLError  <urlopen error timed out>",
+"KZL: TEFAS URLError  <urlopen error timed out>",
+"LKF: TEFAS URLError  <urlopen error timed out>",
+"GOL: TEFAS URLError  <urlopen error timed out>",
+"KCR: TEFAS URLError  <urlopen error timed out>",
+"ZPF: TEFAS URLError  <urlopen error timed out>",
+"ZP6: TEFAS URLError  <urlopen error timed out>",
+"ZP9: TEFAS URLError  <urlopen error timed out>",
+"KDL: TEFAS URLError  <urlopen error timed out>",
+"KTT: TEFAS URLError  <urlopen error timed out>",
+"CKS: TEFAS URLError  <urlopen error timed out>",
+"ZBI: TEFAS URLError  <urlopen error timed out>",
+"ZCK: TEFAS URLError  <urlopen error timed out>",
+"KDE: TEFAS URLError  <urlopen error timed out>",
+"KCV: TEFAS URLError  <urlopen error timed out>",
+"GPF: TEFAS URLError  <urlopen error timed out>",
+"KTJ: TEFAS URLError  <urlopen error timed out>"
+]
 }
