@@ -1144,10 +1144,10 @@ details.sv-sum[open] summary{color:var(--text);}
 
     // Borç dağılımı (kalan borçla aynı zaman noktası)
     var groupTotals = {}, ekTotal = 0;
-    sortedVisible(STATE.debts).forEach(function(d){
+    STATE.debts.forEach(function(d){
       groupTotals[d.tur] = (groupTotals[d.tur]||0) + itemBalanceAt(d, closedUpto);
     });
-    sortedVisible(STATE.ekBorclular).forEach(function(d){ ekTotal += itemBalanceAt(d, closedUpto); });
+    STATE.ekBorclular.forEach(function(d){ ekTotal += itemBalanceAt(d, closedUpto); });
     var distTotal = Object.keys(groupTotals).reduce(function(s,k){return s+groupTotals[k];},0) + ekTotal;
     var distColors = {kredi_karti:'var(--acc)', kmh:'rgba(var(--ink),.35)', kredi:'rgba(var(--ink),.2)', manuel:'rgba(var(--ink),.12)'};
     var distLabels = {kredi_karti:'Kredi Kartları', kmh:'KMH', kredi:'Krediler', manuel:'Manuel'};
@@ -1777,11 +1777,12 @@ details.sv-sum[open] summary{color:var(--text);}
     var gelir = salaryFieldFor(STATE,'netMaas',key)+salaryFieldFor(STATE,'sendika',key)+salaryFieldFor(STATE,'aile',key)
       + pazarGun*salaryFieldFor(STATE,'pazarRate',key) + mesaiSaat*salaryFieldFor(STATE,'mesaiRate',key);
     var debtDue = 0;
-    sortedVisible(STATE.debts).forEach(function(d){
+    // Gizlenen borçlar yalnızca listede görünmez; ödemeleri ve bakiyeleri hesaba (gider, maaştan kalan, raporlar) girmeye devam eder
+    STATE.debts.forEach(function(d){
       if(absIndexFromKey(key) < absIndexFromKey(d.startMonthKey)) return;
       debtDue += calcDebtSeries(STATE,d,key).paid[key]||0;
     });
-    sortedVisible(STATE.ekBorclular).forEach(function(d){
+    STATE.ekBorclular.forEach(function(d){
       if(absIndexFromKey(key) < absIndexFromKey(d.startMonthKey)) return;
       debtDue += calcEkSeries(STATE,d,key).paid[key]||0;
     });
@@ -2218,8 +2219,8 @@ details.sv-sum[open] summary{color:var(--text);}
   }
   function monthDebtBalance(key){
     var bal = 0;
-    sortedVisible(STATE.debts).forEach(function(d){ if(absIndexFromKey(key) < absIndexFromKey(d.startMonthKey)) return; bal += Math.max(0, calcDebtSeries(STATE,d,key).balances[key]||0); });
-    sortedVisible(STATE.ekBorclular).forEach(function(d){ if(absIndexFromKey(key) < absIndexFromKey(d.startMonthKey)) return; bal += Math.max(0, calcEkSeries(STATE,d,key).balances[key]||0); });
+    STATE.debts.forEach(function(d){ if(absIndexFromKey(key) < absIndexFromKey(d.startMonthKey)) return; bal += Math.max(0, calcDebtSeries(STATE,d,key).balances[key]||0); });
+    STATE.ekBorclular.forEach(function(d){ if(absIndexFromKey(key) < absIndexFromKey(d.startMonthKey)) return; bal += Math.max(0, calcEkSeries(STATE,d,key).balances[key]||0); });
     return bal;
   }
   function monthReportData(key){
@@ -2228,8 +2229,8 @@ details.sv-sum[open] summary{color:var(--text);}
     STATE.expenses.forEach(function(e){ if(st < absIndexFromKey(e.startMonthKey||EPOCH_KEY)) return; var a = billAmountForMonth(e,key); if(a) d.exp.push([e.ad, a]); });
     STATE.faturalar.forEach(function(f){ if(st < absIndexFromKey(f.startMonthKey||EPOCH_KEY)) return; if((f.cardTransfers||{})[key]) return; var a = billAmountForMonth(f,key); if(a) d.fat.push([f.ad, a]); });
     (STATE.offBudgetExpenses[key]||[]).forEach(function(i){ if(i.cardTransfer) return; var a = Number(i.tutar||0); if(a) d.off.push([i.ad||'Gider', a]); });
-    sortedVisible(STATE.debts).forEach(function(x){ if(st < absIndexFromKey(x.startMonthKey)) return; var ser = calcDebtSeries(STATE,x,key); d.debts.push([x.ad, ser.paid[key]||0, ser.balances[key]||0, x.tur]); });
-    sortedVisible(STATE.ekBorclular).forEach(function(x){ if(st < absIndexFromKey(x.startMonthKey)) return; var ser = calcEkSeries(STATE,x,key); d.ek.push([x.ad, ser.paid[key]||0, ser.balances[key]||0]); });
+    STATE.debts.forEach(function(x){ if(st < absIndexFromKey(x.startMonthKey)) return; var ser = calcDebtSeries(STATE,x,key); if(x.hidden && !(ser.paid[key]>0) && !(ser.balances[key]>0)) return; d.debts.push([x.ad, ser.paid[key]||0, ser.balances[key]||0, x.tur]); });
+    STATE.ekBorclular.forEach(function(x){ if(st < absIndexFromKey(x.startMonthKey)) return; var ser = calcEkSeries(STATE,x,key); if(x.hidden && !(ser.paid[key]>0) && !(ser.balances[key]>0)) return; d.ek.push([x.ad, ser.paid[key]||0, ser.balances[key]||0]); });
     d.borcKalan = monthDebtBalance(key);
     d.gider = t.debtDue + t.faturaTotal + t.expTotal + t.offTotal;
     d.birikim = t.savDep + t.goldNet;
@@ -3445,7 +3446,7 @@ details.sv-sum[open] summary{color:var(--text);}
   fitApp();
 
   /* ===================== BAŞLAT ===================== */
-  var APP_VERSION = 'v45';
+  var APP_VERSION = 'v46';
   (function(){
     var v = document.getElementById('appVer'); if(v) v.textContent = APP_VERSION;
     var ub = document.getElementById('updateBtn');
