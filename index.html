@@ -1514,19 +1514,25 @@ details.sv-sum[open] summary{color:var(--text);}
     var cells = [];
     if(st.tl>0.005) cells.push('Nakit '+fmtShort(st.tl));
     GOLD_ORDER.forEach(function(k){ if(Math.abs(gh.qty[k])>1e-9) cells.push(GOLD_KINDS[k].label+' '+fmtQty(gh.qty[k],GOLD_KINDS[k].unit)); });
+    var cekimNow = computeMonthTotals(key).cekim;
+    if(cekimNow>0.005) cells.push('Bozdurulan '+fmtShort(cekimNow));
     var body = '';
     if(startK && absIndexFromKey(startK) <= absIndexFromKey(key)){
       var keys = keysBetween(startK, key).slice(-12);
-      body = '<div class="sum-wrap"><table class="sum-tbl"><thead><tr><th>Ay</th><th>TL</th><th>22 gr</th><th>24 gr</th><th>S1 lot</th><th>Toplam*</th></tr></thead><tbody>'+
+      var cekimBy = {}, anyCekim = false, cekimAll = 0;
+      keysBetween(startK, key).forEach(function(k){ var c = computeMonthTotals(k).cekim; cekimBy[k] = c; cekimAll += c; });
+      keys.forEach(function(k){ if(cekimBy[k]>0.005) anyCekim = true; });
+      body = '<div class="sum-wrap"><table class="sum-tbl"><thead><tr><th>Ay</th><th>TL</th><th>22 gr</th><th>24 gr</th><th>S1 lot</th>'+(anyCekim?'<th>Bozd.</th>':'')+'<th>Toplam*</th></tr></thead><tbody>'+
         keys.map(function(k){
           var r = sv.rows[k], g = gh.months[k];
           var tl = r ? r.bal : 0, q = g ? g.qty : {k22:0,k24:0,s1:0}, c = g ? g.cost : {k22:0,k24:0,s1:0};
           var tot = tl + c.k22 + c.k24 + c.s1;
           var n = function(v,d){ return Math.abs(v)<1e-9 ? '–' : Number(v).toLocaleString('tr-TR',{maximumFractionDigits:d}); };
-          return '<tr'+(k===key?' class="cur"':'')+'><td>'+monthAbbrFromKey(k)+' \''+String(yearFromKey(k)).slice(2)+'</td><td>'+n(tl,0)+'</td><td>'+n(q.k22,2)+'</td><td>'+n(q.k24,2)+'</td><td>'+n(q.s1,0)+'</td><td>'+n(tot,0)+'</td></tr>';
+          return '<tr'+(k===key?' class="cur"':'')+'><td>'+monthAbbrFromKey(k)+' \''+String(yearFromKey(k)).slice(2)+'</td><td>'+n(tl,0)+'</td><td>'+n(q.k22,2)+'</td><td>'+n(q.k24,2)+'</td><td>'+n(q.s1,0)+'</td>'+(anyCekim?'<td>'+n(cekimBy[k]||0,0)+'</td>':'')+'<td>'+n(tot,0)+'</td></tr>';
         }).join('')+
         '</tbody></table></div>'+
-        '<div class="year-note">*Toplam: o aya kadar TL bakiyen (kar payıyla) + altın/sertifikaya ödediğin tutar. Altının bugünkü satış değeri üstteki kartta ve aşağıda.</div>'+
+        '<div class="year-note">*Toplam: o aya kadar TL bakiyen (kar payıyla) + altın/sertifikaya ödediğin tutar. Altının bugünkü satış değeri üstteki kartta ve aşağıda.'+(anyCekim?' Bozd.: o ay birikimden bozdurduğun tutar (maaştan kalana eklenir).':'')+'</div>'+
+        (cekimAll>0.005 ? '<div class="line-row"><span class="n">Bugüne kadar bozdurulan toplam</span><b style="font-family:var(--font-num);">'+fmtShort(cekimAll)+'</b></div>' : '')+
         '<div class="line-row"><span class="n">Bugünkü satış değeri (altın + sertifika)</span><b style="font-family:var(--font-num);">'+(gh.hasPrice?fmtShort(gh.value):'fiyat gir')+'</b></div>'+
         '<div class="line-row"><span class="n"><b>Toplam birikim (TL + altın değeri)</b></span><b style="font-family:var(--font-num); color:var(--amber);">'+fmtShort(st.total)+'</b></div>';
     }
@@ -3453,7 +3459,7 @@ details.sv-sum[open] summary{color:var(--text);}
   fitApp();
 
   /* ===================== BAŞLAT ===================== */
-  var APP_VERSION = 'v47';
+  var APP_VERSION = 'v48';
   (function(){
     var v = document.getElementById('appVer'); if(v) v.textContent = APP_VERSION;
     var ub = document.getElementById('updateBtn');
