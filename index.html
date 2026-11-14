@@ -442,13 +442,15 @@ details.sv-sum[open] summary{color:var(--text);}
   }
   function fmt(n){
     var num=Number(n); if(isNaN(num)) return '—';
+    num = Math.round(num*100)/100 || 0;
     return num.toLocaleString('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2})+' TL';
   }
   function fmtShort(n){
     var num=Number(n); if(isNaN(num)) return '—';
+    num = Math.round(num) || 0;            // -0 / -0,3 gibi değerler "-0" yazmasın
     return num.toLocaleString('tr-TR',{maximumFractionDigits:0})+' TL';
   }
-  function editVal(n){ return Number(n||0).toLocaleString('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+  function editVal(n){ return (Math.round(Number(n||0)*100)/100 || 0).toLocaleString('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
   function esc(s){ return (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
   /* ===================== DURUM MODELİ ===================== */
@@ -3459,7 +3461,7 @@ details.sv-sum[open] summary{color:var(--text);}
   fitApp();
 
   /* ===================== BAŞLAT ===================== */
-  var APP_VERSION = 'v48';
+  var APP_VERSION = 'v49';
   (function(){
     var v = document.getElementById('appVer'); if(v) v.textContent = APP_VERSION;
     var ub = document.getElementById('updateBtn');
