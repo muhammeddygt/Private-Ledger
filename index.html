@@ -1508,6 +1508,25 @@ details.sv-sum[open] summary{color:var(--text);}
       '<div class="year-note">Yazdığın miktar × fiyat, bu ayın "Maaştan Kalan"ından düşer. Fiyat kutusu güncel satış fiyatıyla dolar, kendi aldığın fiyatı yazabilirsin. 1 lot Altın S1 ≈ 0,01 gr altındır; lot fiyatını aracı kurumundan elle gir.</div>'+
       '<div class="section-title" style="margin:16px 0 4px; font-size:10.5px;">Güncel Fiyatlar</div>'+prices;
   }
+  var debtBreakOpen = false;
+  // "Bu Ay Düşen Borç" dökümü: hangi borca ne ödendi, faiz ve borcun gerçek azalışı
+  function debtBreakHtml(key){
+    var prevK = addMonths(key,-1), rows = [], tP = 0, tF = 0, tR = 0;
+    var add = function(d, ser, isEk, isCard){
+      if(absIndexFromKey(key) < absIndexFromKey(d.startMonthKey)) return;
+      var pay = ser.paid[key]||0, faiz = (ser.faizM&&ser.faizM[key])||0;
+      var pb = (d.startMonthKey===key) ? Number(d.baslangic||0) : (ser.balances[prevK]||0), red = pb - (ser.balances[key]||0);
+      if(pay<0.5 && faiz<0.5 && Math.abs(red)<0.5) return;
+      rows.push('<tr><td style="text-align:left;">'+esc(d.ad)+(isCard?' <small style="color:var(--text-faint);">(kart)</small>':'')+'</td><td>'+fmtShort(pay).replace(' TL','')+'</td><td>'+(faiz>0.5?fmtShort(faiz).replace(' TL',''):'–')+'</td><td>'+fmtShort(red).replace(' TL','')+'</td></tr>');
+      tP += pay; tF += faiz; tR += red;
+    };
+    STATE.debts.forEach(function(d){ add(d, calcDebtSeries(STATE,d,key), false, d.tur==='kredi_karti'); });
+    STATE.ekBorclular.forEach(function(d){ add(d, calcEkSeries(STATE,d,key), true, false); });
+    if(!rows.length) return '<div class="year-note">Bu ay borç ödemesi yok.</div>';
+    return '<div class="sum-wrap" style="margin-top:10px;"><table class="sum-tbl"><thead><tr><th style="text-align:left;">Borç</th><th>Ödeme</th><th>Faiz</th><th>Düşen</th></tr></thead><tbody>'+rows.join('')+
+      '<tr class="cur"><td style="text-align:left;"><b>Toplam</b></td><td><b>'+fmtShort(tP).replace(' TL','')+'</b></td><td><b>'+(tF>0.5?fmtShort(tF).replace(' TL',''):'–')+'</b></td><td><b>'+fmtShort(tR).replace(' TL','')+'</b></td></tr></tbody></table></div>'+
+      '<div class="year-note">Ödeme: bu ay o borca yazılan ödeme. Faiz: o ay işleyen faiz. Düşen: önceki ay sonu bakiye ile bu ay sonu bakiye farkı (kart harcamaları ve ekler ödemeyi düşürür). Üstteki büyük rakam kartları saymaz.</div>';
+  }
   function savingsSumHtml(key, st){
     if(!st.any) return '';
     var sv = savingsSeries(key), gh = st.gold;
@@ -1765,10 +1784,11 @@ details.sv-sum[open] summary{color:var(--text);}
       '<div class="month-chip">'+monthNameFromKey(currentMonthKey)+' ödenince kalan<b>'+fmtShort(kalanGenel)+'</b></div>'+
     '</div>'+
     '<div class="stat-row" style="margin-top:14px;">'+
-      '<div class="stat-mini"><div class="l">Bu Ay Düşen Borç <small>kredi kartı hariç</small></div><div class="v">'+fmtShort(mt.nkReel)+'</div>'+((mt.debtDue>0.5||mt.debtFaiz>0.5) ? '<div class="sub" style="font-size:9.5px; color:var(--text-faint); line-height:1.35; margin-top:3px;">Toplam ödeme '+fmtShort(mt.debtDue)+(mt.debtFaiz>0.5?' · faiz '+fmtShort(mt.debtFaiz):'')+'</div>' : '')+'</div>'+
+      '<div class="stat-mini" data-action="debt-break" style="cursor:pointer;"><div class="l">Bu Ay Düşen Borç <small>kredi kartı hariç · detay için dokun '+(debtBreakOpen?'▴':'▾')+'</small></div><div class="v">'+fmtShort(mt.nkReel)+'</div>'+((mt.debtDue>0.5||mt.debtFaiz>0.5) ? '<div class="sub" style="font-size:9.5px; color:var(--text-faint); line-height:1.35; margin-top:3px;">Toplam ödeme '+fmtShort(mt.debtDue)+(mt.debtFaiz>0.5?' · faiz '+fmtShort(mt.debtFaiz):'')+'</div>' : '')+'</div>'+
       '<div class="stat-mini"><div class="l">Maaştan Kalan</div><div class="v">'+fmtShort(mt.netKalan)+'</div></div>'+
       '<div class="stat-mini gold"><div class="l">Toplam Birikim<small>güncel satış değeri</small></div><div class="v">'+fmtShort(stT.total)+'</div></div>'+
     '</div>'+
+    (debtBreakOpen ? debtBreakHtml(currentMonthKey) : '')+
     savingsSumHtml(currentMonthKey, stT)+
     '<div class="month-total-line"><span class="mtl-l">'+monthNameFromKey(currentMonthKey)+' toplam gider <small>('+((mt.savDep||mt.goldNet)?'birikim hariç':'hepsi dahil')+')</small></span><span class="mtl-v">'+fmtShort(mt.debtDue+mt.faturaTotal+mt.expTotal+mt.offTotal)+'</span></div>'+
     renderSalaryAcc(currentMonthKey)+
@@ -3315,6 +3335,7 @@ details.sv-sum[open] summary{color:var(--text);}
       if(slotEl) wireAddDebtForm(slotEl.id, scr.id==='s-ay' ? currentMonthKey : homeKey(), t.dataset.tur||'');
       return;
     }
+    if(action==='debt-break'){ debtBreakOpen = !debtBreakOpen; renderAll(); return; }
     if(action==='rp-preset'){ rpInit(); var pn = Number(t.dataset.n)||3; rpFrom = addMonths(rpTo, -(pn-1)); if(absIndexFromKey(rpFrom) < absIndexFromKey(EPOCH_KEY)){ rpFrom = EPOCH_KEY; rpTo = addMonths(EPOCH_KEY, pn-1); } rpMsg=''; renderRapor(); return; }
     if(action==='rp-mode'){ rpMode = t.dataset.m==='y' ? 'y' : t.dataset.m==='k' ? 'k' : t.dataset.m==='r' ? 'r' : 'm'; rpMsg=''; renderRapor(); return; }
     if(action==='rp-kv'){ rpKarView = t.dataset.v; rpMsg=''; renderRapor(); return; }
@@ -3470,7 +3491,7 @@ details.sv-sum[open] summary{color:var(--text);}
   fitApp();
 
   /* ===================== BAŞLAT ===================== */
-  var APP_VERSION = 'v53';
+  var APP_VERSION = 'v54';
   (function(){
     var v = document.getElementById('appVer'); if(v) v.textContent = APP_VERSION;
     var ub = document.getElementById('updateBtn');
