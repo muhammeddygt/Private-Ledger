@@ -1924,7 +1924,8 @@ details.sv-sum[open] summary{color:var(--text);}
     var firstShown = Object.keys(DEBT_SECS).filter(debtSecVisible)[0]===secId;
     var list = sortedVisibleDebts().filter(function(d){ return d.tur===tur0; });
     var groupTotalsM = {};
-    list.forEach(function(d){
+    // Başlıktaki tutarlar gizlenen borçları da kapsar (yalnız listede görünmezler)
+    STATE.debts.filter(function(d){ return d.tur===tur0; }).forEach(function(d){
       if(absIndexFromKey(key) < absIndexFromKey(d.startMonthKey)) return;
       var ser = calcDebtSeries(STATE,d,key);
       var g = groupTotalsM[d.tur]||(groupTotalsM[d.tur]={payment:0,balance:0});
@@ -3506,7 +3507,7 @@ details.sv-sum[open] summary{color:var(--text);}
   fitApp();
 
   /* ===================== BAŞLAT ===================== */
-  var APP_VERSION = 'v60';
+  var APP_VERSION = 'v61';
   (function(){
     var v = document.getElementById('appVer'); if(v) v.textContent = APP_VERSION;
     var ub = document.getElementById('updateBtn');
