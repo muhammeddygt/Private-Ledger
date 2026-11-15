@@ -1519,7 +1519,7 @@ details.sv-sum[open] summary{color:var(--text);}
       var pb = (d.startMonthKey===key) ? Number(d.baslangic||0) : (ser.balances[prevK]||0), red = pb - (ser.balances[key]||0);
       if(pay<0.5 && faiz<0.5 && Math.abs(red)<0.5) return;
       var f0 = function(v){ return fmtShort(v).replace(' TL',''); };
-      var row = '<tr><td style="text-align:left;">'+esc(d.ad)+'</td><td>'+f0(pay)+'</td><td>'+(faiz>0.5?f0(faiz):'–')+'</td><td>'+f0(red)+'</td></tr>';
+      var row = '<tr><td style="text-align:left;">'+esc(d.ad)+(d.hidden?' <small style="color:var(--amber);">(gizli)</small>':'')+'</td><td>'+f0(pay)+'</td><td>'+(faiz>0.5?f0(faiz):'–')+'</td><td>'+f0(red)+'</td></tr>';
       var t = grp==='c' ? tc : grp==='k' ? tn : to; t.p += pay; t.f += faiz; t.r += red;
       (grp==='c' ? cd : grp==='k' ? nk : ot).push(row);
     };
@@ -3506,7 +3506,7 @@ details.sv-sum[open] summary{color:var(--text);}
   fitApp();
 
   /* ===================== BAŞLAT ===================== */
-  var APP_VERSION = 'v56';
+  var APP_VERSION = 'v57';
   (function(){
     var v = document.getElementById('appVer'); if(v) v.textContent = APP_VERSION;
     var ub = document.getElementById('updateBtn');
