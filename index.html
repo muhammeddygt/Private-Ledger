@@ -545,7 +545,7 @@ details.sv-sum[open] summary{color:var(--text);}
   function calcDebtSeries(STATE, d, uptoKey){
     if(absIndexFromKey(d.startMonthKey) > absIndexFromKey(uptoKey)) return {balances:{},paid:{},suggested:{},carryIn:{},carryOut:{},keys:[]};
     var keys = keysBetween(d.startMonthKey, uptoKey);
-    var balances={}, paid={}, suggested={}, carryIn={}, carryOut={}, pendIn={}, pendOut={}, faizM={}, yeniM={}, redM={};
+    var balances={}, paid={}, suggested={}, carryIn={}, carryOut={}, pendIn={}, pendOut={}, faizM={}, yeniM={}, redM={}, ovM={};
     var bal = Number(d.baslangic||0);
     var pend = 0;       // kart: önceki ayda yapılan, bu ay borç olarak başlayan harcama
     var carry = 0;      // önceki aydan ertelenen (ödenemeyen) tutar
@@ -618,15 +618,17 @@ details.sv-sum[open] summary{color:var(--text);}
       }
       carry = carryOut[key];
       redM[key] = balStart - bal;    // bu ay ödeme/faiz/ekle etkisiyle borcun düşüşü (elle bakiye düzeltmesi hariç)
+      var balPre = bal;
       if(d.balanceOverrides && hasOwn(d.balanceOverrides,key)) bal = Math.max(0, Number(d.balanceOverrides[key]||0));
+      ovM[key] = balPre - bal;       // elle bakiye düzeltmesi: + ise borcu azalttı
       balances[key]=bal; paid[key]=payment; suggested[key]=sugg;
     });
-    return {balances:balances, paid:paid, suggested:suggested, carryIn:carryIn, carryOut:carryOut, pendIn:pendIn, pendOut:pendOut, faizM:faizM, yeniM:yeniM, redM:redM, keys:keys};
+    return {balances:balances, paid:paid, suggested:suggested, carryIn:carryIn, carryOut:carryOut, pendIn:pendIn, pendOut:pendOut, faizM:faizM, yeniM:yeniM, redM:redM, ovM:ovM, keys:keys};
   }
   function calcEkSeries(STATE, d, uptoKey){
     if(absIndexFromKey(d.startMonthKey) > absIndexFromKey(uptoKey)) return {balances:{},paid:{},carryIn:{},carryOut:{},keys:[]};
     var keys = keysBetween(d.startMonthKey, uptoKey);
-    var balances={}, paid={}, carryIn={}, carryOut={}, redM={};
+    var balances={}, paid={}, carryIn={}, carryOut={}, redM={}, ovM={};
     var bal = Number(d.baslangic||0);
     var carry = 0;
     keys.forEach(function(key){
@@ -640,10 +642,12 @@ details.sv-sum[open] summary{color:var(--text);}
       carry = carryOut[key];
       bal = Math.max(0, bal-payment);
       redM[key] = balStart - bal;
+      var balPreE = bal;
       if(d.balanceOverrides && hasOwn(d.balanceOverrides,key)) bal = Math.max(0, Number(d.balanceOverrides[key]||0));
+      ovM[key] = balPreE - bal;
       balances[key]=bal; paid[key]=payment;
     });
-    return {balances:balances, paid:paid, carryIn:carryIn, carryOut:carryOut, redM:redM, keys:keys};
+    return {balances:balances, paid:paid, carryIn:carryIn, carryOut:carryOut, redM:redM, ovM:ovM, keys:keys};
   }
   function sortedVisible(list){ return list.filter(function(d){return !d.hidden;}); }
   function computeGrandTotal(STATE, uptoKey){
@@ -1514,13 +1518,14 @@ details.sv-sum[open] summary{color:var(--text);}
   var debtBreakOpen = false;
   // "Bu Ay Düşen Borç" dökümü: hangi borca ne ödendi, faiz ve borcun gerçek azalışı
   function debtBreakHtml(key){
-    var prevK = addMonths(key,-1), nk = [], cd = [], ot = [], tn = {p:0,f:0,r:0}, tc = {p:0,f:0,r:0}, to = {p:0,f:0,r:0};
+    var prevK = addMonths(key,-1), nk = [], cd = [], ot = [], tn = {p:0,f:0,r:0}, tc = {p:0,f:0,r:0}, to = {p:0,f:0,r:0}, ovTot = 0, ovNames = [];
     var add = function(d, ser, isEk, isCard){
       var grp = isCard ? 'c' : (!isEk && d.tur==='kredi') ? 'k' : 'o';
       if(absIndexFromKey(key) < absIndexFromKey(d.startMonthKey)) return;
       var pay = ser.paid[key]||0, faiz = (ser.faizM&&ser.faizM[key])||0;
-      var red = ser.redM[key]||0;
-      if(pay<0.5 && faiz<0.5 && Math.abs(red)<0.5) return;
+      var red = ser.redM[key]||0, ov = ser.ovM[key]||0;
+      if(Math.abs(ov)>0.5){ ovTot += ov; ovNames.push(esc(d.ad)+' '+fmtShort(ov)); }
+      if(pay<0.5 && faiz<0.5 && Math.abs(red)<0.5 && Math.abs(ov)<0.5) return;
       var f0 = function(v){ return fmtShort(v).replace(' TL',''); };
       var row = '<tr><td style="text-align:left;">'+esc(d.ad)+(d.hidden?' <small style="color:var(--amber);">(gizli)</small>':'')+'</td><td>'+f0(pay)+'</td><td>'+(faiz>0.5?f0(faiz):'–')+'</td><td>'+f0(red)+'</td></tr>';
       var t = grp==='c' ? tc : grp==='k' ? tn : to; t.p += pay; t.f += faiz; t.r += red;
@@ -1537,8 +1542,10 @@ details.sv-sum[open] summary{color:var(--text);}
       (nk.length ? head('KREDİLER (üstteki kutu)')+nk.join('')+sub('Toplam (krediler)',tn,'cur') : '')+
       (ot.length ? head('DİĞER BORÇLAR (KMH, manuel, ek borçlular)')+ot.join('')+sub('Toplam (diğer)',to,'cur') : '')+
       (cd.length ? head('KREDİ KARTLARI')+cd.join('')+sub('Toplam (kartlar)',tc,'cur') : '')+
-      head('GENEL')+sub('Toplam (hepsi)',all,'cur')+'</tbody></table></div>'+
-      '<div class="year-note">Üstteki büyük "Düşen Borç" rakamı yalnız <b>Krediler</b> toplamıdır ('+fmtShort(tn.r)+'). Ödeme: bu ay o borca yazılan ödeme. Faiz: o ay işleyen faiz. Düşen: bu ay ödemenin borcu gerçekte azaltan kısmı (faiz ve eklenenler düşülür; elle yaptığın bakiye düzeltmeleri sayılmaz).</div>';
+      head('GENEL')+sub('Toplam (hepsi)',all,'cur')+
+      (Math.abs(ovTot)>0.5 ? '<tr><td colspan="3" style="text-align:left;">Elle bakiye düzeltmeleri <small style="color:var(--text-faint);">('+ovNames.join(', ')+')</small></td><td>'+f0(ovTot)+'</td></tr>'+
+        '<tr class="cur"><td colspan="3" style="text-align:left;"><b>Kalan borçtaki toplam azalış</b></td><td><b>'+f0(all.r+ovTot)+'</b></td></tr>' : '')+'</tbody></table></div>'+
+      '<div class="year-note">Üstteki büyük "Düşen Borç" rakamı yalnız <b>Krediler</b> toplamıdır ('+fmtShort(tn.r)+'). Ödeme: bu ay o borca yazılan ödeme. Faiz: o ay işleyen faiz. Düşen: bu ay ödemenin borcu gerçekte azaltan kısmı (faiz ve eklenenler düşülür; elle yaptığın bakiye düzeltmeleri ayrı satırda gösterilir). "Kalan borçtaki toplam azalış" = düşen + düzeltmeler, önceki ay ve bu ay "ödenince kalan" farkına eşittir.</div>';
   }
   function savingsSumHtml(key, st){
     if(!st.any) return '';
@@ -1797,7 +1804,7 @@ details.sv-sum[open] summary{color:var(--text);}
       '<div class="month-chip">'+monthNameFromKey(currentMonthKey)+' ödenince kalan<b>'+fmtShort(kalanGenel)+'</b></div>'+
     '</div>'+
     '<div class="stat-row" style="margin-top:14px;">'+
-      '<div class="stat-mini" data-action="debt-break" style="cursor:pointer;"><div class="l">Bu Ay Düşen Borç <small>yalnız krediler · detay için dokun '+(debtBreakOpen?'▴':'▾')+'</small></div><div class="v">'+fmtShort(mt.nkReel)+'</div>'+((mt.debtDue>0.5||mt.debtFaiz>0.5) ? '<div class="sub" style="font-size:9.5px; color:var(--text-faint); line-height:1.35; margin-top:3px;">Toplam ödeme '+fmtShort(mt.debtDue)+(mt.debtFaiz>0.5?' · faiz '+fmtShort(mt.debtFaiz):'')+'</div>' : '')+'</div>'+
+      '<div class="stat-mini" data-action="debt-break" style="cursor:pointer;"><div class="l">Bu Ay Düşen Borç <small>yalnız krediler · detay için dokun '+(debtBreakOpen?'▴':'▾')+'</small></div><div class="v">'+fmtShort(mt.nkReel)+'</div>'+((mt.debtDue>0.5||mt.debtFaiz>0.5||Math.abs(mt.debtOv)>0.5) ? '<div class="sub" style="font-size:9.5px; color:var(--text-faint); line-height:1.35; margin-top:3px;">Toplam ödeme '+fmtShort(mt.debtDue)+(mt.debtFaiz>0.5?' · faiz '+fmtShort(mt.debtFaiz):'')+(Math.abs(mt.debtOv)>0.5?' · bakiye düzeltmesi '+fmtShort(mt.debtOv):'')+'</div>' : '')+'</div>'+
       '<div class="stat-mini"><div class="l">Maaştan Kalan</div><div class="v">'+fmtShort(mt.netKalan)+'</div></div>'+
       '<div class="stat-mini gold"><div class="l">Toplam Birikim<small>güncel satış değeri</small></div><div class="v">'+fmtShort(stT.total)+'</div></div>'+
     '</div>'+
@@ -1819,20 +1826,20 @@ details.sv-sum[open] summary{color:var(--text);}
       + pazarGun*salaryFieldFor(STATE,'pazarRate',key) + mesaiSaat*salaryFieldFor(STATE,'mesaiRate',key);
     var debtDue = 0;
     // Gizlenen borçlar yalnızca listede görünmez; ödemeleri ve bakiyeleri hesaba (gider, maaştan kalan, raporlar) girmeye devam eder
-    var faizT = 0, yeniT = 0, reelT = 0, prevK = addMonths(key,-1), nkDue = 0, nkReel = 0, nkFaiz = 0;   // nk: yalnız Krediler (taksitli) bölümü
+    var faizT = 0, yeniT = 0, reelT = 0, prevK = addMonths(key,-1), nkDue = 0, nkReel = 0, nkFaiz = 0, ovT = 0;   // nk: yalnız Krediler (taksitli) bölümü
     STATE.debts.forEach(function(d){
       if(absIndexFromKey(key) < absIndexFromKey(d.startMonthKey)) return;
       var sr = calcDebtSeries(STATE,d,key);
       debtDue += sr.paid[key]||0; faizT += (sr.faizM&&sr.faizM[key])||0; yeniT += (sr.yeniM&&sr.yeniM[key])||0;
       var rd = sr.redM[key]||0;
-      reelT += rd;
+      reelT += rd; ovT += sr.ovM[key]||0;
       if(d.tur === 'kredi'){ nkDue += sr.paid[key]||0; nkFaiz += (sr.faizM&&sr.faizM[key])||0; nkReel += rd; }
     });
     STATE.ekBorclular.forEach(function(d){
       if(absIndexFromKey(key) < absIndexFromKey(d.startMonthKey)) return;
       var se = calcEkSeries(STATE,d,key);
       debtDue += se.paid[key]||0; yeniT += Number((d.additions&&d.additions[key])||0);
-      reelT += se.redM[key]||0;
+      reelT += se.redM[key]||0; ovT += se.ovM[key]||0;
     });
     var faturaTotal = STATE.faturalar.reduce(function(s,f){
       if(absIndexFromKey(key) < absIndexFromKey(f.startMonthKey||EPOCH_KEY) || itemOffIn(f,key)) return s;
@@ -1853,7 +1860,7 @@ details.sv-sum[open] summary{color:var(--text);}
     var svL = ((STATE.savings&&STATE.savings.deposits&&STATE.savings.deposits[key])||[]), gdL = ((STATE.gold&&STATE.gold.entries&&STATE.gold.entries[key])||[]);
     var depPos = svL.reduce(function(a,x){var v=Number(x.tutar||0); return a+(v>0?v:0);},0), depNeg = svL.reduce(function(a,x){var v=Number(x.tutar||0); return a+(v<0?-v:0);},0);
     var goldBuy = gdL.reduce(function(a,x){var v=Number(x.qty||0)*Number(x.price||0); return a+(v>0?v:0);},0), goldSell = gdL.reduce(function(a,x){var v=Number(x.qty||0)*Number(x.price||0); return a+(v<0?-v:0);},0);
-    return {gelir:gelir, debtDue:debtDue, faturaTotal:faturaTotal, expTotal:expTotal, offTotal:offTotal, savDep:savDep, goldNet:goldNet, netKalan:netKalan, debtFaiz:faizT, debtYeni:yeniT, debtReel:reelT, nkDue:nkDue, nkReel:nkReel, nkFaiz:nkFaiz, cekim:depNeg+goldSell, yatirim:depPos+goldBuy, depPos:depPos, goldBuy:goldBuy, depNeg:depNeg, goldSell:goldSell};
+    return {gelir:gelir, debtDue:debtDue, faturaTotal:faturaTotal, expTotal:expTotal, offTotal:offTotal, savDep:savDep, goldNet:goldNet, netKalan:netKalan, debtFaiz:faizT, debtYeni:yeniT, debtReel:reelT, nkDue:nkDue, nkReel:nkReel, nkFaiz:nkFaiz, debtOv:ovT, cekim:depNeg+goldSell, yatirim:depPos+goldBuy, depPos:depPos, goldBuy:goldBuy, depNeg:depNeg, goldSell:goldSell};
   }
 
   var salBulkMsg = '';
@@ -3508,7 +3515,7 @@ details.sv-sum[open] summary{color:var(--text);}
   fitApp();
 
   /* ===================== BAŞLAT ===================== */
-  var APP_VERSION = 'v58';
+  var APP_VERSION = 'v59';
   (function(){
     var v = document.getElementById('appVer'); if(v) v.textContent = APP_VERSION;
     var ub = document.getElementById('updateBtn');
