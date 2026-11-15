@@ -1511,21 +1511,29 @@ details.sv-sum[open] summary{color:var(--text);}
   var debtBreakOpen = false;
   // "Bu Ay Düşen Borç" dökümü: hangi borca ne ödendi, faiz ve borcun gerçek azalışı
   function debtBreakHtml(key){
-    var prevK = addMonths(key,-1), rows = [], tP = 0, tF = 0, tR = 0;
+    var prevK = addMonths(key,-1), nk = [], cd = [], tn = {p:0,f:0,r:0}, tc = {p:0,f:0,r:0};
     var add = function(d, ser, isEk, isCard){
       if(absIndexFromKey(key) < absIndexFromKey(d.startMonthKey)) return;
       var pay = ser.paid[key]||0, faiz = (ser.faizM&&ser.faizM[key])||0;
       var pb = (d.startMonthKey===key) ? Number(d.baslangic||0) : (ser.balances[prevK]||0), red = pb - (ser.balances[key]||0);
       if(pay<0.5 && faiz<0.5 && Math.abs(red)<0.5) return;
-      rows.push('<tr><td style="text-align:left;">'+esc(d.ad)+(isCard?' <small style="color:var(--text-faint);">(kart)</small>':'')+'</td><td>'+fmtShort(pay).replace(' TL','')+'</td><td>'+(faiz>0.5?fmtShort(faiz).replace(' TL',''):'–')+'</td><td>'+fmtShort(red).replace(' TL','')+'</td></tr>');
-      tP += pay; tF += faiz; tR += red;
+      var f0 = function(v){ return fmtShort(v).replace(' TL',''); };
+      var row = '<tr><td style="text-align:left;">'+esc(d.ad)+'</td><td>'+f0(pay)+'</td><td>'+(faiz>0.5?f0(faiz):'–')+'</td><td>'+f0(red)+'</td></tr>';
+      var t = isCard ? tc : tn; t.p += pay; t.f += faiz; t.r += red;
+      (isCard ? cd : nk).push(row);
     };
     STATE.debts.forEach(function(d){ add(d, calcDebtSeries(STATE,d,key), false, d.tur==='kredi_karti'); });
     STATE.ekBorclular.forEach(function(d){ add(d, calcEkSeries(STATE,d,key), true, false); });
-    if(!rows.length) return '<div class="year-note">Bu ay borç ödemesi yok.</div>';
-    return '<div class="sum-wrap" style="margin-top:10px;"><table class="sum-tbl"><thead><tr><th style="text-align:left;">Borç</th><th>Ödeme</th><th>Faiz</th><th>Düşen</th></tr></thead><tbody>'+rows.join('')+
-      '<tr class="cur"><td style="text-align:left;"><b>Toplam</b></td><td><b>'+fmtShort(tP).replace(' TL','')+'</b></td><td><b>'+(tF>0.5?fmtShort(tF).replace(' TL',''):'–')+'</b></td><td><b>'+fmtShort(tR).replace(' TL','')+'</b></td></tr></tbody></table></div>'+
-      '<div class="year-note">Ödeme: bu ay o borca yazılan ödeme. Faiz: o ay işleyen faiz. Düşen: önceki ay sonu bakiye ile bu ay sonu bakiye farkı (kart harcamaları ve ekler ödemeyi düşürür). Üstteki büyük rakam kartları saymaz.</div>';
+    if(!nk.length && !cd.length) return '<div class="year-note">Bu ay borç ödemesi yok.</div>';
+    var f0 = function(v){ return fmtShort(v).replace(' TL',''); };
+    var sub = function(lbl,t,cls){ return '<tr class="'+(cls||'')+'"><td style="text-align:left;"><b>'+lbl+'</b></td><td><b>'+f0(t.p)+'</b></td><td><b>'+(t.f>0.5?f0(t.f):'–')+'</b></td><td><b>'+f0(t.r)+'</b></td></tr>'; };
+    var head = function(lbl){ return '<tr><td colspan="4" style="text-align:left; color:var(--text-faint); font-size:10px; padding-top:8px;">'+lbl+'</td></tr>'; };
+    var all = {p:tn.p+tc.p, f:tn.f+tc.f, r:tn.r+tc.r};
+    return '<div class="sum-wrap" style="margin-top:10px;"><table class="sum-tbl"><thead><tr><th style="text-align:left;">Borç</th><th>Ödeme</th><th>Faiz</th><th>Düşen</th></tr></thead><tbody>'+
+      (nk.length ? head('KREDİ KARTI OLMAYANLAR')+nk.join('')+sub('Toplam (kart hariç)',tn,'cur') : '')+
+      (cd.length ? head('KREDİ KARTLARI')+cd.join('')+sub('Toplam (kartlar)',tc,'cur') : '')+
+      head('GENEL')+sub('Toplam (hepsi)',all,'cur')+'</tbody></table></div>'+
+      '<div class="year-note">Üstteki büyük "Düşen Borç" rakamı <b>kart hariç</b> toplamdır ('+fmtShort(tn.r)+'). Ödeme: bu ay o borca yazılan ödeme. Faiz: o ay işleyen faiz. Düşen: önceki ay sonu bakiye ile bu ay sonu bakiye farkı.</div>';
   }
   function savingsSumHtml(key, st){
     if(!st.any) return '';
@@ -3491,7 +3499,7 @@ details.sv-sum[open] summary{color:var(--text);}
   fitApp();
 
   /* ===================== BAŞLAT ===================== */
-  var APP_VERSION = 'v54';
+  var APP_VERSION = 'v55';
   (function(){
     var v = document.getElementById('appVer'); if(v) v.textContent = APP_VERSION;
     var ub = document.getElementById('updateBtn');
