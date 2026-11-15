@@ -1765,7 +1765,7 @@ details.sv-sum[open] summary{color:var(--text);}
       '<div class="month-chip">'+monthNameFromKey(currentMonthKey)+' ödenince kalan<b>'+fmtShort(kalanGenel)+'</b></div>'+
     '</div>'+
     '<div class="stat-row" style="margin-top:14px;">'+
-      '<div class="stat-mini"><div class="l">Bu Ay Düşen Borç</div><div class="v">'+fmtShort(mt.debtReel)+'</div>'+((mt.debtDue>0.5||mt.debtFaiz>0.5) ? '<div class="sub" style="font-size:9.5px; color:var(--text-faint); line-height:1.35; margin-top:3px;">Toplam ödeme '+fmtShort(mt.debtDue)+(mt.debtFaiz>0.5?' · faiz '+fmtShort(mt.debtFaiz):'')+'</div>' : '')+'</div>'+
+      '<div class="stat-mini"><div class="l">Bu Ay Düşen Borç <small>kredi kartı hariç</small></div><div class="v">'+fmtShort(mt.nkReel)+'</div>'+((mt.nkDue>0.5||mt.nkFaiz>0.5) ? '<div class="sub" style="font-size:9.5px; color:var(--text-faint); line-height:1.35; margin-top:3px;">Toplam ödeme '+fmtShort(mt.nkDue)+(mt.nkFaiz>0.5?' · faiz '+fmtShort(mt.nkFaiz):'')+'</div>' : '')+'</div>'+
       '<div class="stat-mini"><div class="l">Maaştan Kalan</div><div class="v">'+fmtShort(mt.netKalan)+'</div></div>'+
       '<div class="stat-mini gold"><div class="l">Toplam Birikim<small>güncel satış değeri</small></div><div class="v">'+fmtShort(stT.total)+'</div></div>'+
     '</div>'+
@@ -1786,13 +1786,14 @@ details.sv-sum[open] summary{color:var(--text);}
       + pazarGun*salaryFieldFor(STATE,'pazarRate',key) + mesaiSaat*salaryFieldFor(STATE,'mesaiRate',key);
     var debtDue = 0;
     // Gizlenen borçlar yalnızca listede görünmez; ödemeleri ve bakiyeleri hesaba (gider, maaştan kalan, raporlar) girmeye devam eder
-    var faizT = 0, yeniT = 0, reelT = 0, prevK = addMonths(key,-1);
+    var faizT = 0, yeniT = 0, reelT = 0, prevK = addMonths(key,-1), nkDue = 0, nkReel = 0, nkFaiz = 0;   // nk: kredi kartı hariç
     STATE.debts.forEach(function(d){
       if(absIndexFromKey(key) < absIndexFromKey(d.startMonthKey)) return;
       var sr = calcDebtSeries(STATE,d,key);
       debtDue += sr.paid[key]||0; faizT += (sr.faizM&&sr.faizM[key])||0; yeniT += (sr.yeniM&&sr.yeniM[key])||0;
       var pb = (d.startMonthKey===key) ? Number(d.baslangic||0) : (sr.balances[prevK]||0);
       reelT += pb - (sr.balances[key]||0);
+      if(d.tur !== 'kredi_karti'){ nkDue += sr.paid[key]||0; nkFaiz += (sr.faizM&&sr.faizM[key])||0; nkReel += pb - (sr.balances[key]||0); }
     });
     STATE.ekBorclular.forEach(function(d){
       if(absIndexFromKey(key) < absIndexFromKey(d.startMonthKey)) return;
@@ -1800,6 +1801,7 @@ details.sv-sum[open] summary{color:var(--text);}
       debtDue += se.paid[key]||0; yeniT += Number((d.additions&&d.additions[key])||0);
       var pbe = (d.startMonthKey===key) ? Number(d.baslangic||0) : (se.balances[prevK]||0);
       reelT += pbe - (se.balances[key]||0);
+      nkDue += se.paid[key]||0; nkReel += pbe - (se.balances[key]||0);
     });
     var faturaTotal = STATE.faturalar.reduce(function(s,f){
       if(absIndexFromKey(key) < absIndexFromKey(f.startMonthKey||EPOCH_KEY) || itemOffIn(f,key)) return s;
@@ -1820,7 +1822,7 @@ details.sv-sum[open] summary{color:var(--text);}
     var svL = ((STATE.savings&&STATE.savings.deposits&&STATE.savings.deposits[key])||[]), gdL = ((STATE.gold&&STATE.gold.entries&&STATE.gold.entries[key])||[]);
     var depPos = svL.reduce(function(a,x){var v=Number(x.tutar||0); return a+(v>0?v:0);},0), depNeg = svL.reduce(function(a,x){var v=Number(x.tutar||0); return a+(v<0?-v:0);},0);
     var goldBuy = gdL.reduce(function(a,x){var v=Number(x.qty||0)*Number(x.price||0); return a+(v>0?v:0);},0), goldSell = gdL.reduce(function(a,x){var v=Number(x.qty||0)*Number(x.price||0); return a+(v<0?-v:0);},0);
-    return {gelir:gelir, debtDue:debtDue, faturaTotal:faturaTotal, expTotal:expTotal, offTotal:offTotal, savDep:savDep, goldNet:goldNet, netKalan:netKalan, debtFaiz:faizT, debtYeni:yeniT, debtReel:reelT, cekim:depNeg+goldSell, yatirim:depPos+goldBuy, depPos:depPos, goldBuy:goldBuy, depNeg:depNeg, goldSell:goldSell};
+    return {gelir:gelir, debtDue:debtDue, faturaTotal:faturaTotal, expTotal:expTotal, offTotal:offTotal, savDep:savDep, goldNet:goldNet, netKalan:netKalan, debtFaiz:faizT, debtYeni:yeniT, debtReel:reelT, nkDue:nkDue, nkReel:nkReel, nkFaiz:nkFaiz, cekim:depNeg+goldSell, yatirim:depPos+goldBuy, depPos:depPos, goldBuy:goldBuy, depNeg:depNeg, goldSell:goldSell};
   }
 
   var salBulkMsg = '';
@@ -3468,7 +3470,7 @@ details.sv-sum[open] summary{color:var(--text);}
   fitApp();
 
   /* ===================== BAŞLAT ===================== */
-  var APP_VERSION = 'v51';
+  var APP_VERSION = 'v52';
   (function(){
     var v = document.getElementById('appVer'); if(v) v.textContent = APP_VERSION;
     var ub = document.getElementById('updateBtn');
