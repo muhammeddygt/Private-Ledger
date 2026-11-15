@@ -545,13 +545,13 @@ details.sv-sum[open] summary{color:var(--text);}
   function calcDebtSeries(STATE, d, uptoKey){
     if(absIndexFromKey(d.startMonthKey) > absIndexFromKey(uptoKey)) return {balances:{},paid:{},suggested:{},carryIn:{},carryOut:{},keys:[]};
     var keys = keysBetween(d.startMonthKey, uptoKey);
-    var balances={}, paid={}, suggested={}, carryIn={}, carryOut={}, pendIn={}, pendOut={}, faizM={}, yeniM={};
+    var balances={}, paid={}, suggested={}, carryIn={}, carryOut={}, pendIn={}, pendOut={}, faizM={}, yeniM={}, redM={};
     var bal = Number(d.baslangic||0);
     var pend = 0;       // kart: önceki ayda yapılan, bu ay borç olarak başlayan harcama
     var carry = 0;      // önceki aydan ertelenen (ödenemeyen) tutar
     var prepaid = 0;    // kredide peşin ödenen taksit tutarı (sonraki taksitlerden düşer)
     keys.forEach(function(key){
-      var payment, sugg;
+      var payment, sugg, balStart = bal;
       var hasOv = !!(d.payments && hasOwn(d.payments,key));
       var missed = !!(d.missedMonths && d.missedMonths[key]);
       carryIn[key] = carry;
@@ -617,18 +617,20 @@ details.sv-sum[open] summary{color:var(--text);}
         bal = Math.max(0, bal-payment);
       }
       carry = carryOut[key];
+      redM[key] = balStart - bal;    // bu ay ödeme/faiz/ekle etkisiyle borcun düşüşü (elle bakiye düzeltmesi hariç)
       if(d.balanceOverrides && hasOwn(d.balanceOverrides,key)) bal = Math.max(0, Number(d.balanceOverrides[key]||0));
       balances[key]=bal; paid[key]=payment; suggested[key]=sugg;
     });
-    return {balances:balances, paid:paid, suggested:suggested, carryIn:carryIn, carryOut:carryOut, pendIn:pendIn, pendOut:pendOut, faizM:faizM, yeniM:yeniM, keys:keys};
+    return {balances:balances, paid:paid, suggested:suggested, carryIn:carryIn, carryOut:carryOut, pendIn:pendIn, pendOut:pendOut, faizM:faizM, yeniM:yeniM, redM:redM, keys:keys};
   }
   function calcEkSeries(STATE, d, uptoKey){
     if(absIndexFromKey(d.startMonthKey) > absIndexFromKey(uptoKey)) return {balances:{},paid:{},carryIn:{},carryOut:{},keys:[]};
     var keys = keysBetween(d.startMonthKey, uptoKey);
-    var balances={}, paid={}, carryIn={}, carryOut={};
+    var balances={}, paid={}, carryIn={}, carryOut={}, redM={};
     var bal = Number(d.baslangic||0);
     var carry = 0;
     keys.forEach(function(key){
+      var balStart = bal;
       bal += Number((d.additions && d.additions[key])||0);
       var missed = !!(d.missedMonths && d.missedMonths[key]);
       carryIn[key] = carry;
@@ -637,10 +639,11 @@ details.sv-sum[open] summary{color:var(--text);}
       carryOut[key] = missed ? due : 0;
       carry = carryOut[key];
       bal = Math.max(0, bal-payment);
+      redM[key] = balStart - bal;
       if(d.balanceOverrides && hasOwn(d.balanceOverrides,key)) bal = Math.max(0, Number(d.balanceOverrides[key]||0));
       balances[key]=bal; paid[key]=payment;
     });
-    return {balances:balances, paid:paid, carryIn:carryIn, carryOut:carryOut, keys:keys};
+    return {balances:balances, paid:paid, carryIn:carryIn, carryOut:carryOut, redM:redM, keys:keys};
   }
   function sortedVisible(list){ return list.filter(function(d){return !d.hidden;}); }
   function computeGrandTotal(STATE, uptoKey){
@@ -1516,7 +1519,7 @@ details.sv-sum[open] summary{color:var(--text);}
       var grp = isCard ? 'c' : (!isEk && d.tur==='kredi') ? 'k' : 'o';
       if(absIndexFromKey(key) < absIndexFromKey(d.startMonthKey)) return;
       var pay = ser.paid[key]||0, faiz = (ser.faizM&&ser.faizM[key])||0;
-      var pb = (d.startMonthKey===key) ? Number(d.baslangic||0) : (ser.balances[prevK]||0), red = pb - (ser.balances[key]||0);
+      var red = ser.redM[key]||0;
       if(pay<0.5 && faiz<0.5 && Math.abs(red)<0.5) return;
       var f0 = function(v){ return fmtShort(v).replace(' TL',''); };
       var row = '<tr><td style="text-align:left;">'+esc(d.ad)+(d.hidden?' <small style="color:var(--amber);">(gizli)</small>':'')+'</td><td>'+f0(pay)+'</td><td>'+(faiz>0.5?f0(faiz):'–')+'</td><td>'+f0(red)+'</td></tr>';
@@ -1535,7 +1538,7 @@ details.sv-sum[open] summary{color:var(--text);}
       (ot.length ? head('DİĞER BORÇLAR (KMH, manuel, ek borçlular)')+ot.join('')+sub('Toplam (diğer)',to,'cur') : '')+
       (cd.length ? head('KREDİ KARTLARI')+cd.join('')+sub('Toplam (kartlar)',tc,'cur') : '')+
       head('GENEL')+sub('Toplam (hepsi)',all,'cur')+'</tbody></table></div>'+
-      '<div class="year-note">Üstteki büyük "Düşen Borç" rakamı yalnız <b>Krediler</b> toplamıdır ('+fmtShort(tn.r)+'). Ödeme: bu ay o borca yazılan ödeme. Faiz: o ay işleyen faiz. Düşen: önceki ay sonu bakiye ile bu ay sonu bakiye farkı.</div>';
+      '<div class="year-note">Üstteki büyük "Düşen Borç" rakamı yalnız <b>Krediler</b> toplamıdır ('+fmtShort(tn.r)+'). Ödeme: bu ay o borca yazılan ödeme. Faiz: o ay işleyen faiz. Düşen: bu ay ödemenin borcu gerçekte azaltan kısmı (faiz ve eklenenler düşülür; elle yaptığın bakiye düzeltmeleri sayılmaz).</div>';
   }
   function savingsSumHtml(key, st){
     if(!st.any) return '';
@@ -1821,16 +1824,15 @@ details.sv-sum[open] summary{color:var(--text);}
       if(absIndexFromKey(key) < absIndexFromKey(d.startMonthKey)) return;
       var sr = calcDebtSeries(STATE,d,key);
       debtDue += sr.paid[key]||0; faizT += (sr.faizM&&sr.faizM[key])||0; yeniT += (sr.yeniM&&sr.yeniM[key])||0;
-      var pb = (d.startMonthKey===key) ? Number(d.baslangic||0) : (sr.balances[prevK]||0);
-      reelT += pb - (sr.balances[key]||0);
-      if(d.tur === 'kredi'){ nkDue += sr.paid[key]||0; nkFaiz += (sr.faizM&&sr.faizM[key])||0; nkReel += pb - (sr.balances[key]||0); }
+      var rd = sr.redM[key]||0;
+      reelT += rd;
+      if(d.tur === 'kredi'){ nkDue += sr.paid[key]||0; nkFaiz += (sr.faizM&&sr.faizM[key])||0; nkReel += rd; }
     });
     STATE.ekBorclular.forEach(function(d){
       if(absIndexFromKey(key) < absIndexFromKey(d.startMonthKey)) return;
       var se = calcEkSeries(STATE,d,key);
       debtDue += se.paid[key]||0; yeniT += Number((d.additions&&d.additions[key])||0);
-      var pbe = (d.startMonthKey===key) ? Number(d.baslangic||0) : (se.balances[prevK]||0);
-      reelT += pbe - (se.balances[key]||0);
+      reelT += se.redM[key]||0;
     });
     var faturaTotal = STATE.faturalar.reduce(function(s,f){
       if(absIndexFromKey(key) < absIndexFromKey(f.startMonthKey||EPOCH_KEY) || itemOffIn(f,key)) return s;
@@ -3506,7 +3508,7 @@ details.sv-sum[open] summary{color:var(--text);}
   fitApp();
 
   /* ===================== BAŞLAT ===================== */
-  var APP_VERSION = 'v57';
+  var APP_VERSION = 'v58';
   (function(){
     var v = document.getElementById('appVer'); if(v) v.textContent = APP_VERSION;
     var ub = document.getElementById('updateBtn');
